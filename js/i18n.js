@@ -738,58 +738,281 @@ class I18nManager {
         const modalBody = document.querySelector('#help-modal .modal-body');
         if (!modalBody) return;
         
+        if (this.currentLang === 'ja') {
+            // 日本語版の詳細な内容を復元
+            this.restoreJapaneseHelpContent(modalBody);
+            return;
+        }
+        
+        // 英語版の詳細なヘルプ内容
         modalBody.innerHTML = `
             <section>
-                <h3>${this.t('help.progress.title')}</h3>
-                <p>${this.t('help.progress.desc')}</p>
+                <h3>📊 Learning Progress</h3>
+                <p>You can check your learning status with the accordion-style progress panel above the tabs.</p>
                 <ul>
-                    <li>${this.t('help.progress.points')}</li>
-                    <li>${this.t('help.progress.challenges')}</li>
-                    <li>${this.t('help.progress.levels')}</li>
-                    <li>${this.t('help.progress.reset')}</li>
+                    <li><strong>Total Points</strong>: Earned by completing decryption challenges in the decryption tab</li>
+                    <li><strong>Completed Challenges</strong>: Number of correctly solved decryption challenges</li>
+                    <li><strong>Unlocked Levels</strong>: Next level unlocks when all challenges in current level are completed</li>
+                    <li><strong>Progress Reset</strong>: Reset all progress with confirmation dialog</li>
                 </ul>
             </section>
 
             <section>
-                <h3>${this.t('help.key.title')}</h3>
-                <p>${this.t('help.key.desc')}</p>
+                <h3>🔑 Key Generation Tab</h3>
+                <p>Set up the 5×5 matrix used for Playfair cipher.</p>
                 <ul>
-                    <li>${this.t('help.key.keyword')}</li>
-                    <li>${this.t('help.key.matrix')}</li>
-                    <li>${this.t('help.key.chars')}</li>
-                    <li>${this.t('help.key.duplicate')}</li>
+                    <li><strong>Keyword Mode</strong>: Automatically generate matrix from English words</li>
+                    <li><strong>Matrix Mode</strong>: Directly input 25 characters</li>
+                    <li><strong>Character Restriction</strong>: 25 characters A-Z (J not used, merged with I)</li>
+                    <li><strong>Duplicate Check</strong>: Error if same characters are duplicated</li>
                 </ul>
             </section>
 
             <section>
-                <h3>${this.t('help.encrypt.title')}</h3>
-                <p>${this.t('help.encrypt.desc')}</p>
+                <h3>🔐 Encryption Tab</h3>
+                <p>Encrypt plaintext using Playfair cipher.</p>
                 <ul>
-                    <li>${this.t('help.encrypt.examples')}</li>
+                    <li><strong>Example Selection</strong>: Load examples by category for learning</li>
+                    <li><strong>Input Validation</strong>: Non-alphabetic characters show warning but processing continues</li>
+                    <li><strong>Same Pair Processing Mode</strong>:
+                        <ul>
+                            <li><strong>ON</strong>: Insert padding characters (X/Q/Z) to separate pairs</li>
+                            <li><strong>OFF</strong>: Choose from 3 special rules
+                                <ul>
+                                    <li>No change (keep same characters)</li>
+                                    <li>Replace with right adjacent (standard)</li>
+                                    <li>Move one right, one down</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                    <li><strong>Transformation Rules</strong>: Same row shifts right, same column shifts down, rectangle swaps diagonally</li>
                 </ul>
             </section>
 
             <section>
-                <h3>${this.t('help.decrypt.title')}</h3>
-                <p>${this.t('help.decrypt.desc')}</p>
+                <h3>🔓 Decryption Tab</h3>
+                <p>Decrypt ciphertext using Playfair cipher.</p>
+                <ul>
+                    <li><strong>Practice & Challenge Selection</strong>: Choose from decryption practice and challenge problems</li>
+                    <li><strong>Decryption Challenges</strong>: Earn points for correct answers, progress is recorded
+                        <ul>
+                            <li>Challenge 1: Basic decryption with default key (10pt)</li>
+                            <li>Challenge 2: Intermediate decryption with SECRET key (20pt)</li>
+                            <li>Challenge 3: Advanced decryption with MILITARY key (30pt)</li>
+                        </ul>
+                    </li>
+                    <li><strong>Level Restrictions</strong>: Next level unlocks after completing previous level</li>
+                    <li><strong>Hint System</strong>: Progressive hint display
+                        <ul>
+                            <li>Hint button shows "(current/total)" counter</li>
+                            <li>Multiple clicks show next hints</li>
+                            <li>Button disabled after all hints shown</li>
+                        </ul>
+                    </li>
+                    <li><strong>Answer Validation</strong>: Flexible answer acceptance
+                        <ul>
+                            <li>Exact match for correct answer</li>
+                            <li>Considers presence/absence of padding characters</li>
+                            <li>Proper word spacing required</li>
+                        </ul>
+                    </li>
+                    <li><strong>Same Pair Processing Rules</strong>: Select according to encryption settings
+                        <ul>
+                            <li>No change (keep same characters)</li>
+                            <li>Restore from right adjacent (convert to left・standard)</li>
+                            <li>Restore from one right, one down (convert to one left, one up)</li>
+                        </ul>
+                    </li>
+                    <li><strong>Input Restriction</strong>: Only alphabetic characters accepted (others show error)</li>
+                    <li><strong>Transformation Rules</strong>: Reverse of encryption (left shift, up shift, diagonal swap)</li>
+                </ul>
             </section>
 
             <section>
-                <h3>${this.t('help.animation.title')}</h3>
-                <p>${this.t('help.animation.desc')}</p>
+                <h3>🎬 Animation Controls</h3>
+                <p>View encryption/decryption process step by step.</p>
+                <ul>
+                    <li><strong>◀ Prev</strong>: Go to previous step (with highlight display)</li>
+                    <li><strong>▶ Play / ⏸ Stop</strong>: Start/stop automatic playback</li>
+                    <li><strong>Next ▶</strong>: Go to next step</li>
+                    <li><strong>🔄 Restart</strong>: Restart animation from beginning</li>
+                    <li><strong>Step Display</strong>: Shows current step and total steps</li>
+                </ul>
+                <p>Matrix highlighting and transformed pair display sync at each step. Previous button also highlights corresponding pair positions in matrix.</p>
+                <p><strong>Intermediate State Display</strong>: Shows 2-character pairs before and after transformation step by step for visual understanding of the process.</p>
             </section>
 
             <section>
-                <h3>${this.t('help.other.title')}</h3>
+                <h3>🌙 Other Features</h3>
+                <ul>
+                    <li><strong>Dark Mode</strong>: Toggle light/dark mode with top-right button</li>
+                    <li><strong>Copy Function</strong>: One-click copy for ciphertext and decryption results</li>
+                    <li><strong>Responsive Design</strong>: Comfortable use on mobile devices</li>
+                    <li><strong>Auto-save Function</strong>: Learning progress automatically saved to browser</li>
+                    <li><strong>Dynamic Updates</strong>: Next challenge selectable without tab switching after challenge success</li>
+                    <li><strong>Completion Display</strong>: Completed challenges marked with "✓"</li>
+                    <li><strong>Multi-language Support</strong>: Switch between Japanese and English with JA/EN button</li>
+                    <li><strong>Accessibility</strong>: Keyboard navigation and screen reader support</li>
+                </ul>
             </section>
 
             <section>
-                <h3>${this.t('help.tips.title')}</h3>
+                <h3>🎯 Usage Tips</h3>
+                <ul>
+                    <li><strong>Learning Order</strong>: Recommended to learn in order: Key Generation → Encryption → Decryption</li>
+                    <li><strong>Challenge Strategy</strong>: Enjoy decryption by displaying hints progressively</li>
+                    <li><strong>Animation Utilization</strong>: Use prev/next buttons to examine process steps in detail</li>
+                    <li><strong>Same Pair Processing</strong>: Important to select same rules for encryption and decryption</li>
+                    <li><strong>Progress Management</strong>: Regularly check learning status with progress panel</li>
+                    <li><strong>Example Utilization</strong>: Start with examples in encryption tab to master basic operations</li>
+                    <li><strong>Error Handling</strong>: Read red error messages and fix appropriately</li>
+                    <li><strong>Matrix Understanding</strong>: Try both keyword and matrix modes in key generation</li>
+                    <li><strong>Pair Processing Practice</strong>: Check result differences with each same pair processing rule</li>
+                    <li><strong>Challenge Strategy</strong>: Try decryption yourself first without overusing hints</li>
+                </ul>
             </section>
 
             <section>
-                <h3>${this.t('help.warning.title')}</h3>
-                <p>${this.t('help.warning.desc')}</p>
+                <h3>⚠️ Important Notice</h3>
+                <p><strong>This tool is for educational purposes.</strong> Playfair cipher is a classical cipher and not suitable for modern cryptographic use.</p>
+            </section>
+        `;
+    }
+
+    restoreJapaneseHelpContent(modalBody) {
+        // 日本語版の詳細なヘルプ内容を復元
+        modalBody.innerHTML = `
+            <section>
+                <h3>📊 学習進捗</h3>
+                <p>タブの上にあるアコーディオン式の進捗パネルで学習状況を確認できます。</p>
+                <ul>
+                    <li><strong>総ポイント</strong>：復号タブの解読チャレンジをクリアすると獲得</li>
+                    <li><strong>クリア課題数</strong>：正解した解読チャレンジの数</li>
+                    <li><strong>解放レベル</strong>：レベル内の全チャレンジクリアで次レベル解放</li>
+                    <li><strong>進捗リセット</strong>：確認ダイアログ付きで全進捗をリセット可能</li>
+                </ul>
+            </section>
+
+            <section>
+                <h3>🔑 鍵生成タブ</h3>
+                <p>プレイフェア暗号で使用する5×5マトリクスを設定します。</p>
+                <ul>
+                    <li><strong>キーワード指定</strong>：英単語からマトリクスを自動生成</li>
+                    <li><strong>マトリクス指定</strong>：25文字を直接入力して設定</li>
+                    <li><strong>文字制限</strong>：A-Zの25文字（Jは使用不可、Iと統合）</li>
+                    <li><strong>重複チェック</strong>：同じ文字が重複している場合はエラー</li>
+                </ul>
+            </section>
+
+            <section>
+                <h3>🔐 暗号化タブ</h3>
+                <p>平文をプレイフェア暗号で暗号化します。</p>
+                <ul>
+                    <li><strong>例文選択</strong>：カテゴリ別の例文を読み込んで学習可能</li>
+                    <li><strong>入力検証</strong>：英字以外は警告表示されますが処理は続行</li>
+                    <li><strong>同一ペア処理モード</strong>：
+                        <ul>
+                            <li><strong>ON</strong>：補完文字（X/Q/Z）を挿入して分離</li>
+                            <li><strong>OFF</strong>：3つの特別ルールから選択
+                                <ul>
+                                    <li>変化なし（同じ文字のまま）</li>
+                                    <li>右隣の文字に置換（標準）</li>
+                                    <li>1つ右、1つ下の位置に移動</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                    <li><strong>変換ルール</strong>：同一行は右シフト、同一列は下シフト、長方形は対角交換</li>
+                </ul>
+            </section>
+
+            <section>
+                <h3>🔓 復号タブ</h3>
+                <p>暗号文をプレイフェア暗号で復号します。</p>
+                <ul>
+                    <li><strong>練習・課題選択</strong>：復号練習と解読チャレンジを選択可能</li>
+                    <li><strong>解読チャレンジ</strong>：正解するとポイント獲得、進捗が記録される
+                        <ul>
+                            <li>チャレンジ1: デフォルト鍵による基本復号（10pt）</li>
+                            <li>チャレンジ2: SECRET鍵による中級復号（20pt）</li>
+                            <li>チャレンジ3: MILITARY鍵による上級復号（30pt）</li>
+                        </ul>
+                    </li>
+                    <li><strong>レベル制限</strong>：前レベルクリアで次レベルが解放される</li>
+                    <li><strong>ヒントシステム</strong>：段階的にヒントを表示
+                        <ul>
+                            <li>ヒントボタンに「(現在/総数)」カウンターを表示</li>
+                            <li>複数回クリックで次のヒントを表示</li>
+                            <li>全ヒント表示後はボタンが無効化</li>
+                        </ul>
+                    </li>
+                    <li><strong>解答検証</strong>：柔軟な答え受け入れ
+                        <ul>
+                            <li>完全一致による正解判定</li>
+                            <li>埋め文字の有無を考慮した判定</li>
+                            <li>適切なスペースでの単語区切りが必要</li>
+                        </ul>
+                    </li>
+                    <li><strong>同一ペア処理ルール</strong>：暗号化時の設定に合わせて選択
+                        <ul>
+                            <li>変化なし（同じ文字のまま）</li>
+                            <li>右隣の文字から復元（左の文字に変換・標準）</li>
+                            <li>1つ右、1つ下の位置から復元（1つ左、1つ上に変換）</li>
+                        </ul>
+                    </li>
+                    <li><strong>入力制限</strong>：英字のみ受け付け（その他はエラー）</li>
+                    <li><strong>変換ルール</strong>：暗号化の逆処理（左シフト、上シフト、対角交換）</li>
+                </ul>
+            </section>
+
+            <section>
+                <h3>🎬 アニメーション制御</h3>
+                <p>暗号化・復号の過程をステップごとに確認できます。</p>
+                <ul>
+                    <li><strong>◀ 前</strong>：前のステップに戻る（ハイライト表示付き）</li>
+                    <li><strong>▶ 再生 / ⏸ 停止</strong>：自動再生の開始・停止</li>
+                    <li><strong>次 ▶</strong>：次のステップに進む</li>
+                    <li><strong>🔄 最初から再生</strong>：アニメーションを最初からリスタート</li>
+                    <li><strong>ステップ表示</strong>：現在のステップと総ステップ数を表示</li>
+                </ul>
+                <p>各ステップでマトリクスのハイライトと変換後ペアの表示が連動します。前ボタンでも対応するペアの位置がマトリクスでハイライト表示されます。</p>
+                <p><strong>中間状態表示</strong>：変換前の2文字ペアと変換後の2文字ペアを段階的に表示し、処理過程を視覚的に理解できます。</p>
+            </section>
+
+            <section>
+                <h3>🌙 その他の機能</h3>
+                <ul>
+                    <li><strong>ダークモード</strong>：右上のボタンでライト/ダークモードを切り替え</li>
+                    <li><strong>コピー機能</strong>：暗号文・復号結果をワンクリックでコピー</li>
+                    <li><strong>レスポンシブ対応</strong>：モバイル端末でも快適に利用可能</li>
+                    <li><strong>自動保存機能</strong>：学習進捗は自動的にブラウザに保存される</li>
+                    <li><strong>動的更新</strong>：チャレンジ成功後、タブ切り替えなしで次のチャレンジが選択可能</li>
+                    <li><strong>完了表示</strong>：クリア済みチャレンジには「✓」マークを表示</li>
+                    <li><strong>多言語対応</strong>：右上のJA/ENボタンで日本語・英語を切り替え可能</li>
+                    <li><strong>アクセシビリティ</strong>：キーボードナビゲーションとスクリーンリーダー対応</li>
+                </ul>
+            </section>
+
+            <section>
+                <h3>🎯 使い方のコツ</h3>
+                <ul>
+                    <li><strong>学習の順序</strong>：鍵生成 → 暗号化 → 復号の順で学習することを推奨</li>
+                    <li><strong>チャレンジ攻略</strong>：ヒントを段階的に表示して解読を楽しむ</li>
+                    <li><strong>アニメーション活用</strong>：前・次ボタンで処理過程を詳しく確認</li>
+                    <li><strong>同一ペア処理</strong>：暗号化と復号で同じルールを選択することが重要</li>
+                    <li><strong>進捗管理</strong>：進捗パネルで学習状況を定期的に確認</li>
+                    <li><strong>例文活用</strong>：暗号化タブの例文から始めて基本操作を習得</li>
+                    <li><strong>エラー対処</strong>：赤字エラーメッセージを読んで適切に修正</li>
+                    <li><strong>マトリクス理解</strong>：鍵生成でキーワード指定とマトリクス指定を両方試す</li>
+                    <li><strong>ペア処理練習</strong>：同一ペア処理の各ルールで結果の違いを確認</li>
+                    <li><strong>チャレンジ戦略</strong>：ヒントを使い過ぎず、まず自力で解読を試す</li>
+                </ul>
+            </section>
+
+            <section>
+                <h3>⚠️ 注意事項</h3>
+                <p><strong>このツールは教育目的です。</strong>プレイフェア暗号は古典暗号であり、現代の暗号学的用途には適していません。</p>
             </section>
         `;
     }

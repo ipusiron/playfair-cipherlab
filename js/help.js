@@ -33,6 +33,12 @@ class HelpManager {
     }
     
     showModal() {
+        // モーダル表示前に現在の言語に合わせてヘルプ内容を更新
+        if (window.i18n) {
+            window.i18n.updateElement('#help-modal h2', 'help.title');
+            window.i18n.updateHelpModalContent();
+        }
+        
         this.helpModal.classList.remove('hidden');
         document.body.style.overflow = 'hidden'; // スクロールを無効化
         
