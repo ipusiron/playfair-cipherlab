@@ -1058,6 +1058,11 @@ class UI {
         document.getElementById('check-answer').addEventListener('click', () => {
             this.checkChallengeAnswer();
         });
+        
+        // ヒントボタン
+        document.getElementById('hint-button').addEventListener('click', () => {
+            this.showHint();
+        });
     }
 
     displayChallengeInfo(challenge) {
@@ -1097,6 +1102,26 @@ class UI {
             this.showToast(`チャレンジ「${challenge.title}」を読み込みました`);
         }
         
+        // チャレンジUI状態をリセット
+        document.getElementById('challenge-answer').value = '';
+        document.getElementById('challenge-answer').disabled = false;
+        document.getElementById('check-answer').disabled = false;
+        document.getElementById('hint-button').disabled = false;
+        
+        // ヒントボタンとカウンターを初期化
+        const hintButton = document.getElementById('hint-button');
+        const hintCounter = document.getElementById('hint-counter');
+        if (challenge.hints && challenge.hints.length > 0) {
+            hintButton.innerHTML = `ヒントを見る <span id="hint-counter" class="hint-counter">(1/${challenge.hints.length})</span>`;
+        } else {
+            hintButton.innerHTML = 'ヒントを見る <span id="hint-counter" class="hint-counter hidden">(1/4)</span>';
+        }
+        
+        document.getElementById('answer-result').textContent = '';
+        document.getElementById('hint-display').innerHTML = '';
+        document.getElementById('hint-display').classList.add('hidden');
+        document.getElementById('hint-display').dataset.hintIndex = '0';
+        
         document.getElementById('decrypt-btn').disabled = false;
         document.getElementById('answer-check').classList.remove('hidden');
         this.currentChallenge = challenge;
@@ -1105,7 +1130,14 @@ class UI {
     checkChallengeAnswer() {
         if (!this.currentChallenge) return;
 
-        const userAnswer = document.getElementById('decrypted-text').textContent;
+        const userAnswer = document.getElementById('challenge-answer').value.trim();
+        if (!userAnswer) {
+            const resultDiv = document.getElementById('answer-result');
+            resultDiv.textContent = '解答を入力してください。';
+            resultDiv.className = 'answer-result incorrect';
+            return;
+        }
+
         const userKeyword = this.getCurrentKeyword();
         
         const result = this.exerciseManager.validateAnswer(
@@ -1122,18 +1154,83 @@ class UI {
         if (result.correct && result.points) {
             this.showToast(`正解！ ${result.points}ポイント獲得しました！`);
             this.updateProgressDisplay();
+            this.refreshDecryptionChallenges();
+            
+            // 正解時は解答入力欄を無効化
+            document.getElementById('challenge-answer').disabled = true;
+            document.getElementById('check-answer').disabled = true;
+        }
+    }
+
+    showHint() {
+        if (!this.currentChallenge || !this.currentChallenge.hints) return;
+
+        const hintDisplay = document.getElementById('hint-display');
+        const hintButton = document.getElementById('hint-button');
+        const hintCounter = document.getElementById('hint-counter');
+        const hints = this.currentChallenge.hints;
+        
+        // 段階的にヒントを表示
+        let currentHintIndex = hintDisplay.dataset.hintIndex || 0;
+        currentHintIndex = parseInt(currentHintIndex);
+        
+        if (currentHintIndex < hints.length) {
+            const hintText = hints[currentHintIndex];
+            const currentContent = hintDisplay.innerHTML;
+            
+            if (currentContent) {
+                hintDisplay.innerHTML = currentContent + '<br>💡 ' + hintText;
+            } else {
+                hintDisplay.innerHTML = '💡 ' + hintText;
+            }
+            
+            hintDisplay.classList.remove('hidden');
+            hintDisplay.dataset.hintIndex = currentHintIndex + 1;
+            
+            // ヒントカウンターを更新
+            const nextHintIndex = currentHintIndex + 1;
+            if (nextHintIndex < hints.length) {
+                hintCounter.textContent = `(${nextHintIndex + 1}/${hints.length})`;
+                hintCounter.classList.remove('hidden');
+                hintButton.innerHTML = `次のヒントを見る <span id="hint-counter" class="hint-counter">(${nextHintIndex + 1}/${hints.length})</span>`;
+            } else {
+                // 最後のヒントの場合ボタンを無効化
+                hintButton.disabled = true;
+                hintButton.innerHTML = 'ヒント完了 <span id="hint-counter" class="hint-counter">(完了)</span>';
+            }
         }
     }
 
     getCurrentKeyword() {
+        // チャレンジ解答時は、チャレンジのキーワードを使用
+        if (this.currentChallenge && this.currentChallenge.keyword) {
+            return this.currentChallenge.keyword;
+        }
+        
         // 現在設定されているマトリクスからキーワードを推測するのは困難なので、
         // ここでは空文字を返す（将来的に改善可能）
         return '';
     }
 
     setupProgressDisplay() {
+        const progressToggle = document.getElementById('progress-toggle');
+        const progressContent = document.getElementById('progress-content');
         const resetButton = document.getElementById('reset-progress');
         
+        // アコーディオン開閉
+        progressToggle.addEventListener('click', () => {
+            const isExpanded = !progressContent.classList.contains('hidden');
+            
+            if (isExpanded) {
+                progressContent.classList.add('hidden');
+                progressToggle.classList.remove('expanded');
+            } else {
+                progressContent.classList.remove('hidden');
+                progressToggle.classList.add('expanded');
+            }
+        });
+        
+        // リセット機能
         resetButton.addEventListener('click', () => {
             const confirmed = confirm(
                 '学習進捗をリセットしますか？\n\n' +
@@ -1146,6 +1243,7 @@ class UI {
             if (confirmed) {
                 this.exerciseManager.resetProgress();
                 this.updateProgressDisplay();
+                this.updateProgressSummary();
                 this.showToast('学習進捗をリセットしました');
                 
                 // UI状態もリセット
@@ -1164,6 +1262,53 @@ class UI {
         const decryptionLevel = progress.unlockedLevels.decryption;
         const maxLevel = Math.max(encryptionLevel, decryptionLevel);
         document.getElementById('unlocked-levels').textContent = `${maxLevel}/3`;
+        
+        this.updateProgressSummary();
+    }
+
+    updateProgressSummary() {
+        const progress = this.exerciseManager.getProgress();
+        const encryptionLevel = progress.unlockedLevels.encryption;
+        const decryptionLevel = progress.unlockedLevels.decryption;
+        const maxLevel = Math.max(encryptionLevel, decryptionLevel);
+        
+        const summary = `総ポイント: ${progress.totalPoints} | クリア課題: ${progress.completedChallenges.length} | レベル: ${maxLevel}/3`;
+        document.getElementById('progress-summary').textContent = summary;
+    }
+
+    refreshDecryptionChallenges() {
+        const typeSelect = document.getElementById('practice-type');
+        const practiceSelect = document.getElementById('practice-list');
+        
+        // チャレンジタイプが選択されている場合のみ更新
+        if (typeSelect.value === 'challenge') {
+            practiceSelect.innerHTML = '<option value="">課題を選択...</option>';
+            
+            const challenges = this.exerciseManager.getChallengesByLevel('decryption');
+            Object.keys(challenges).sort().forEach(level => {
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = `レベル ${level}`;
+                challenges[level].forEach(challenge => {
+                    const option = document.createElement('option');
+                    option.value = challenge.id;
+                    option.textContent = `${challenge.title} (${challenge.points}pt)`;
+                    
+                    // ロックされているレベルかチェック
+                    if (!this.exerciseManager.isLevelUnlocked('decryption', parseInt(level))) {
+                        option.disabled = true;
+                        option.textContent += ' [ロック]';
+                    }
+                    
+                    // 完了済みチャレンジにマーク
+                    if (this.exerciseManager.isChallengeCompleted(challenge.id)) {
+                        option.textContent += ' ✓';
+                    }
+                    
+                    optgroup.appendChild(option);
+                });
+                practiceSelect.appendChild(optgroup);
+            });
+        }
     }
 
     resetExerciseUI() {

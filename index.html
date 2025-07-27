@@ -29,6 +29,36 @@
     </header>
 
     <main>
+      <!-- Progress Accordion -->
+      <div class="progress-accordion">
+        <button id="progress-toggle" class="progress-toggle">
+          <span class="progress-title">📊 学習進捗</span>
+          <span class="progress-summary" id="progress-summary">総ポイント: 0 | クリア課題: 0 | レベル: 1/3</span>
+          <span class="progress-arrow">▼</span>
+        </button>
+        <div id="progress-content" class="progress-content hidden">
+          <div class="progress-stats">
+            <div class="progress-stat" title="復号タブの解読チャレンジをクリアするとポイントが獲得できます">
+              <div class="progress-stat-value" id="total-points">0</div>
+              <div class="progress-stat-label">総ポイント</div>
+            </div>
+            <div class="progress-stat" title="復号タブの解読チャレンジを正解するとカウントされます">
+              <div class="progress-stat-value" id="completed-challenges">0</div>
+              <div class="progress-stat-label">クリア課題数</div>
+            </div>
+            <div class="progress-stat" title="レベル内の全チャレンジをクリアすると次レベルが解放されます">
+              <div class="progress-stat-value" id="unlocked-levels">1/3</div>
+              <div class="progress-stat-label">解放レベル</div>
+            </div>
+          </div>
+          <div class="progress-actions">
+            <button id="reset-progress" class="btn btn-secondary btn-small">
+              🔄 進捗をリセット
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div class="tabs">
         <button class="tab-button active" data-tab="key-generation">
           🔑 鍵生成
@@ -87,28 +117,6 @@
               </button>
             </div>
             <div id="matrix-error" class="error-message"></div>
-          </div>
-          
-          <!-- Progress Display -->
-          <div class="progress-display">
-            <h3>📊 学習進捗</h3>
-            <div class="progress-stats">
-              <div class="progress-stat">
-                <div class="progress-stat-value" id="total-points">0</div>
-                <div class="progress-stat-label">総ポイント</div>
-              </div>
-              <div class="progress-stat">
-                <div class="progress-stat-value" id="completed-challenges">0</div>
-                <div class="progress-stat-label">クリア課題数</div>
-              </div>
-              <div class="progress-stat">
-                <div class="progress-stat-value" id="unlocked-levels">1/3</div>
-                <div class="progress-stat-label">解放レベル</div>
-              </div>
-            </div>
-            <button id="reset-progress" class="btn btn-secondary btn-small" style="margin-top: 1rem;">
-              🔄 進捗をリセット
-            </button>
           </div>
         </div>
 
@@ -325,7 +333,7 @@
                   value="right-shift"
                   checked
                 />
-                右隣の文字から復元（標準）</label
+                右隣の文字から復元（左の文字に変換・標準）</label
               >
               <label
                 ><input
@@ -333,7 +341,7 @@
                   name="decrypt-same-pair-rule"
                   value="bottom-right"
                 />
-                1つ右、1つ下の位置から復元</label
+                1つ右、1つ下の位置から復元（1つ左、1つ上に変換）</label
               >
             </div>
           </div>
@@ -397,8 +405,22 @@
               </button>
             </div>
             <div id="answer-check" class="answer-check hidden">
-              <button id="check-answer" class="btn btn-success">解答をチェック</button>
+              <h4>解読チャレンジ解答</h4>
+              <div class="answer-input-section">
+                <label for="challenge-answer">復号した平文を入力してください:</label>
+                <input 
+                  type="text" 
+                  id="challenge-answer" 
+                  class="challenge-answer-input"
+                  placeholder="例: HELLO, ATTACK AT DAWN"
+                />
+              </div>
+              <div class="answer-actions">
+                <button id="check-answer" class="btn btn-success">解答をチェック</button>
+                <button id="hint-button" class="btn btn-secondary">ヒントを見る <span id="hint-counter" class="hint-counter hidden">(1/4)</span></button>
+              </div>
               <div id="answer-result" class="answer-result"></div>
+              <div id="hint-display" class="hint-display hidden"></div>
             </div>
             <div id="decryption-notes" class="info-message"></div>
           </div>
@@ -428,19 +450,39 @@
         </div>
         <div class="modal-body">
           <section>
+            <h3>📊 学習進捗</h3>
+            <p>タブの上にあるアコーディオン式の進捗パネルで学習状況を確認できます。</p>
+            <ul>
+              <li>
+                <strong>総ポイント</strong>：復号タブの解読チャレンジをクリアすると獲得
+              </li>
+              <li>
+                <strong>クリア課題数</strong>：正解した解読チャレンジの数
+              </li>
+              <li>
+                <strong>解放レベル</strong>：レベル内の全チャレンジクリアで次レベル解放
+              </li>
+              <li>
+                <strong>進捗リセット</strong>：確認ダイアログ付きで全進捗をリセット可能
+              </li>
+            </ul>
+          </section>
+
+          <section>
             <h3>🔑 鍵生成タブ</h3>
             <p>プレイフェア暗号で使用する5×5マトリクスを設定します。</p>
             <ul>
               <li>
-                <strong>編集ボタン</strong
-                >：マトリクスをテキストで直接編集できます
+                <strong>キーワード指定</strong>：英単語からマトリクスを自動生成
+              </li>
+              <li>
+                <strong>マトリクス指定</strong>：25文字を直接入力して設定
               </li>
               <li>
                 <strong>文字制限</strong>：A-Zの25文字（Jは使用不可、Iと統合）
               </li>
               <li>
-                <strong>重複チェック</strong
-                >：同じ文字が重複している場合はエラーになります
+                <strong>重複チェック</strong>：同じ文字が重複している場合はエラー
               </li>
             </ul>
           </section>
@@ -450,28 +492,26 @@
             <p>平文をプレイフェア暗号で暗号化します。</p>
             <ul>
               <li>
-                <strong>入力検証</strong
-                >：英字以外の文字は警告表示されますが処理は続行されます
+                <strong>例文選択</strong>：カテゴリ別の例文を読み込んで学習可能
+              </li>
+              <li>
+                <strong>入力検証</strong>：英字以外は警告表示されますが処理は続行
               </li>
               <li>
                 <strong>同一ペア処理モード</strong>：
                 <ul>
-                  <li>
-                    <strong>ON</strong
-                    >：補完文字（X/Q/Z）を挿入して同一文字ペアを分離
-                  </li>
-                  <li>
-                    <strong>OFF</strong>：変化なしまたはマトリクス右下文字に置換
+                  <li><strong>ON</strong>：補完文字（X/Q/Z）を挿入して分離</li>
+                  <li><strong>OFF</strong>：3つの特別ルールから選択
+                    <ul>
+                      <li>変化なし（同じ文字のまま）</li>
+                      <li>右隣の文字に置換（標準）</li>
+                      <li>1つ右、1つ下の位置に移動</li>
+                    </ul>
                   </li>
                 </ul>
               </li>
               <li>
-                <strong>変換ルール</strong>：
-                <ul>
-                  <li>同一行：右シフト（末尾は先頭へ）</li>
-                  <li>同一列：下シフト（末尾は上へ）</li>
-                  <li>長方形：対角線交換</li>
-                </ul>
+                <strong>変換ルール</strong>：同一行は右シフト、同一列は下シフト、長方形は対角交換
               </li>
             </ul>
           </section>
@@ -481,20 +521,27 @@
             <p>暗号文をプレイフェア暗号で復号します。</p>
             <ul>
               <li>
-                <strong>入力制限</strong
-                >：英字のみ受け付けます（その他の文字はエラー）
+                <strong>練習・課題選択</strong>：復号練習と解読チャレンジを選択可能
               </li>
               <li>
-                <strong>変換ルール</strong>：暗号化の逆処理
+                <strong>解読チャレンジ</strong>：正解するとポイント獲得、進捗が記録される
+              </li>
+              <li>
+                <strong>レベル制限</strong>：前レベルクリアで次レベルが解放される
+              </li>
+              <li>
+                <strong>同一ペア処理ルール</strong>：暗号化時の設定に合わせて選択
                 <ul>
-                  <li>同一行：左シフト（先頭は末尾へ）</li>
-                  <li>同一列：上シフト（先頭は末尾へ）</li>
-                  <li>長方形：対角線交換</li>
+                  <li>変化なし（同じ文字のまま）</li>
+                  <li>右隣の文字から復元（左の文字に変換・標準）</li>
+                  <li>1つ右、1つ下の位置から復元（1つ左、1つ上に変換）</li>
                 </ul>
               </li>
               <li>
-                <strong>注意事項</strong>：補完文字や I/J
-                の曖昧性について表示されます
+                <strong>入力制限</strong>：英字のみ受け付け（その他はエラー）
+              </li>
+              <li>
+                <strong>変換ルール</strong>：暗号化の逆処理（左シフト、上シフト、対角交換）
               </li>
             </ul>
           </section>

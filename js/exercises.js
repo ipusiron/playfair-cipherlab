@@ -151,13 +151,14 @@ class ExerciseManager {
                         id: "mystery-01",
                         level: 1,
                         title: "謎の単語",
-                        ciphertext: "DMYNIA",
+                        ciphertext: "KCMMNY",
                         answer: "HELLO",
                         keyword: null,
                         hints: [
                             "3文字以下の短い単語ではありません",
                             "挨拶に使われる言葉です",
-                            "デフォルトの鍵が使われています"
+                            "デフォルトの鍵が使われています",
+                            "5文字の基本的な英単語です"
                         ],
                         points: 10,
                         description: "基本的な復号チャレンジ"
@@ -166,13 +167,14 @@ class ExerciseManager {
                         id: "mystery-02",
                         level: 2,
                         title: "秘密のメッセージ",
-                        ciphertext: "LKKMFKFTAIRFX",
+                        ciphertext: "ITWCGUCSPOMBMS",
                         answer: "MEET ME TONIGHT",
                         keyword: "SECRET",
                         hints: [
-                            "鍵は「秘密」という意味の英単語",
+                            "鍵マトリクスは「秘密」という意味の英単語をキーワードに生成しています",
                             "待ち合わせに関する文章",
-                            "3つの単語で構成されています"
+                            "3つの単語で構成されています",
+                            "適切なスペースで単語を区切って入力してください"
                         ],
                         points: 20,
                         description: "中級レベルの暗号解読"
@@ -181,13 +183,14 @@ class ExerciseManager {
                         id: "mystery-03",
                         level: 3,
                         title: "軍事作戦",
-                        ciphertext: "BHMKDBGMTQYIAKNM",
+                        ciphertext: "MAAMDHMAKDUP",
                         answer: "ATTACK AT DAWN",
                         keyword: "MILITARY",
                         hints: [
-                            "軍事に関連するキーワード",
-                            "歴史的に有名な軍事指令",
-                            "時間に関する単語が含まれています"
+                            "鍵マトリクスは軍事に関連する英単語をキーワードに生成しています",
+                            "平文は歴史的に有名な軍事指令です",
+                            "時間に関する単語が含まれています",
+                            "適切なスペースで単語を区切って入力してください"
                         ],
                         points: 30,
                         description: "上級レベルの暗号解読"
@@ -355,20 +358,26 @@ class ExerciseManager {
         
         // キーワードチェック
         if (challenge.keyword && (!userKeyword || userKeyword.toUpperCase() !== challenge.keyword.toUpperCase())) {
+            const hintText = challenge.hints && challenge.hints.length > 0 ? challenge.hints[0] : challenge.hint || '';
             return { 
                 correct: false, 
-                message: `正しいキーワードを設定してください。ヒント: ${challenge.hint}` 
+                message: `正しいキーワードを設定してください。ヒント: ${hintText}` 
             };
         }
         
         // 答えチェック
-        const expectedAnswer = type === 'encryption' ? 
-            this.getExpectedCiphertext(challenge) : 
-            challenge.answer.toUpperCase().replace(/\s/g, '');
+        let expectedAnswer;
+        if (type === 'encryption') {
+            expectedAnswer = this.getExpectedCiphertext(challenge);
+        } else {
+            // スペースを保持して大文字に変換
+            expectedAnswer = challenge.answer.toUpperCase();
+        }
             
-        const cleanUserAnswer = userAnswer.toUpperCase().replace(/\s/g, '');
+        const userAnswerUpperCase = userAnswer.toUpperCase();
         
-        if (cleanUserAnswer === expectedAnswer) {
+        // 完全一致をチェック
+        if (userAnswerUpperCase === expectedAnswer) {
             if (challenge.points) {
                 this.markChallengeCompleted(challengeId, challenge.points);
             }
@@ -377,12 +386,27 @@ class ExerciseManager {
                 message: '正解です！', 
                 points: challenge.points || 0 
             };
-        } else {
-            return { 
-                correct: false, 
-                message: '答えが違います。もう一度確認してください。' 
-            };
         }
+        
+        // 復号の場合、末尾の埋め文字を除去した版も受け入れる
+        if (type === 'decryption') {
+            const expectedWithoutPadding = expectedAnswer.replace(/\s*[XQZ]\s*$/, '').trim();
+            if (userAnswerUpperCase === expectedWithoutPadding) {
+                if (challenge.points) {
+                    this.markChallengeCompleted(challengeId, challenge.points);
+                }
+                return { 
+                    correct: true, 
+                    message: '正解です！', 
+                    points: challenge.points || 0 
+                };
+            }
+        }
+        
+        return { 
+            correct: false, 
+            message: '答えが違います。もう一度確認してください。' 
+        };
     }
     
     getExpectedCiphertext(challenge) {
