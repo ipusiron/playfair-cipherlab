@@ -13,6 +13,7 @@ class UI {
         this.currentDecryptionStep = 0;
         this.autoPlayTimer = null;
         this.currentChallenge = null;
+        this.selectedChallenge = null;
     }
 
     init() {
@@ -22,6 +23,177 @@ class UI {
         this.setupDecryption();
         this.setupExercises();
         this.displayMatrix('key-matrix');
+        this.setupI18n();
+    }
+
+    setupI18n() {
+        // Listen for language changes
+        window.addEventListener('languageChanged', (event) => {
+            this.updateDynamicTexts();
+        });
+    }
+
+    updateDynamicTexts() {
+        // Update example categories
+        this.updateExampleCategories();
+        // Update progress summary
+        this.updateProgressSummary();
+        // Update any dynamic hint texts
+        this.updateHintButton();
+        // Force update dropdown contents
+        this.updateAllDropdownContents();
+        // Update challenge info if displayed
+        this.updateChallengeInfoDisplay();
+    }
+
+    updateExampleCategories() {
+        // Update category dropdown options
+        const categorySelect = document.getElementById('example-category');
+        if (categorySelect) {
+            // Update the first option (placeholder)
+            if (categorySelect.options.length > 0) {
+                categorySelect.options[0].textContent = i18n.t('dropdown.select-category');
+            }
+            
+            // Update category names
+            for (let i = 1; i < categorySelect.options.length; i++) {
+                const option = categorySelect.options[i];
+                const translatedCategory = this.translateCategory(option.value);
+                if (translatedCategory) {
+                    option.textContent = translatedCategory;
+                }
+            }
+        }
+    }
+
+    translateCategory(category) {
+        const key = `category.${category}`;
+        const translated = i18n.t(key);
+        
+        // If translation exists and is different from the key (i.e., a translation was found)
+        return translated !== key ? translated : category;
+    }
+
+    updateAllDropdownContents() {
+        // Re-trigger category population to update with translations
+        const categorySelect = document.getElementById('example-category');
+        if (categorySelect && categorySelect.value) {
+            this.populateExampleList(categorySelect.value);
+        }
+        
+        const practiceTypeSelect = document.getElementById('practice-type');
+        if (practiceTypeSelect && practiceTypeSelect.value) {
+            this.populatePracticeList(practiceTypeSelect.value);
+        }
+    }
+
+    populateExampleList(selectedCategory) {
+        const exampleSelect = document.getElementById('example-list');
+        const categories = this.exerciseManager.getExamplesByCategory('encryption');
+        
+        exampleSelect.innerHTML = `<option value="">${i18n.t('dropdown.select-example')}</option>`;
+        
+        if (selectedCategory && categories[selectedCategory]) {
+            const examples = categories[selectedCategory];
+            examples.forEach(example => {
+                const option = document.createElement('option');
+                option.value = example.id;
+                const translatedTitle = i18n.t(`example.${example.title}`) !== `example.${example.title}` 
+                    ? i18n.t(`example.${example.title}`) 
+                    : example.title;
+                option.textContent = `${translatedTitle} - "${example.plaintext}"`;
+                exampleSelect.appendChild(option);
+            });
+        }
+    }
+
+    populatePracticeList(selectedType) {
+        const practiceSelect = document.getElementById('practice-list');
+        
+        practiceSelect.innerHTML = `<option value="">${i18n.t('dropdown.select-task')}</option>`;
+        
+        if (selectedType === 'practice') {
+            const practices = this.exerciseManager.getPracticesByCategory();
+            Object.keys(practices).forEach(category => {
+                const optgroup = document.createElement('optgroup');
+                const translatedCategory = i18n.t(`category.${category}`) !== `category.${category}` 
+                    ? i18n.t(`category.${category}`) 
+                    : category;
+                optgroup.label = translatedCategory;
+                practices[category].forEach(practice => {
+                    const option = document.createElement('option');
+                    option.value = practice.id;
+                    const translatedTitle = i18n.t(`example.${practice.title}`) !== `example.${practice.title}` 
+                        ? i18n.t(`example.${practice.title}`) 
+                        : practice.title;
+                    option.textContent = `${translatedTitle} - ${practice.ciphertext}`;
+                    optgroup.appendChild(option);
+                });
+                practiceSelect.appendChild(optgroup);
+            });
+        } else if (selectedType === 'challenge') {
+            const challenges = this.exerciseManager.getChallengesByLevel('decryption');
+            Object.keys(challenges).sort().forEach(level => {
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = i18n.getCurrentLanguage() === 'ja' ? `レベル ${level}` : `Level ${level}`;
+                challenges[level].forEach(challenge => {
+                    const option = document.createElement('option');
+                    option.value = challenge.id;
+                    const translatedTitle = i18n.t(`example.${challenge.title}`) !== `example.${challenge.title}` 
+                        ? i18n.t(`example.${challenge.title}`) 
+                        : challenge.title;
+                    option.textContent = `${translatedTitle} (${challenge.points}pt)`;
+                    
+                    if (!this.exerciseManager.isLevelUnlocked('decryption', parseInt(level))) {
+                        option.disabled = true;
+                        const lockText = i18n.getCurrentLanguage() === 'ja' ? ' [ロック]' : ' [Locked]';
+                        option.textContent += lockText;
+                    }
+                    
+                    if (this.exerciseManager.isChallengeCompleted(challenge.id)) {
+                        option.textContent += ' ✓';
+                    }
+                    
+                    optgroup.appendChild(option);
+                });
+                practiceSelect.appendChild(optgroup);
+            });
+        }
+    }
+
+    updateChallengeInfoDisplay() {
+        // チャレンジ情報が表示されている場合は再表示
+        if (this.selectedChallenge) {
+            const challengeInfo = document.getElementById('challenge-info');
+            if (challengeInfo && !challengeInfo.classList.contains('hidden')) {
+                this.displayChallengeInfo(this.selectedChallenge);
+            }
+        }
+        
+        // 現在アクティブなチャレンジも更新
+        if (this.currentChallenge) {
+            const answerCheck = document.getElementById('answer-check');
+            if (answerCheck && !answerCheck.classList.contains('hidden')) {
+                // ヒントボタンのテキストを更新
+                this.updateHintButton();
+            }
+        }
+    }
+
+    updateHintButton() {
+        const hintButton = document.getElementById('hint-button');
+        if (hintButton && this.currentChallenge && this.currentChallenge.hints) {
+            const hintDisplay = document.getElementById('hint-display');
+            const currentHintIndex = parseInt(hintDisplay.dataset.hintIndex) || 0;
+            const totalHints = this.currentChallenge.hints.length;
+            
+            if (currentHintIndex < totalHints) {
+                const baseText = currentHintIndex === 0 ? i18n.t('decrypt.hint') : i18n.t('decrypt.hint-next');
+                hintButton.innerHTML = `${baseText} <span id="hint-counter" class="hint-counter">(${currentHintIndex + 1}/${totalHints})</span>`;
+            } else {
+                hintButton.innerHTML = `${i18n.t('decrypt.hint-complete')} <span id="hint-counter" class="hint-counter">(${i18n.getCurrentLanguage() === 'ja' ? '完了' : 'Complete'})</span>`;
+            }
+        }
     }
 
     setupTabs() {
@@ -406,11 +578,11 @@ class UI {
         const notes = [];
         
         if (plaintext.includes('x') || plaintext.includes('q') || plaintext.includes('z')) {
-            notes.push('復号結果に x, q, z が含まれています。これらは補完文字の可能性があります。');
+            notes.push(i18n.t('message.padding-chars'));
         }
         
         if (plaintext.includes('i')) {
-            notes.push('復号結果の "i" は元のテキストでは "j" だった可能性があります。');
+            notes.push(i18n.t('message.i-or-j'));
         }
         
         if (notes.length > 0) {
@@ -423,7 +595,7 @@ class UI {
 
     copyToClipboard(text) {
         navigator.clipboard.writeText(text).then(() => {
-            this.showToast('クリップボードにコピーしました');
+            this.showToast(i18n.t('message.copied'));
         });
     }
 
@@ -578,7 +750,7 @@ class UI {
         // アニメーション完了時は再生ボタンを無効化
         if (this.currentEncryptionStep === this.encryptionSteps.length) {
             playPauseBtn.disabled = true;
-            playPauseBtn.textContent = '▶ 再生';
+            playPauseBtn.textContent = i18n.t('anim.play');
         } else {
             playPauseBtn.disabled = false;
         }
@@ -595,7 +767,7 @@ class UI {
         // アニメーション完了時は再生ボタンを無効化
         if (this.currentDecryptionStep === this.decryptionSteps.length) {
             playPauseBtn.disabled = true;
-            playPauseBtn.textContent = '▶ 再生';
+            playPauseBtn.textContent = i18n.t('anim.play');
         } else {
             playPauseBtn.disabled = false;
         }
@@ -625,9 +797,9 @@ class UI {
         if (this.autoPlayTimer) {
             clearTimeout(this.autoPlayTimer);
             this.autoPlayTimer = null;
-            playPauseBtn.textContent = '▶ 再生';
+            playPauseBtn.textContent = i18n.t('anim.play');
         } else {
-            playPauseBtn.textContent = '⏸ 停止';
+            playPauseBtn.textContent = i18n.t('anim.pause');
             this.autoPlayEncryption();
         }
     }
@@ -638,9 +810,9 @@ class UI {
         if (this.autoPlayTimer) {
             clearTimeout(this.autoPlayTimer);
             this.autoPlayTimer = null;
-            playPauseBtn.textContent = '▶ 再生';
+            playPauseBtn.textContent = i18n.t('anim.play');
         } else {
-            playPauseBtn.textContent = '⏸ 停止';
+            playPauseBtn.textContent = i18n.t('anim.pause');
             this.autoPlayDecryption();
         }
     }
@@ -653,7 +825,7 @@ class UI {
             }, 1600); // 800ms * 2 for each step
         } else {
             const playPauseBtn = document.getElementById('play-pause-encryption');
-            playPauseBtn.textContent = '▶ 再生';
+            playPauseBtn.textContent = i18n.t('anim.play');
             playPauseBtn.disabled = true;
             this.autoPlayTimer = null;
         }
@@ -667,7 +839,7 @@ class UI {
             }, 1600);
         } else {
             const playPauseBtn = document.getElementById('play-pause-decryption');
-            playPauseBtn.textContent = '▶ 再生';
+            playPauseBtn.textContent = i18n.t('anim.play');
             playPauseBtn.disabled = true;
             this.autoPlayTimer = null;
         }
@@ -879,7 +1051,7 @@ class UI {
         
         // 再生ボタンを有効化
         const playPauseBtn = document.getElementById('play-pause-encryption');
-        playPauseBtn.textContent = '▶ 再生';
+        playPauseBtn.textContent = i18n.t('anim.play');
         playPauseBtn.disabled = false;
     }
 
@@ -898,7 +1070,7 @@ class UI {
         
         // 再生ボタンを有効化
         const playPauseBtn = document.getElementById('play-pause-decryption');
-        playPauseBtn.textContent = '▶ 再生';
+        playPauseBtn.textContent = i18n.t('anim.play');
         playPauseBtn.disabled = false;
     }
 
@@ -966,13 +1138,13 @@ class UI {
         Object.keys(categories).forEach(category => {
             const option = document.createElement('option');
             option.value = category;
-            option.textContent = category;
+            option.textContent = this.translateCategory(category);
             categorySelect.appendChild(option);
         });
 
         categorySelect.addEventListener('change', () => {
             const selectedCategory = categorySelect.value;
-            exampleSelect.innerHTML = '<option value="">例文を選択...</option>';
+            exampleSelect.innerHTML = `<option value="">${i18n.t('dropdown.select-example')}</option>`;
             exampleSelect.disabled = !selectedCategory;
             loadButton.disabled = true;
 
@@ -981,7 +1153,10 @@ class UI {
                 examples.forEach(example => {
                     const option = document.createElement('option');
                     option.value = example.id;
-                    option.textContent = `${example.title} - "${example.plaintext}"`;
+                    const translatedTitle = i18n.t(`example.${example.title}`) !== `example.${example.title}` 
+                        ? i18n.t(`example.${example.title}`) 
+                        : example.title;
+                    option.textContent = `${translatedTitle} - "${example.plaintext}"`;
                     exampleSelect.appendChild(option);
                 });
                 exampleSelect.disabled = false;
@@ -1008,7 +1183,10 @@ class UI {
                     this.displayMatrix('decryption-matrix');
                 }
 
-                this.showToast(`例文「${selectedExample.title}」を読み込みました`);
+                const translatedTitle = i18n.t(`example.${selectedExample.title}`) !== `example.${selectedExample.title}` 
+                    ? i18n.t(`example.${selectedExample.title}`) 
+                    : selectedExample.title;
+                this.showToast(i18n.t('exercise.loaded.example', { title: translatedTitle }));
                 
                 // 暗号化ボタンを有効化
                 document.getElementById('encrypt-btn').disabled = false;
@@ -1025,22 +1203,29 @@ class UI {
 
         typeSelect.addEventListener('change', () => {
             const selectedType = typeSelect.value;
-            practiceSelect.innerHTML = '<option value="">課題を選択...</option>';
+            practiceSelect.innerHTML = `<option value="">${i18n.t('dropdown.select-task')}</option>`;
             practiceSelect.disabled = !selectedType;
             loadButton.disabled = true;
             challengeInfo.classList.add('hidden');
             answerCheck.classList.add('hidden');
             this.currentChallenge = null;
+            this.selectedChallenge = null;
 
             if (selectedType === 'practice') {
                 const practices = this.exerciseManager.getPracticesByCategory();
                 Object.keys(practices).forEach(category => {
                     const optgroup = document.createElement('optgroup');
-                    optgroup.label = category;
+                    const translatedCategory = i18n.t(`category.${category}`) !== `category.${category}` 
+                        ? i18n.t(`category.${category}`) 
+                        : category;
+                    optgroup.label = translatedCategory;
                     practices[category].forEach(practice => {
                         const option = document.createElement('option');
                         option.value = practice.id;
-                        option.textContent = `${practice.title} - ${practice.ciphertext}`;
+                        const translatedTitle = i18n.t(`example.${practice.title}`) !== `example.${practice.title}` 
+                            ? i18n.t(`example.${practice.title}`) 
+                            : practice.title;
+                        option.textContent = `${translatedTitle} - ${practice.ciphertext}`;
                         optgroup.appendChild(option);
                     });
                     practiceSelect.appendChild(optgroup);
@@ -1050,16 +1235,20 @@ class UI {
                 const challenges = this.exerciseManager.getChallengesByLevel('decryption');
                 Object.keys(challenges).sort().forEach(level => {
                     const optgroup = document.createElement('optgroup');
-                    optgroup.label = `レベル ${level}`;
+                    optgroup.label = i18n.getCurrentLanguage() === 'ja' ? `レベル ${level}` : `Level ${level}`;
                     challenges[level].forEach(challenge => {
                         const option = document.createElement('option');
                         option.value = challenge.id;
-                        option.textContent = `${challenge.title} (${challenge.points}pt)`;
+                        const translatedTitle = i18n.t(`example.${challenge.title}`) !== `example.${challenge.title}` 
+                            ? i18n.t(`example.${challenge.title}`) 
+                            : challenge.title;
+                        option.textContent = `${translatedTitle} (${challenge.points}pt)`;
                         
                         // ロックされているレベルかチェック
                         if (!this.exerciseManager.isLevelUnlocked('decryption', parseInt(level))) {
                             option.disabled = true;
-                            option.textContent += ' [ロック]';
+                            const lockText = i18n.getCurrentLanguage() === 'ja' ? ' [ロック]' : ' [Locked]';
+                            option.textContent += lockText;
                         }
                         
                         optgroup.appendChild(option);
@@ -1080,6 +1269,7 @@ class UI {
                     .find(c => c.id === selectedId);
                 
                 if (challenge) {
+                    this.selectedChallenge = challenge; // 選択されたチャレンジを保存
                     this.displayChallengeInfo(challenge);
                     challengeInfo.classList.remove('hidden');
                 }
@@ -1120,10 +1310,22 @@ class UI {
 
     displayChallengeInfo(challenge) {
         const details = document.querySelector('.challenge-details');
-        details.querySelector('.challenge-title').textContent = challenge.title;
-        details.querySelector('.challenge-description').textContent = challenge.description;
-        details.querySelector('.challenge-hint').textContent = `ヒント: ${challenge.hints[0]}`;
-        details.querySelector('.challenge-points').textContent = `獲得ポイント: ${challenge.points}pt`;
+        const translatedTitle = i18n.t(`example.${challenge.title}`) !== `example.${challenge.title}` 
+            ? i18n.t(`example.${challenge.title}`) 
+            : challenge.title;
+        details.querySelector('.challenge-title').textContent = translatedTitle;
+        
+        // 説明文の翻訳（もし翻訳キーが存在すれば）
+        const descKey = `challenge.${challenge.id}.description`;
+        const translatedDesc = i18n.t(descKey) !== descKey ? i18n.t(descKey) : challenge.description;
+        details.querySelector('.challenge-description').textContent = translatedDesc;
+        
+        // ヒントの翻訳（最初のヒント）
+        const hintKey = `challenge.${challenge.id}.hint.0`;
+        const translatedHint = i18n.t(hintKey) !== hintKey ? i18n.t(hintKey) : challenge.hints[0];
+        details.querySelector('.challenge-hint').textContent = `${i18n.t('challenge.hint-label')}${translatedHint}`;
+        
+        details.querySelector('.challenge-points').textContent = `${i18n.t('challenge.points-label')}${challenge.points}${i18n.t('challenge.points-unit')}`;
     }
 
     loadPractice(practice) {
@@ -1138,7 +1340,10 @@ class UI {
             this.displayMatrix('decryption-matrix');
         }
 
-        this.showToast(`練習問題「${practice.title}」を読み込みました`);
+        const translatedTitle = i18n.t(`example.${practice.title}`) !== `example.${practice.title}` 
+            ? i18n.t(`example.${practice.title}`) 
+            : practice.title;
+        this.showToast(i18n.t('exercise.loaded.practice', { title: translatedTitle }));
         document.getElementById('decrypt-btn').disabled = false;
         document.getElementById('answer-check').classList.add('hidden');
         this.currentChallenge = null;
@@ -1147,12 +1352,16 @@ class UI {
     loadChallenge(challenge) {
         document.getElementById('ciphertext-input').value = challenge.ciphertext;
         
+        const translatedTitle = i18n.t(`example.${challenge.title}`) !== `example.${challenge.title}` 
+            ? i18n.t(`example.${challenge.title}`) 
+            : challenge.title;
+        
         // キーワードがある場合は設定（チャレンジでは初期状態では設定しない）
         if (challenge.keyword) {
             // チャレンジなのでキーワードはユーザーが見つける必要がある
-            this.showToast(`チャレンジ「${challenge.title}」を読み込みました。鍵を推測してください。`);
+            this.showToast(i18n.t('exercise.loaded.challenge.keyword', { title: translatedTitle }));
         } else {
-            this.showToast(`チャレンジ「${challenge.title}」を読み込みました`);
+            this.showToast(i18n.t('exercise.loaded.challenge', { title: translatedTitle }));
         }
         
         // チャレンジUI状態をリセット
@@ -1165,9 +1374,9 @@ class UI {
         const hintButton = document.getElementById('hint-button');
         const hintCounter = document.getElementById('hint-counter');
         if (challenge.hints && challenge.hints.length > 0) {
-            hintButton.innerHTML = `ヒントを見る <span id="hint-counter" class="hint-counter">(1/${challenge.hints.length})</span>`;
+            hintButton.innerHTML = `${i18n.t('decrypt.hint')} <span id="hint-counter" class="hint-counter">(1/${challenge.hints.length})</span>`;
         } else {
-            hintButton.innerHTML = 'ヒントを見る <span id="hint-counter" class="hint-counter hidden">(1/4)</span>';
+            hintButton.innerHTML = `${i18n.t('decrypt.hint')} <span id="hint-counter" class="hint-counter hidden">(1/4)</span>`;
         }
         
         document.getElementById('answer-result').textContent = '';
@@ -1186,7 +1395,7 @@ class UI {
         const userAnswer = document.getElementById('challenge-answer').value.trim();
         if (!userAnswer) {
             const resultDiv = document.getElementById('answer-result');
-            resultDiv.textContent = '解答を入力してください。';
+            resultDiv.textContent = i18n.t('message.enter-answer');
             resultDiv.className = 'answer-result incorrect';
             return;
         }
@@ -1205,7 +1414,7 @@ class UI {
         resultDiv.className = 'answer-result ' + (result.correct ? 'correct' : 'incorrect');
 
         if (result.correct && result.points) {
-            this.showToast(`正解！ ${result.points}ポイント獲得しました！`);
+            this.showToast(`${i18n.t('message.correct')} ${result.points}${i18n.getCurrentLanguage() === 'ja' ? 'ポイント獲得しました！' : ' points earned!'}`);
             this.updateProgressDisplay();
             this.refreshDecryptionChallenges();
             
@@ -1228,13 +1437,16 @@ class UI {
         currentHintIndex = parseInt(currentHintIndex);
         
         if (currentHintIndex < hints.length) {
-            const hintText = hints[currentHintIndex];
+            // ヒントの翻訳を試みる
+            const hintKey = `challenge.${this.currentChallenge.id}.hint.${currentHintIndex}`;
+            const translatedHint = i18n.t(hintKey) !== hintKey ? i18n.t(hintKey) : hints[currentHintIndex];
+            
             const currentContent = hintDisplay.innerHTML;
             
             if (currentContent) {
-                hintDisplay.innerHTML = currentContent + '<br>💡 ' + hintText;
+                hintDisplay.innerHTML = currentContent + '<br>💡 ' + translatedHint;
             } else {
-                hintDisplay.innerHTML = '💡 ' + hintText;
+                hintDisplay.innerHTML = '💡 ' + translatedHint;
             }
             
             hintDisplay.classList.remove('hidden');
@@ -1245,11 +1457,12 @@ class UI {
             if (nextHintIndex < hints.length) {
                 hintCounter.textContent = `(${nextHintIndex + 1}/${hints.length})`;
                 hintCounter.classList.remove('hidden');
-                hintButton.innerHTML = `次のヒントを見る <span id="hint-counter" class="hint-counter">(${nextHintIndex + 1}/${hints.length})</span>`;
+                hintButton.innerHTML = `${i18n.t('decrypt.hint-next')} <span id="hint-counter" class="hint-counter">(${nextHintIndex + 1}/${hints.length})</span>`;
             } else {
                 // 最後のヒントの場合ボタンを無効化
                 hintButton.disabled = true;
-                hintButton.innerHTML = 'ヒント完了 <span id="hint-counter" class="hint-counter">(完了)</span>';
+                const completeText = i18n.getCurrentLanguage() === 'ja' ? '完了' : 'Complete';
+                hintButton.innerHTML = `${i18n.t('decrypt.hint-complete')} <span id="hint-counter" class="hint-counter">(${completeText})</span>`;
             }
         }
     }
@@ -1285,19 +1498,13 @@ class UI {
         
         // リセット機能
         resetButton.addEventListener('click', () => {
-            const confirmed = confirm(
-                '学習進捗をリセットしますか？\n\n' +
-                '- 獲得ポイントが0になります\n' +
-                '- クリア済み課題の記録が消去されます\n' +
-                '- レベル解放状況がリセットされます\n\n' +
-                'この操作は取り消せません。'
-            );
+            const confirmed = confirm(i18n.t('message.reset-confirm'));
             
             if (confirmed) {
                 this.exerciseManager.resetProgress();
                 this.updateProgressDisplay();
                 this.updateProgressSummary();
-                this.showToast('学習進捗をリセットしました');
+                this.showToast(i18n.t('message.reset-success'));
                 
                 // UI状態もリセット
                 this.resetExerciseUI();
@@ -1325,7 +1532,11 @@ class UI {
         const decryptionLevel = progress.unlockedLevels.decryption;
         const maxLevel = Math.max(encryptionLevel, decryptionLevel);
         
-        const summary = `総ポイント: ${progress.totalPoints} | クリア課題: ${progress.completedChallenges.length} | レベル: ${maxLevel}/3`;
+        const summary = i18n.t('progress.summary', {
+            points: progress.totalPoints,
+            challenges: progress.completedChallenges.length,
+            level: maxLevel
+        });
         document.getElementById('progress-summary').textContent = summary;
     }
 
@@ -1335,21 +1546,25 @@ class UI {
         
         // チャレンジタイプが選択されている場合のみ更新
         if (typeSelect.value === 'challenge') {
-            practiceSelect.innerHTML = '<option value="">課題を選択...</option>';
+            practiceSelect.innerHTML = `<option value="">${i18n.t('dropdown.select-task')}</option>`;
             
             const challenges = this.exerciseManager.getChallengesByLevel('decryption');
             Object.keys(challenges).sort().forEach(level => {
                 const optgroup = document.createElement('optgroup');
-                optgroup.label = `レベル ${level}`;
+                optgroup.label = i18n.getCurrentLanguage() === 'ja' ? `レベル ${level}` : `Level ${level}`;
                 challenges[level].forEach(challenge => {
                     const option = document.createElement('option');
                     option.value = challenge.id;
-                    option.textContent = `${challenge.title} (${challenge.points}pt)`;
+                    const translatedTitle = i18n.t(`example.${challenge.title}`) !== `example.${challenge.title}` 
+                        ? i18n.t(`example.${challenge.title}`) 
+                        : challenge.title;
+                    option.textContent = `${translatedTitle} (${challenge.points}pt)`;
                     
                     // ロックされているレベルかチェック
                     if (!this.exerciseManager.isLevelUnlocked('decryption', parseInt(level))) {
                         option.disabled = true;
-                        option.textContent += ' [ロック]';
+                        const lockText = i18n.getCurrentLanguage() === 'ja' ? ' [ロック]' : ' [Locked]';
+                        option.textContent += lockText;
                     }
                     
                     // 完了済みチャレンジにマーク
@@ -1367,13 +1582,13 @@ class UI {
     resetExerciseUI() {
         // 例文選択をリセット
         document.getElementById('example-category').selectedIndex = 0;
-        document.getElementById('example-list').innerHTML = '<option value="">例文を選択...</option>';
+        document.getElementById('example-list').innerHTML = `<option value="">${i18n.t('dropdown.select-example')}</option>`;
         document.getElementById('example-list').disabled = true;
         document.getElementById('load-example').disabled = true;
         
         // 課題選択をリセット
         document.getElementById('practice-type').selectedIndex = 0;
-        document.getElementById('practice-list').innerHTML = '<option value="">課題を選択...</option>';
+        document.getElementById('practice-list').innerHTML = `<option value="">${i18n.t('dropdown.select-task')}</option>`;
         document.getElementById('practice-list').disabled = true;
         document.getElementById('load-practice').disabled = true;
         

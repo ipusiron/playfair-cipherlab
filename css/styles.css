@@ -70,6 +70,17 @@ header p {
     font-size: 1.5rem;
 }
 
+.lang-text {
+    font-size: 0.75rem;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+#lang-toggle:hover .lang-text {
+    transform: scale(1.1);
+}
+
 main {
     flex: 1;
     max-width: 1200px;

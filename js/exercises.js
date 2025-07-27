@@ -383,7 +383,7 @@ class ExerciseManager {
             }
             return { 
                 correct: true, 
-                message: '正解です！', 
+                message: i18n.t('message.correct'), 
                 points: challenge.points || 0 
             };
         }
@@ -397,7 +397,7 @@ class ExerciseManager {
                 }
                 return { 
                     correct: true, 
-                    message: '正解です！', 
+                    message: i18n.t('message.correct'), 
                     points: challenge.points || 0 
                 };
             }
@@ -405,7 +405,7 @@ class ExerciseManager {
         
         return { 
             correct: false, 
-            message: '答えが違います。もう一度確認してください。' 
+            message: i18n.t('message.incorrect') 
         };
     }
     

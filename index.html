@@ -14,6 +14,9 @@
           <p>ビジュアルで学ぶプレイフェア暗号ツール</p>
         </div>
         <div class="header-buttons">
+          <button id="lang-toggle" class="header-btn" aria-label="言語切り替え / Switch Language">
+            <span class="lang-text">JA</span>
+          </button>
           <button id="help-toggle" class="header-btn" aria-label="ヘルプを表示">
             <span class="header-icon">❓</span>
           </button>
@@ -404,6 +407,7 @@
                 コピー
               </button>
             </div>
+            <div id="decryption-notes" class="info-message"></div>
             <div id="answer-check" class="answer-check hidden">
               <h4>解読チャレンジ解答</h4>
               <div class="answer-input-section">
@@ -422,7 +426,6 @@
               <div id="answer-result" class="answer-result"></div>
               <div id="hint-display" class="hint-display hidden"></div>
             </div>
-            <div id="decryption-notes" class="info-message"></div>
           </div>
         </div>
       </div>
@@ -656,6 +659,7 @@
     <script src="js/animations.js"></script>
     <script src="js/theme.js"></script>
     <script src="js/help.js"></script>
+    <script src="js/i18n.js"></script>
     <script src="js/main.js"></script>
   </body>
 </html>
