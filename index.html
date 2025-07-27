@@ -46,12 +46,40 @@
             <button id="edit-matrix-btn" class="btn btn-primary">編集</button>
           </div>
           <div id="matrix-editor" class="matrix-editor hidden">
-            <textarea
-              id="matrix-text"
-              rows="5"
-              cols="10"
-              placeholder="5行×5文字で入力"
-            ></textarea>
+            <div class="edit-mode-selector">
+              <label class="radio-option">
+                <input type="radio" name="edit-mode" value="keyword" checked>
+                <span>キーワード指定</span>
+              </label>
+              <label class="radio-option">
+                <input type="radio" name="edit-mode" value="matrix">
+                <span>マトリクス指定</span>
+              </label>
+            </div>
+            
+            <div id="keyword-input" class="input-mode">
+              <label for="keyword-text">キーワード/キーフレーズ:</label>
+              <input
+                type="text"
+                id="keyword-text"
+                placeholder="例: PLAYFAIR EXAMPLE"
+              />
+              <div class="keyword-preview">
+                <label>生成されるマトリクス:</label>
+                <div id="keyword-matrix-preview" class="matrix-preview"></div>
+              </div>
+            </div>
+            
+            <div id="matrix-input" class="input-mode hidden">
+              <label for="matrix-text">マトリクス（5行×5文字）:</label>
+              <textarea
+                id="matrix-text"
+                rows="5"
+                cols="10"
+                placeholder="5行×5文字で入力"
+              ></textarea>
+            </div>
+            
             <div class="editor-buttons">
               <button id="save-matrix-btn" class="btn btn-success">保存</button>
               <button id="cancel-edit-btn" class="btn btn-secondary">

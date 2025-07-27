@@ -180,6 +180,76 @@ main {
     text-align: center;
 }
 
+.edit-mode-selector {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+    justify-content: center;
+}
+
+.radio-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.radio-option input[type="radio"] {
+    transform: scale(1.2);
+}
+
+.input-mode {
+    margin-bottom: 1.5rem;
+}
+
+.input-mode label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.input-mode input[type="text"] {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #bdc3c7;
+    border-radius: 4px;
+    font-size: 1rem;
+    text-transform: uppercase;
+}
+
+.keyword-preview {
+    margin-top: 1rem;
+}
+
+.matrix-preview {
+    display: grid;
+    grid-template-columns: repeat(5, 30px);
+    grid-template-rows: repeat(5, 30px);
+    gap: 2px;
+    margin-top: 0.5rem;
+    justify-content: center;
+}
+
+.matrix-preview-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.matrix-preview-cell.keyword-char {
+    background-color: #e3f2fd;
+    border-color: #2196f3;
+    color: #1976d2;
+}
+
 .matrix-editor textarea {
     font-family: monospace;
     font-size: 1.2rem;
@@ -188,6 +258,11 @@ main {
     border-radius: 4px;
     resize: none;
     text-transform: uppercase;
+    width: 200px;
+    max-width: 100%;
+    margin: 0 auto;
+    display: block;
+    text-align: center;
 }
 
 .editor-buttons {
@@ -1005,4 +1080,30 @@ body.dark-mode .modal-body li {
 
 body.dark-mode .modal-body strong {
     color: #e0e0e0;
+}
+
+body.dark-mode .radio-option {
+    color: #e0e0e0;
+}
+
+body.dark-mode .input-mode label {
+    color: #e0e0e0;
+}
+
+body.dark-mode .input-mode input[type="text"] {
+    background-color: #2d2d2d;
+    border-color: #444;
+    color: #e0e0e0;
+}
+
+body.dark-mode .matrix-preview-cell {
+    background-color: #2d2d2d;
+    border-color: #444;
+    color: #e0e0e0;
+}
+
+body.dark-mode .matrix-preview-cell.keyword-char {
+    background-color: #1a3a52;
+    border-color: #2980b9;
+    color: #5dade2;
 }

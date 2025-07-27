@@ -74,15 +74,45 @@ class UI {
         const matrixContainer = document.querySelector('.key-matrix-container');
         const editor = document.getElementById('matrix-editor');
         const textArea = document.getElementById('matrix-text');
+        const keywordInput = document.getElementById('keyword-text');
+        const keywordInputDiv = document.getElementById('keyword-input');
+        const matrixInputDiv = document.getElementById('matrix-input');
         const errorDiv = document.getElementById('matrix-error');
+        const editModeRadios = document.querySelectorAll('input[name="edit-mode"]');
+        
+        // 編集モード切り替え
+        editModeRadios.forEach(radio => {
+            radio.addEventListener('change', () => {
+                if (radio.value === 'keyword') {
+                    keywordInputDiv.classList.remove('hidden');
+                    matrixInputDiv.classList.add('hidden');
+                } else {
+                    keywordInputDiv.classList.add('hidden');
+                    matrixInputDiv.classList.remove('hidden');
+                }
+                errorDiv.textContent = '';
+            });
+        });
+        
+        // キーワード入力時のプレビュー更新
+        keywordInput.addEventListener('input', () => {
+            this.updateKeywordPreview(keywordInput.value);
+        });
         
         editBtn.addEventListener('click', () => {
             matrixContainer.querySelector('#key-matrix').classList.add('hidden');
             editBtn.classList.add('hidden');
             editor.classList.remove('hidden');
             
+            // デフォルトでキーワードモードを選択
+            document.querySelector('input[name="edit-mode"][value="keyword"]').checked = true;
+            keywordInputDiv.classList.remove('hidden');
+            matrixInputDiv.classList.add('hidden');
+            
             textArea.value = this.cipher.matrixToText();
-            textArea.focus();
+            keywordInput.value = '';
+            this.updateKeywordPreview('');
+            keywordInput.focus();
         });
         
         cancelBtn.addEventListener('click', () => {
@@ -93,21 +123,37 @@ class UI {
         });
         
         saveBtn.addEventListener('click', () => {
-            const text = textArea.value;
-            const validation = this.cipher.validateMatrix(text);
+            const selectedMode = document.querySelector('input[name="edit-mode"]:checked').value;
             
-            if (!validation.valid) {
-                errorDiv.textContent = validation.error;
+            if (selectedMode === 'keyword') {
+                const keyword = keywordInput.value;
+                const validation = this.cipher.validateKeyword(keyword);
                 
-                if (validation.warning) {
-                    const correctedText = text.replace(/J/gi, 'I');
-                    textArea.value = correctedText;
+                if (!validation.valid) {
+                    errorDiv.textContent = validation.error;
+                    return;
                 }
-                return;
+                
+                const result = this.cipher.generateMatrixFromKeyword(keyword);
+                this.cipher.setMatrix(result.matrix);
+                
+            } else {
+                const text = textArea.value;
+                const validation = this.cipher.validateMatrix(text);
+                
+                if (!validation.valid) {
+                    errorDiv.textContent = validation.error;
+                    
+                    if (validation.warning) {
+                        const correctedText = text.replace(/J/gi, 'I');
+                        textArea.value = correctedText;
+                    }
+                    return;
+                }
+                
+                const newMatrix = this.cipher.textToMatrix(text);
+                this.cipher.setMatrix(newMatrix);
             }
-            
-            const newMatrix = this.cipher.textToMatrix(text);
-            this.cipher.setMatrix(newMatrix);
             
             this.displayMatrix('key-matrix');
             this.displayMatrix('encryption-matrix');
@@ -794,5 +840,52 @@ class UI {
         const playPauseBtn = document.getElementById('play-pause-decryption');
         playPauseBtn.textContent = '▶ 再生';
         playPauseBtn.disabled = false;
+    }
+
+    updateKeywordPreview(keyword) {
+        const previewContainer = document.getElementById('keyword-matrix-preview');
+        previewContainer.innerHTML = '';
+        
+        if (!keyword.trim()) {
+            // 空の場合は空のマトリクスを表示
+            for (let i = 0; i < 25; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'matrix-preview-cell';
+                cell.textContent = '';
+                previewContainer.appendChild(cell);
+            }
+            return;
+        }
+        
+        try {
+            const result = this.cipher.generateMatrixFromKeyword(keyword);
+            const matrix = result.matrix;
+            const keywordLength = result.keywordLength;
+            
+            let charIndex = 0;
+            for (let row = 0; row < 5; row++) {
+                for (let col = 0; col < 5; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'matrix-preview-cell';
+                    
+                    if (charIndex < keywordLength) {
+                        cell.classList.add('keyword-char');
+                    }
+                    
+                    const char = matrix[row][col];
+                    cell.textContent = char === 'I' ? 'I/J' : char;
+                    previewContainer.appendChild(cell);
+                    charIndex++;
+                }
+            }
+        } catch (error) {
+            // エラーの場合は空のマトリクスを表示
+            for (let i = 0; i < 25; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'matrix-preview-cell';
+                cell.textContent = '';
+                previewContainer.appendChild(cell);
+            }
+        }
     }
 }
