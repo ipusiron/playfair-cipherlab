@@ -185,10 +185,17 @@ class PlayfairCipher {
         
         // 同一文字ペアの特別処理
         if (pair[0] === pair[1]) {
-            if (samePairRule === 'bottom-right') {
-                // マトリクス右下の文字（位置[4,4]）に置換
-                const bottomRightChar = this.matrix[4][4];
-                return bottomRightChar + bottomRightChar;
+            if (samePairRule === 'right-shift') {
+                // 右隣の文字に置換（標準Playfair）
+                const newCol = (pos1.col + 1) % 5;
+                const newChar = this.matrix[pos1.row][newCol];
+                return newChar + newChar;
+            } else if (samePairRule === 'bottom-right') {
+                // 1つ右、1つ下の位置に移動
+                const newRow = (pos1.row + 1) % 5;
+                const newCol = (pos1.col + 1) % 5;
+                const newChar = this.matrix[newRow][newCol];
+                return newChar + newChar;
             } else {
                 // 変化なし
                 return pair;
@@ -211,12 +218,31 @@ class PlayfairCipher {
         return encrypted;
     }
 
-    decryptPair(pair) {
+    decryptPair(pair, samePairRule = 'no-change') {
         const pos1 = this.findPosition(pair[0]);
         const pos2 = this.findPosition(pair[1]);
         
         if (!pos1 || !pos2) {
             return pair;
+        }
+        
+        // 同一文字ペアの特別処理（復号時）
+        if (pair[0] === pair[1]) {
+            if (samePairRule === 'right-shift') {
+                // 左隣の文字から復元（標準Playfair）
+                const originalCol = (pos1.col + 4) % 5; // -1と同じ
+                const originalChar = this.matrix[pos1.row][originalCol];
+                return originalChar + originalChar;
+            } else if (samePairRule === 'bottom-right') {
+                // 1つ左、1つ上の位置から復元
+                const originalRow = (pos1.row + 4) % 5; // -1と同じ
+                const originalCol = (pos1.col + 4) % 5; // -1と同じ
+                const originalChar = this.matrix[originalRow][originalCol];
+                return originalChar + originalChar;
+            } else {
+                // 変化なし
+                return pair;
+            }
         }
         
         let decrypted = '';
@@ -247,13 +273,27 @@ class PlayfairCipher {
         };
     }
 
-    decrypt(ciphertext) {
+    decrypt(ciphertext, samePairRule = 'no-change', paddingChar = 'X', removePadding = true) {
         const processed = ciphertext.toUpperCase().replace(/[^A-Z]/g, '');
         const pairs = this.createPairs(processed);
-        const decryptedPairs = pairs.map(pair => this.decryptPair(pair));
+        const decryptedPairs = pairs.map(pair => this.decryptPair(pair, samePairRule));
+        let plaintext = decryptedPairs.join('');
+        
+        // 補完文字の除去処理
+        if (removePadding) {
+            // 末尾の補完文字を除去
+            if (plaintext.endsWith(paddingChar)) {
+                plaintext = plaintext.slice(0, -1);
+            }
+            
+            // 連続する同一文字間の補完文字を除去
+            const paddingPattern = new RegExp(`(.)${paddingChar}\\1`, 'g');
+            plaintext = plaintext.replace(paddingPattern, '$1$1');
+        }
+        
         return {
             pairs,
-            plaintext: decryptedPairs.join('').toLowerCase(),
+            plaintext: plaintext.toLowerCase(),
             decryptedPairs
         };
     }

@@ -1,6 +1,7 @@
 class UI {
     constructor() {
         this.cipher = new PlayfairCipher();
+        this.exerciseManager = new ExerciseManager();
         this.currentTab = 'key-generation';
         this.animationQueue = [];
         this.isAnimating = false;
@@ -11,6 +12,7 @@ class UI {
         this.currentEncryptionStep = 0;
         this.currentDecryptionStep = 0;
         this.autoPlayTimer = null;
+        this.currentChallenge = null;
     }
 
     init() {
@@ -18,6 +20,7 @@ class UI {
         this.setupKeyGeneration();
         this.setupEncryption();
         this.setupDecryption();
+        this.setupExercises();
         this.displayMatrix('key-matrix');
     }
 
@@ -213,7 +216,7 @@ class UI {
             
             const samePairMode = samePairModeToggle.checked;
             let paddingChar = 'X';
-            let samePairRule = 'no-change';
+            let samePairRule = 'right-shift';
             
             if (samePairMode) {
                 paddingChar = document.querySelector('input[name="padding-char"]:checked').value;
@@ -296,7 +299,10 @@ class UI {
             
             errorDiv.textContent = '';
             
-            const result = this.cipher.decrypt(ciphertext);
+            // 復号設定を取得
+            const samePairRule = document.querySelector('input[name="decrypt-same-pair-rule"]:checked').value;
+            
+            const result = this.cipher.decrypt(ciphertext, samePairRule, 'X', false);
             
             this.displayPairs('decrypt-pair-display', result.pairs);
             
@@ -377,9 +383,10 @@ class UI {
             const samePairs = pairs.filter(pair => pair[0] === pair[1]);
             
             if (samePairs.length > 0) {
-                if (samePairRule === 'bottom-right') {
-                    const bottomRightChar = this.cipher.getMatrix()[4][4];
-                    messages.push(`同一文字ペア ${samePairs.map(p => `"${p}"`).join(', ')} を検出しました。マトリクス右下の文字 "${bottomRightChar}" に置換しました。`);
+                if (samePairRule === 'right-shift') {
+                    messages.push(`同一文字ペア ${samePairs.map(p => `"${p}"`).join(', ')} を検出しました。右隣の文字に置換して処理しました。`);
+                } else if (samePairRule === 'bottom-right') {
+                    messages.push(`同一文字ペア ${samePairs.map(p => `"${p}"`).join(', ')} を検出しました。各文字を1つ右、1つ下の位置に移動して処理しました。`);
                 } else {
                     messages.push(`同一文字ペア ${samePairs.map(p => `"${p}"`).join(', ')} を検出しました。変化なしで処理しました。`);
                 }
@@ -887,5 +894,296 @@ class UI {
                 previewContainer.appendChild(cell);
             }
         }
+    }
+
+    setupExercises() {
+        this.setupEncryptionExercises();
+        this.setupDecryptionExercises();
+        this.setupProgressDisplay();
+        this.updateProgressDisplay();
+    }
+
+    setupEncryptionExercises() {
+        const categorySelect = document.getElementById('example-category');
+        const exampleSelect = document.getElementById('example-list');
+        const loadButton = document.getElementById('load-example');
+
+        // カテゴリ選択肢を構築
+        const categories = this.exerciseManager.getExamplesByCategory('encryption');
+        Object.keys(categories).forEach(category => {
+            const option = document.createElement('option');
+            option.value = category;
+            option.textContent = category;
+            categorySelect.appendChild(option);
+        });
+
+        categorySelect.addEventListener('change', () => {
+            const selectedCategory = categorySelect.value;
+            exampleSelect.innerHTML = '<option value="">例文を選択...</option>';
+            exampleSelect.disabled = !selectedCategory;
+            loadButton.disabled = true;
+
+            if (selectedCategory) {
+                const examples = categories[selectedCategory];
+                examples.forEach(example => {
+                    const option = document.createElement('option');
+                    option.value = example.id;
+                    option.textContent = `${example.title} - "${example.plaintext}"`;
+                    exampleSelect.appendChild(option);
+                });
+                exampleSelect.disabled = false;
+            }
+        });
+
+        exampleSelect.addEventListener('change', () => {
+            loadButton.disabled = !exampleSelect.value;
+        });
+
+        loadButton.addEventListener('click', () => {
+            const selectedExample = this.exerciseManager.getExamples('encryption')
+                .find(ex => ex.id === exampleSelect.value);
+            
+            if (selectedExample) {
+                document.getElementById('plaintext').value = selectedExample.plaintext;
+                
+                // キーワードがある場合は設定
+                if (selectedExample.keyword) {
+                    const result = this.cipher.generateMatrixFromKeyword(selectedExample.keyword);
+                    this.cipher.setMatrix(result.matrix);
+                    this.displayMatrix('key-matrix');
+                    this.displayMatrix('encryption-matrix');
+                    this.displayMatrix('decryption-matrix');
+                }
+
+                this.showToast(`例文「${selectedExample.title}」を読み込みました`);
+                
+                // 暗号化ボタンを有効化
+                document.getElementById('encrypt-btn').disabled = false;
+            }
+        });
+    }
+
+    setupDecryptionExercises() {
+        const typeSelect = document.getElementById('practice-type');
+        const practiceSelect = document.getElementById('practice-list');
+        const loadButton = document.getElementById('load-practice');
+        const challengeInfo = document.getElementById('challenge-info');
+        const answerCheck = document.getElementById('answer-check');
+
+        typeSelect.addEventListener('change', () => {
+            const selectedType = typeSelect.value;
+            practiceSelect.innerHTML = '<option value="">課題を選択...</option>';
+            practiceSelect.disabled = !selectedType;
+            loadButton.disabled = true;
+            challengeInfo.classList.add('hidden');
+            answerCheck.classList.add('hidden');
+            this.currentChallenge = null;
+
+            if (selectedType === 'practice') {
+                const practices = this.exerciseManager.getPracticesByCategory();
+                Object.keys(practices).forEach(category => {
+                    const optgroup = document.createElement('optgroup');
+                    optgroup.label = category;
+                    practices[category].forEach(practice => {
+                        const option = document.createElement('option');
+                        option.value = practice.id;
+                        option.textContent = `${practice.title} - ${practice.ciphertext}`;
+                        optgroup.appendChild(option);
+                    });
+                    practiceSelect.appendChild(optgroup);
+                });
+                practiceSelect.disabled = false;
+            } else if (selectedType === 'challenge') {
+                const challenges = this.exerciseManager.getChallengesByLevel('decryption');
+                Object.keys(challenges).sort().forEach(level => {
+                    const optgroup = document.createElement('optgroup');
+                    optgroup.label = `レベル ${level}`;
+                    challenges[level].forEach(challenge => {
+                        const option = document.createElement('option');
+                        option.value = challenge.id;
+                        option.textContent = `${challenge.title} (${challenge.points}pt)`;
+                        
+                        // ロックされているレベルかチェック
+                        if (!this.exerciseManager.isLevelUnlocked('decryption', parseInt(level))) {
+                            option.disabled = true;
+                            option.textContent += ' [ロック]';
+                        }
+                        
+                        optgroup.appendChild(option);
+                    });
+                    practiceSelect.appendChild(optgroup);
+                });
+                practiceSelect.disabled = false;
+            }
+        });
+
+        practiceSelect.addEventListener('change', () => {
+            const selectedId = practiceSelect.value;
+            loadButton.disabled = !selectedId;
+            challengeInfo.classList.add('hidden');
+
+            if (selectedId && typeSelect.value === 'challenge') {
+                const challenge = this.exerciseManager.getChallenges('decryption')
+                    .find(c => c.id === selectedId);
+                
+                if (challenge) {
+                    this.displayChallengeInfo(challenge);
+                    challengeInfo.classList.remove('hidden');
+                }
+            }
+        });
+
+        loadButton.addEventListener('click', () => {
+            const selectedType = typeSelect.value;
+            const selectedId = practiceSelect.value;
+            
+            if (selectedType === 'practice') {
+                const practice = this.exerciseManager.getPractices()
+                    .find(p => p.id === selectedId);
+                
+                if (practice) {
+                    this.loadPractice(practice);
+                }
+            } else if (selectedType === 'challenge') {
+                const challenge = this.exerciseManager.getChallenges('decryption')
+                    .find(c => c.id === selectedId);
+                
+                if (challenge) {
+                    this.loadChallenge(challenge);
+                }
+            }
+        });
+
+        // 解答チェックボタン
+        document.getElementById('check-answer').addEventListener('click', () => {
+            this.checkChallengeAnswer();
+        });
+    }
+
+    displayChallengeInfo(challenge) {
+        const details = document.querySelector('.challenge-details');
+        details.querySelector('.challenge-title').textContent = challenge.title;
+        details.querySelector('.challenge-description').textContent = challenge.description;
+        details.querySelector('.challenge-hint').textContent = `ヒント: ${challenge.hints[0]}`;
+        details.querySelector('.challenge-points').textContent = `獲得ポイント: ${challenge.points}pt`;
+    }
+
+    loadPractice(practice) {
+        document.getElementById('ciphertext-input').value = practice.ciphertext;
+        
+        // キーワードがある場合は設定
+        if (practice.keyword) {
+            const result = this.cipher.generateMatrixFromKeyword(practice.keyword);
+            this.cipher.setMatrix(result.matrix);
+            this.displayMatrix('key-matrix');
+            this.displayMatrix('encryption-matrix');
+            this.displayMatrix('decryption-matrix');
+        }
+
+        this.showToast(`練習問題「${practice.title}」を読み込みました`);
+        document.getElementById('decrypt-btn').disabled = false;
+        document.getElementById('answer-check').classList.add('hidden');
+        this.currentChallenge = null;
+    }
+
+    loadChallenge(challenge) {
+        document.getElementById('ciphertext-input').value = challenge.ciphertext;
+        
+        // キーワードがある場合は設定（チャレンジでは初期状態では設定しない）
+        if (challenge.keyword) {
+            // チャレンジなのでキーワードはユーザーが見つける必要がある
+            this.showToast(`チャレンジ「${challenge.title}」を読み込みました。鍵を推測してください。`);
+        } else {
+            this.showToast(`チャレンジ「${challenge.title}」を読み込みました`);
+        }
+        
+        document.getElementById('decrypt-btn').disabled = false;
+        document.getElementById('answer-check').classList.remove('hidden');
+        this.currentChallenge = challenge;
+    }
+
+    checkChallengeAnswer() {
+        if (!this.currentChallenge) return;
+
+        const userAnswer = document.getElementById('decrypted-text').textContent;
+        const userKeyword = this.getCurrentKeyword();
+        
+        const result = this.exerciseManager.validateAnswer(
+            'decryption', 
+            this.currentChallenge.id, 
+            userAnswer, 
+            userKeyword
+        );
+
+        const resultDiv = document.getElementById('answer-result');
+        resultDiv.textContent = result.message;
+        resultDiv.className = 'answer-result ' + (result.correct ? 'correct' : 'incorrect');
+
+        if (result.correct && result.points) {
+            this.showToast(`正解！ ${result.points}ポイント獲得しました！`);
+            this.updateProgressDisplay();
+        }
+    }
+
+    getCurrentKeyword() {
+        // 現在設定されているマトリクスからキーワードを推測するのは困難なので、
+        // ここでは空文字を返す（将来的に改善可能）
+        return '';
+    }
+
+    setupProgressDisplay() {
+        const resetButton = document.getElementById('reset-progress');
+        
+        resetButton.addEventListener('click', () => {
+            const confirmed = confirm(
+                '学習進捗をリセットしますか？\n\n' +
+                '- 獲得ポイントが0になります\n' +
+                '- クリア済み課題の記録が消去されます\n' +
+                '- レベル解放状況がリセットされます\n\n' +
+                'この操作は取り消せません。'
+            );
+            
+            if (confirmed) {
+                this.exerciseManager.resetProgress();
+                this.updateProgressDisplay();
+                this.showToast('学習進捗をリセットしました');
+                
+                // UI状態もリセット
+                this.resetExerciseUI();
+            }
+        });
+    }
+
+    updateProgressDisplay() {
+        const progress = this.exerciseManager.getProgress();
+        
+        document.getElementById('total-points').textContent = progress.totalPoints;
+        document.getElementById('completed-challenges').textContent = progress.completedChallenges.length;
+        
+        const encryptionLevel = progress.unlockedLevels.encryption;
+        const decryptionLevel = progress.unlockedLevels.decryption;
+        const maxLevel = Math.max(encryptionLevel, decryptionLevel);
+        document.getElementById('unlocked-levels').textContent = `${maxLevel}/3`;
+    }
+
+    resetExerciseUI() {
+        // 例文選択をリセット
+        document.getElementById('example-category').selectedIndex = 0;
+        document.getElementById('example-list').innerHTML = '<option value="">例文を選択...</option>';
+        document.getElementById('example-list').disabled = true;
+        document.getElementById('load-example').disabled = true;
+        
+        // 課題選択をリセット
+        document.getElementById('practice-type').selectedIndex = 0;
+        document.getElementById('practice-list').innerHTML = '<option value="">課題を選択...</option>';
+        document.getElementById('practice-list').disabled = true;
+        document.getElementById('load-practice').disabled = true;
+        
+        // チャレンジ情報とチェック結果を隠す
+        document.getElementById('challenge-info').classList.add('hidden');
+        document.getElementById('answer-check').classList.add('hidden');
+        document.getElementById('answer-result').textContent = '';
+        
+        this.currentChallenge = null;
     }
 }

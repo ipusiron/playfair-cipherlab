@@ -88,11 +88,48 @@
             </div>
             <div id="matrix-error" class="error-message"></div>
           </div>
+          
+          <!-- Progress Display -->
+          <div class="progress-display">
+            <h3>📊 学習進捗</h3>
+            <div class="progress-stats">
+              <div class="progress-stat">
+                <div class="progress-stat-value" id="total-points">0</div>
+                <div class="progress-stat-label">総ポイント</div>
+              </div>
+              <div class="progress-stat">
+                <div class="progress-stat-value" id="completed-challenges">0</div>
+                <div class="progress-stat-label">クリア課題数</div>
+              </div>
+              <div class="progress-stat">
+                <div class="progress-stat-value" id="unlocked-levels">1/3</div>
+                <div class="progress-stat-label">解放レベル</div>
+              </div>
+            </div>
+            <button id="reset-progress" class="btn btn-secondary btn-small" style="margin-top: 1rem;">
+              🔄 進捗をリセット
+            </button>
+          </div>
         </div>
 
         <!-- Encryption Tab -->
         <div id="encryption" class="tab-panel">
           <h2>暗号化</h2>
+          
+          <!-- Exercise Selection -->
+          <div class="exercise-section">
+            <h3>例文から選択</h3>
+            <div class="exercise-controls">
+              <select id="example-category" class="exercise-select">
+                <option value="">カテゴリを選択...</option>
+              </select>
+              <select id="example-list" class="exercise-select" disabled>
+                <option value="">例文を選択...</option>
+              </select>
+              <button id="load-example" class="btn btn-secondary btn-small" disabled>読み込み</button>
+            </div>
+          </div>
+          
           <div class="input-section">
             <label for="plaintext">平文入力:</label>
             <textarea
@@ -146,7 +183,6 @@
                     type="radio"
                     name="same-pair-rule"
                     value="no-change"
-                    checked
                   />
                   変化なし（同じ文字のまま）</label
                 >
@@ -154,9 +190,18 @@
                   ><input
                     type="radio"
                     name="same-pair-rule"
+                    value="right-shift"
+                    checked
+                  />
+                  右隣の文字に置換（標準）</label
+                >
+                <label
+                  ><input
+                    type="radio"
+                    name="same-pair-rule"
                     value="bottom-right"
                   />
-                  マトリクス右下の文字に置換</label
+                  1つ右、1つ下の位置に移動</label
                 >
               </div>
             </div>
@@ -227,6 +272,31 @@
         <!-- Decryption Tab -->
         <div id="decryption" class="tab-panel">
           <h2>復号</h2>
+          
+          <!-- Exercise Selection -->
+          <div class="exercise-section">
+            <h3>練習・課題から選択</h3>
+            <div class="exercise-controls">
+              <select id="practice-type" class="exercise-select">
+                <option value="">タイプを選択...</option>
+                <option value="practice">復号練習</option>
+                <option value="challenge">解読チャレンジ</option>
+              </select>
+              <select id="practice-list" class="exercise-select" disabled>
+                <option value="">課題を選択...</option>
+              </select>
+              <button id="load-practice" class="btn btn-secondary btn-small" disabled>読み込み</button>
+            </div>
+            <div id="challenge-info" class="challenge-info hidden">
+              <div class="challenge-details">
+                <div class="challenge-title"></div>
+                <div class="challenge-description"></div>
+                <div class="challenge-hint"></div>
+                <div class="challenge-points"></div>
+              </div>
+            </div>
+          </div>
+          
           <div class="input-section">
             <label for="ciphertext-input">暗号文入力:</label>
             <textarea
@@ -235,6 +305,37 @@
               placeholder="復号したい暗号文を入力"
             ></textarea>
             <div id="ciphertext-error" class="error-message"></div>
+          </div>
+
+          <div class="settings-section">
+            <div class="mode-label">同一ペア処理ルール</div>
+            <div class="radio-group-vertical">
+              <label
+                ><input
+                  type="radio"
+                  name="decrypt-same-pair-rule"
+                  value="no-change"
+                />
+                変化なし（同じ文字のまま）</label
+              >
+              <label
+                ><input
+                  type="radio"
+                  name="decrypt-same-pair-rule"
+                  value="right-shift"
+                  checked
+                />
+                右隣の文字から復元（標準）</label
+              >
+              <label
+                ><input
+                  type="radio"
+                  name="decrypt-same-pair-rule"
+                  value="bottom-right"
+                />
+                1つ右、1つ下の位置から復元</label
+              >
+            </div>
           </div>
 
           <button id="decrypt-btn" class="btn btn-primary">復号</button>
@@ -294,6 +395,10 @@
               <button id="copy-plaintext" class="btn btn-secondary">
                 コピー
               </button>
+            </div>
+            <div id="answer-check" class="answer-check hidden">
+              <button id="check-answer" class="btn btn-success">解答をチェック</button>
+              <div id="answer-result" class="answer-result"></div>
             </div>
             <div id="decryption-notes" class="info-message"></div>
           </div>
@@ -441,6 +546,7 @@
     </div>
 
     <script src="js/cipher.js"></script>
+    <script src="js/exercises.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/animations.js"></script>
     <script src="js/theme.js"></script>

@@ -762,6 +762,140 @@ footer a:hover {
     color: #2c3e50;
 }
 
+/* Exercise Section */
+.exercise-section {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    border-left: 3px solid #3498db;
+}
+
+.exercise-section h3 {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.exercise-controls {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.exercise-select {
+    padding: 0.5rem;
+    border: 2px solid #bdc3c7;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    background-color: white;
+    min-width: 180px;
+}
+
+.exercise-select:disabled {
+    background-color: #ecf0f1;
+    color: #7f8c8d;
+    cursor: not-allowed;
+}
+
+.challenge-info {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: white;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+}
+
+.challenge-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.challenge-title {
+    font-weight: bold;
+    color: #2c3e50;
+    font-size: 1rem;
+}
+
+.challenge-description {
+    color: #555;
+    font-size: 0.9rem;
+}
+
+.challenge-hint {
+    color: #f39c12;
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+.challenge-points {
+    color: #27ae60;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.answer-check {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.answer-result {
+    margin-top: 0.5rem;
+    padding: 0.75rem;
+    border-radius: 4px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.answer-result.correct {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.answer-result.incorrect {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.progress-display {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: #e3f2fd;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.progress-stats {
+    display: flex;
+    justify-content: space-around;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.progress-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.progress-stat-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.progress-stat-label {
+    font-size: 0.8rem;
+    color: #7f8c8d;
+}
+
 /* Utility Classes */
 .hidden {
     display: none !important;
@@ -1106,4 +1240,73 @@ body.dark-mode .matrix-preview-cell.keyword-char {
     background-color: #1a3a52;
     border-color: #2980b9;
     color: #5dade2;
+}
+
+body.dark-mode .exercise-section {
+    background-color: #2d2d2d;
+    border-left-color: #2980b9;
+}
+
+body.dark-mode .exercise-section h3 {
+    color: #e0e0e0;
+}
+
+body.dark-mode .exercise-select {
+    background-color: #2d2d2d;
+    border-color: #444;
+    color: #e0e0e0;
+}
+
+body.dark-mode .exercise-select:disabled {
+    background-color: #1a1a1a;
+    color: #666;
+}
+
+body.dark-mode .challenge-info {
+    background-color: #1a1a1a;
+    border-color: #444;
+}
+
+body.dark-mode .challenge-title {
+    color: #e0e0e0;
+}
+
+body.dark-mode .challenge-description {
+    color: #b0b0b0;
+}
+
+body.dark-mode .challenge-hint {
+    color: #f1c40f;
+}
+
+body.dark-mode .challenge-points {
+    color: #2ecc71;
+}
+
+body.dark-mode .answer-check {
+    background-color: #2d2d2d;
+}
+
+body.dark-mode .answer-result.correct {
+    background-color: #1e3a1e;
+    color: #a8d4a8;
+    border-color: #2e5a2e;
+}
+
+body.dark-mode .answer-result.incorrect {
+    background-color: #3a1e1e;
+    color: #d4a8a8;
+    border-color: #5a2e2e;
+}
+
+body.dark-mode .progress-display {
+    background-color: #1a3a52;
+}
+
+body.dark-mode .progress-stat-value {
+    color: #e0e0e0;
+}
+
+body.dark-mode .progress-stat-label {
+    color: #95a5a6;
 }
