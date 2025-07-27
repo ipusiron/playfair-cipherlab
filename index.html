@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Playfair CipherLab - ビジュアルで学ぶプレイフェア暗号ツール</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <h1>Playfair CipherLab</h1>
+        <p>ビジュアルで学ぶプレイフェア暗号ツール</p>
+    </header>
+
+    <main>
+        <div class="tabs">
+            <button class="tab-button active" data-tab="key-generation">🔑 鍵生成</button>
+            <button class="tab-button" data-tab="encryption">🔐 暗号化</button>
+            <button class="tab-button" data-tab="decryption">🔓 復号</button>
+        </div>
+
+        <div class="tab-content">
+            <!-- Key Generation Tab -->
+            <div id="key-generation" class="tab-panel active">
+                <h2>鍵マトリクスの生成</h2>
+                <div class="key-matrix-container">
+                    <div id="key-matrix" class="matrix-grid"></div>
+                    <button id="edit-matrix-btn" class="btn btn-primary">編集</button>
+                </div>
+                <div id="matrix-editor" class="matrix-editor hidden">
+                    <textarea id="matrix-text" rows="5" cols="10" placeholder="5行×5文字で入力"></textarea>
+                    <div class="editor-buttons">
+                        <button id="save-matrix-btn" class="btn btn-success">保存</button>
+                        <button id="cancel-edit-btn" class="btn btn-secondary">キャンセル</button>
+                    </div>
+                    <div id="matrix-error" class="error-message"></div>
+                </div>
+            </div>
+
+            <!-- Encryption Tab -->
+            <div id="encryption" class="tab-panel">
+                <h2>暗号化</h2>
+                <div class="input-section">
+                    <label for="plaintext">平文入力:</label>
+                    <textarea id="plaintext" rows="4" placeholder="暗号化したいテキストを入力"></textarea>
+                    <div id="plaintext-error" class="error-message"></div>
+                </div>
+                
+                <div class="settings-section">
+                    <label class="switch-container">
+                        <input type="checkbox" id="same-pair-padding" checked>
+                        <span>同一ペア補完モード</span>
+                    </label>
+                    <div id="padding-char-container">
+                        <div class="padding-char-wrapper">
+                            <label>補完文字:</label>
+                            <div class="radio-group">
+                                <label><input type="radio" name="padding-char" value="X" checked> X</label>
+                                <label><input type="radio" name="padding-char" value="Q"> Q</label>
+                                <label><input type="radio" name="padding-char" value="Z"> Z</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="encrypt-btn" class="btn btn-primary">暗号化</button>
+
+                <div id="encryption-process" class="process-section hidden">
+                    <h3>処理過程</h3>
+                    <div id="pair-display" class="pair-display"></div>
+                    <div id="encryption-matrix" class="matrix-grid"></div>
+                    <div id="encryption-message" class="info-message"></div>
+                </div>
+
+                <div id="ciphertext-section" class="output-section hidden">
+                    <h3>暗号文</h3>
+                    <div class="output-container">
+                        <div id="ciphertext" class="output-text"></div>
+                        <button id="copy-ciphertext" class="btn btn-secondary">コピー</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Decryption Tab -->
+            <div id="decryption" class="tab-panel">
+                <h2>復号</h2>
+                <div class="input-section">
+                    <label for="ciphertext-input">暗号文入力:</label>
+                    <textarea id="ciphertext-input" rows="4" placeholder="復号したい暗号文を入力"></textarea>
+                    <div id="ciphertext-error" class="error-message"></div>
+                </div>
+
+                <button id="decrypt-btn" class="btn btn-primary">復号</button>
+
+                <div id="decryption-process" class="process-section hidden">
+                    <h3>処理過程</h3>
+                    <div id="decrypt-pair-display" class="pair-display"></div>
+                    <div id="decryption-matrix" class="matrix-grid"></div>
+                </div>
+
+                <div id="plaintext-section" class="output-section hidden">
+                    <h3>復号結果</h3>
+                    <div class="output-container">
+                        <div id="decrypted-text" class="output-text"></div>
+                        <button id="copy-plaintext" class="btn btn-secondary">コピー</button>
+                    </div>
+                    <div id="decryption-notes" class="info-message"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>
+            <a href="https://ipusiron.github.io/playfair-cipherlab/" target="_blank">
+                Playfair CipherLab
+            </a>
+            - Day027 生成AIで作るセキュリティツール100
+        </p>
+    </footer>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="js/cipher.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/animations.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
