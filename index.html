@@ -13,9 +13,14 @@
                 <h1>Playfair CipherLab</h1>
                 <p>ビジュアルで学ぶプレイフェア暗号ツール</p>
             </div>
-            <button id="theme-toggle" class="theme-toggle" aria-label="ダークモード切り替え">
-                <span class="theme-icon">🌙</span>
-            </button>
+            <div class="header-buttons">
+                <button id="help-toggle" class="header-btn" aria-label="ヘルプを表示">
+                    <span class="header-icon">❓</span>
+                </button>
+                <button id="theme-toggle" class="header-btn" aria-label="ダークモード切り替え">
+                    <span class="theme-icon">🌙</span>
+                </button>
+            </div>
         </div>
     </header>
 
@@ -181,10 +186,96 @@
 
     <div id="toast" class="toast hidden"></div>
 
+    <!-- Help Modal -->
+    <div id="help-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Playfair CipherLab ヘルプ</h2>
+                <button id="help-close" class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <section>
+                    <h3>🔑 鍵生成タブ</h3>
+                    <p>プレイフェア暗号で使用する5×5マトリクスを設定します。</p>
+                    <ul>
+                        <li><strong>編集ボタン</strong>：マトリクスをテキストで直接編集できます</li>
+                        <li><strong>文字制限</strong>：A-Zの25文字（Jは使用不可、Iと統合）</li>
+                        <li><strong>重複チェック</strong>：同じ文字が重複している場合はエラーになります</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h3>🔐 暗号化タブ</h3>
+                    <p>平文をプレイフェア暗号で暗号化します。</p>
+                    <ul>
+                        <li><strong>入力検証</strong>：英字以外の文字は警告表示されますが処理は続行されます</li>
+                        <li><strong>同一ペア処理モード</strong>：
+                            <ul>
+                                <li><strong>ON</strong>：補完文字（X/Q/Z）を挿入して同一文字ペアを分離</li>
+                                <li><strong>OFF</strong>：変化なしまたはマトリクス右下文字に置換</li>
+                            </ul>
+                        </li>
+                        <li><strong>変換ルール</strong>：
+                            <ul>
+                                <li>同一行：右シフト（末尾は先頭へ）</li>
+                                <li>同一列：下シフト（末尾は上へ）</li>
+                                <li>長方形：対角線交換</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h3>🔓 復号タブ</h3>
+                    <p>暗号文をプレイフェア暗号で復号します。</p>
+                    <ul>
+                        <li><strong>入力制限</strong>：英字のみ受け付けます（その他の文字はエラー）</li>
+                        <li><strong>変換ルール</strong>：暗号化の逆処理
+                            <ul>
+                                <li>同一行：左シフト（先頭は末尾へ）</li>
+                                <li>同一列：上シフト（先頭は末尾へ）</li>
+                                <li>長方形：対角線交換</li>
+                            </ul>
+                        </li>
+                        <li><strong>注意事項</strong>：補完文字や I/J の曖昧性について表示されます</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h3>🎬 アニメーション制御</h3>
+                    <p>暗号化・復号の過程をステップごとに確認できます。</p>
+                    <ul>
+                        <li><strong>◀ 前</strong>：前のステップに戻る</li>
+                        <li><strong>▶ 再生 / ⏸ 停止</strong>：自動再生の開始・停止</li>
+                        <li><strong>次 ▶</strong>：次のステップに進む</li>
+                        <li><strong>🔄 最初から再生</strong>：アニメーションを最初からリスタート</li>
+                    </ul>
+                    <p>各ステップでマトリクスのハイライトと変換後ペアの表示が連動します。</p>
+                </section>
+
+                <section>
+                    <h3>🌙 その他の機能</h3>
+                    <ul>
+                        <li><strong>ダークモード</strong>：右上のボタンでライト/ダークモードを切り替え</li>
+                        <li><strong>コピー機能</strong>：暗号文・復号結果をワンクリックでコピー</li>
+                        <li><strong>レスポンシブ対応</strong>：モバイル端末でも快適に利用可能</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h3>⚠️ 注意事項</h3>
+                    <p><strong>このツールは教育目的です。</strong>プレイフェア暗号は古典暗号であり、現代の暗号学的用途には適していません。</p>
+                </section>
+            </div>
+        </div>
+    </div>
+
     <script src="js/cipher.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/animations.js"></script>
     <script src="js/theme.js"></script>
+    <script src="js/help.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>
