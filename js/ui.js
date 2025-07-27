@@ -678,7 +678,15 @@ class UI {
             this.currentEncryptionStep--;
             this.updateEncryptionStepInfo();
             this.updateEncryptionControls();
+            
+            // 前のステップまでの結果を表示してから、現在のステップをハイライト
             this.refreshEncryptionDisplay();
+            if (this.currentEncryptionStep > 0) {
+                const step = this.encryptionSteps[this.currentEncryptionStep - 1];
+                if (step) {
+                    this.showMatrixHighlight(step.originalPair, step.encryptedPair, 'encryption-matrix');
+                }
+            }
         }
     }
 
@@ -696,7 +704,15 @@ class UI {
             this.currentDecryptionStep--;
             this.updateDecryptionStepInfo();
             this.updateDecryptionControls();
+            
+            // 前のステップまでの結果を表示してから、現在のステップをハイライト
             this.refreshDecryptionDisplay();
+            if (this.currentDecryptionStep > 0) {
+                const step = this.decryptionSteps[this.currentDecryptionStep - 1];
+                if (step) {
+                    this.showMatrixHighlight(step.originalPair, step.decryptedPair, 'decryption-matrix');
+                }
+            }
         }
     }
 
@@ -729,6 +745,43 @@ class UI {
         cells.forEach(cell => {
             cell.classList.remove('highlight-source', 'highlight-target');
         });
+    }
+
+    showMatrixHighlight(originalPair, transformedPair, matrixId) {
+        const matrix = document.getElementById(matrixId);
+        const cells = matrix.querySelectorAll('.matrix-cell');
+        
+        // すべてのハイライトをクリア
+        cells.forEach(cell => {
+            cell.classList.remove('highlight-source', 'highlight-target');
+        });
+        
+        const pos1 = this.cipher.findPosition(originalPair[0]);
+        const pos2 = this.cipher.findPosition(originalPair[1]);
+        const newPos1 = this.cipher.findPosition(transformedPair[0]);
+        const newPos2 = this.cipher.findPosition(transformedPair[1]);
+        
+        // 元のペアの位置をハイライト
+        if (pos1 && pos2) {
+            const cell1 = matrix.querySelector(`[data-row="${pos1.row}"][data-col="${pos1.col}"]`);
+            const cell2 = matrix.querySelector(`[data-row="${pos2.row}"][data-col="${pos2.col}"]`);
+            
+            if (cell1) cell1.classList.add('highlight-source');
+            if (cell2) cell2.classList.add('highlight-source');
+        }
+        
+        // 変換後の位置もハイライト（異なる場合）
+        if (newPos1 && newPos2) {
+            const newCell1 = matrix.querySelector(`[data-row="${newPos1.row}"][data-col="${newPos1.col}"]`);
+            const newCell2 = matrix.querySelector(`[data-row="${newPos2.row}"][data-col="${newPos2.col}"]`);
+            
+            if (newCell1 && !newCell1.classList.contains('highlight-source')) {
+                newCell1.classList.add('highlight-target');
+            }
+            if (newCell2 && !newCell2.classList.contains('highlight-source')) {
+                newCell2.classList.add('highlight-target');
+            }
+        }
     }
 
     refreshEncryptionDisplay() {
