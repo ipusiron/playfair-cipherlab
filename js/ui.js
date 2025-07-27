@@ -4,6 +4,13 @@ class UI {
         this.currentTab = 'key-generation';
         this.animationQueue = [];
         this.isAnimating = false;
+        this.lastEncryptionData = null;
+        this.lastDecryptionData = null;
+        this.encryptionSteps = [];
+        this.decryptionSteps = [];
+        this.currentEncryptionStep = 0;
+        this.currentDecryptionStep = 0;
+        this.autoPlayTimer = null;
     }
 
     init() {
@@ -120,8 +127,9 @@ class UI {
         const ciphertextSection = document.getElementById('ciphertext-section');
         const copyBtn = document.getElementById('copy-ciphertext');
         const errorDiv = document.getElementById('plaintext-error');
-        const samePairCheckbox = document.getElementById('same-pair-padding');
-        const paddingCharContainer = document.getElementById('padding-char-container');
+        const samePairModeToggle = document.getElementById('same-pair-mode');
+        const modeOnSettings = document.getElementById('mode-on-settings');
+        const modeOffSettings = document.getElementById('mode-off-settings');
         
         // 初期状態でボタンを無効化
         encryptBtn.disabled = true;
@@ -132,15 +140,14 @@ class UI {
             encryptBtn.disabled = !hasText;
         });
         
-        // 同一ペア補完モードのチェックボックス変更時の処理
-        samePairCheckbox.addEventListener('change', () => {
-            const radios = paddingCharContainer.querySelectorAll('input[type="radio"]');
-            if (samePairCheckbox.checked) {
-                paddingCharContainer.classList.remove('disabled');
-                radios.forEach(radio => radio.disabled = false);
+        // 同一ペア処理モードのトグル変更時の処理
+        samePairModeToggle.addEventListener('change', () => {
+            if (samePairModeToggle.checked) {
+                modeOnSettings.classList.remove('hidden');
+                modeOffSettings.classList.add('hidden');
             } else {
-                paddingCharContainer.classList.add('disabled');
-                radios.forEach(radio => radio.disabled = true);
+                modeOnSettings.classList.add('hidden');
+                modeOffSettings.classList.remove('hidden');
             }
         });
         
@@ -148,31 +155,61 @@ class UI {
             const plaintext = plaintextInput.value;
             if (!plaintext.trim()) return;
             
-            // 入力検証
-            const validationResult = this.validateInput(plaintext);
-            if (!validationResult.valid) {
-                errorDiv.textContent = validationResult.error;
-                processSection.classList.add('hidden');
-                ciphertextSection.classList.add('hidden');
-                return;
+            // 入力検証（暗号化では警告のみ）
+            const validationResult = this.validateInputForEncryption(plaintext);
+            if (validationResult.warning) {
+                errorDiv.textContent = validationResult.warning;
+                errorDiv.style.color = '#f39c12'; // 警告は黄色系
+            } else {
+                errorDiv.textContent = '';
+                errorDiv.style.color = ''; // デフォルトに戻す
             }
             
-            errorDiv.textContent = '';
+            const samePairMode = samePairModeToggle.checked;
+            let paddingChar = 'X';
+            let samePairRule = 'no-change';
             
-            const paddingChar = document.querySelector('input[name="padding-char"]:checked').value;
-            const samePairPadding = document.getElementById('same-pair-padding').checked;
+            if (samePairMode) {
+                paddingChar = document.querySelector('input[name="padding-char"]:checked').value;
+            } else {
+                samePairRule = document.querySelector('input[name="same-pair-rule"]:checked').value;
+            }
             
-            const result = this.cipher.encrypt(plaintext, paddingChar, samePairPadding);
+            const result = this.cipher.encrypt(plaintext, paddingChar, samePairMode, samePairRule);
             
             this.displayPairs('pair-display', result.pairs, result.processed);
-            this.displayEncryptionMessage(result.processed, paddingChar, samePairPadding);
+            this.displayEncryptionMessage(result.processed, paddingChar, samePairMode, samePairRule);
+            
+            // 変換後の表示エリアを初期化
+            this.initializeEncryptedPairsDisplay(result.encryptedPairs.length);
             
             processSection.classList.remove('hidden');
             ciphertextSection.classList.remove('hidden');
             
             document.getElementById('ciphertext').textContent = result.ciphertext;
             
-            this.animateEncryption(result.pairs, result.encryptedPairs);
+            // アニメーションデータを保存
+            this.lastEncryptionData = { pairs: result.pairs, encryptedPairs: result.encryptedPairs };
+            this.setupEncryptionSteps(result.pairs, result.encryptedPairs);
+            
+            this.startEncryptionAnimation();
+        });
+        
+        // アニメーション制御ボタンのイベント
+        document.getElementById('play-pause-encryption').addEventListener('click', () => {
+            this.toggleEncryptionAnimation();
+        });
+        
+        document.getElementById('prev-step-encryption').addEventListener('click', () => {
+            this.prevEncryptionStep();
+        });
+        
+        document.getElementById('next-step-encryption').addEventListener('click', () => {
+            this.nextEncryptionStep();
+        });
+        
+        document.getElementById('restart-encryption').addEventListener('click', () => {
+            this.restartEncryptionAnimation();
         });
         
         copyBtn.addEventListener('click', () => {
@@ -217,6 +254,9 @@ class UI {
             
             this.displayPairs('decrypt-pair-display', result.pairs);
             
+            // 変換後の表示エリアを初期化
+            this.initializeDecryptedPairsDisplay(result.decryptedPairs.length);
+            
             processSection.classList.remove('hidden');
             plaintextSection.classList.remove('hidden');
             
@@ -224,7 +264,28 @@ class UI {
             
             this.displayDecryptionNotes(result.plaintext);
             
-            this.animateDecryption(result.pairs, result.decryptedPairs);
+            // アニメーションデータを保存
+            this.lastDecryptionData = { pairs: result.pairs, decryptedPairs: result.decryptedPairs };
+            this.setupDecryptionSteps(result.pairs, result.decryptedPairs);
+            
+            this.startDecryptionAnimation();
+        });
+        
+        // アニメーション制御ボタンのイベント
+        document.getElementById('play-pause-decryption').addEventListener('click', () => {
+            this.toggleDecryptionAnimation();
+        });
+        
+        document.getElementById('prev-step-decryption').addEventListener('click', () => {
+            this.prevDecryptionStep();
+        });
+        
+        document.getElementById('next-step-decryption').addEventListener('click', () => {
+            this.nextDecryptionStep();
+        });
+        
+        document.getElementById('restart-decryption').addEventListener('click', () => {
+            this.restartDecryptionAnimation();
         });
         
         copyBtn.addEventListener('click', () => {
@@ -253,13 +314,29 @@ class UI {
         });
     }
 
-    displayEncryptionMessage(processed, paddingChar, samePairPadding) {
+    displayEncryptionMessage(processed, paddingChar, samePairMode, samePairRule) {
         const messageDiv = document.getElementById('encryption-message');
         const messages = [];
         
-        for (let i = 0; i < processed.length - 1; i++) {
-            if (processed[i] === processed[i + 1] && samePairPadding) {
-                messages.push(`同一文字ペア "${processed[i]}${processed[i]}" を検出しました。間に補完文字 "${paddingChar}" を挿入しました。`);
+        if (samePairMode) {
+            // 補完モードONの場合
+            for (let i = 0; i < processed.length - 1; i++) {
+                if (processed[i] === processed[i + 1]) {
+                    messages.push(`同一文字ペア "${processed[i]}${processed[i]}" を検出しました。間に補完文字 "${paddingChar}" を挿入しました。`);
+                }
+            }
+        } else {
+            // 補完モードOFFの場合
+            const pairs = this.cipher.createPairs(processed);
+            const samePairs = pairs.filter(pair => pair[0] === pair[1]);
+            
+            if (samePairs.length > 0) {
+                if (samePairRule === 'bottom-right') {
+                    const bottomRightChar = this.cipher.getMatrix()[4][4];
+                    messages.push(`同一文字ペア ${samePairs.map(p => `"${p}"`).join(', ')} を検出しました。マトリクス右下の文字 "${bottomRightChar}" に置換しました。`);
+                } else {
+                    messages.push(`同一文字ペア ${samePairs.map(p => `"${p}"`).join(', ')} を検出しました。変化なしで処理しました。`);
+                }
             }
         }
         
@@ -307,29 +384,8 @@ class UI {
         }, 3000);
     }
 
-    animateEncryption(pairs, encryptedPairs) {
-        const matrixId = 'encryption-matrix';
-        this.animateTransformation(pairs, encryptedPairs, matrixId);
-    }
 
-    animateDecryption(pairs, decryptedPairs) {
-        const matrixId = 'decryption-matrix';
-        this.animateTransformation(pairs, decryptedPairs, matrixId);
-    }
-
-    animateTransformation(pairs, transformedPairs, matrixId) {
-        this.animationQueue = [];
-        
-        pairs.forEach((pair, index) => {
-            this.animationQueue.push(() => {
-                return this.animatePair(pair, transformedPairs[index], matrixId);
-            });
-        });
-        
-        this.processAnimationQueue();
-    }
-
-    async animatePair(originalPair, transformedPair, matrixId) {
+    async animatePair(originalPair, transformedPair, matrixId, index) {
         const matrix = document.getElementById(matrixId);
         const cells = matrix.querySelectorAll('.matrix-cell');
         
@@ -350,7 +406,7 @@ class UI {
             if (cell2) cell2.classList.add('highlight-source');
         }
         
-        await this.delay(500);
+        await this.delay(800);
         
         if (newPos1 && newPos2) {
             const newCell1 = matrix.querySelector(`[data-row="${newPos1.row}"][data-col="${newPos1.col}"]`);
@@ -358,23 +414,18 @@ class UI {
             
             if (newCell1) newCell1.classList.add('highlight-target');
             if (newCell2) newCell2.classList.add('highlight-target');
+            
+            // 変換後の表示を更新
+            if (matrixId === 'encryption-matrix') {
+                this.updateEncryptedPairDisplay(index, transformedPair);
+            } else if (matrixId === 'decryption-matrix') {
+                this.updateDecryptedPairDisplay(index, transformedPair);
+            }
         }
         
-        await this.delay(500);
+        await this.delay(800);
     }
 
-    async processAnimationQueue() {
-        if (this.isAnimating || this.animationQueue.length === 0) return;
-        
-        this.isAnimating = true;
-        
-        while (this.animationQueue.length > 0) {
-            const animation = this.animationQueue.shift();
-            await animation();
-        }
-        
-        this.isAnimating = false;
-    }
 
     delay(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
@@ -404,5 +455,344 @@ class UI {
         }
         
         return { valid: true };
+    }
+
+    validateInputForEncryption(text) {
+        // 空文字チェック
+        if (!text.trim()) {
+            return { valid: false, error: 'テキストを入力してください。' };
+        }
+        
+        // 英字が少なくとも1文字あるかチェック
+        const hasAlphabet = /[a-zA-Z]/.test(text);
+        if (!hasAlphabet) {
+            return { valid: false, error: '少なくとも1文字の英字を入力してください。' };
+        }
+        
+        // 英字以外の文字があるか警告チェック
+        const nonAlphabetChars = text.match(/[^a-zA-Z\s\n\r]/g);
+        if (nonAlphabetChars) {
+            const uniqueChars = [...new Set(nonAlphabetChars)].join(', ');
+            return { 
+                valid: true, 
+                warning: `次の文字は無視されます: ${uniqueChars}` 
+            };
+        }
+        
+        return { valid: true };
+    }
+
+    setupEncryptionSteps(pairs, encryptedPairs) {
+        this.encryptionSteps = pairs.map((pair, index) => ({
+            originalPair: pair,
+            encryptedPair: encryptedPairs[index],
+            index: index
+        }));
+        this.currentEncryptionStep = 0;
+        this.updateEncryptionStepInfo();
+        this.updateEncryptionControls();
+    }
+
+    setupDecryptionSteps(pairs, decryptedPairs) {
+        this.decryptionSteps = pairs.map((pair, index) => ({
+            originalPair: pair,
+            decryptedPair: decryptedPairs[index],
+            index: index
+        }));
+        this.currentDecryptionStep = 0;
+        this.updateDecryptionStepInfo();
+        this.updateDecryptionControls();
+    }
+
+    updateEncryptionStepInfo() {
+        const stepInfo = document.getElementById('step-info-encryption');
+        stepInfo.textContent = `${this.currentEncryptionStep} / ${this.encryptionSteps.length}`;
+    }
+
+    updateDecryptionStepInfo() {
+        const stepInfo = document.getElementById('step-info-decryption');
+        stepInfo.textContent = `${this.currentDecryptionStep} / ${this.decryptionSteps.length}`;
+    }
+
+    updateEncryptionControls() {
+        const prevBtn = document.getElementById('prev-step-encryption');
+        const nextBtn = document.getElementById('next-step-encryption');
+        const playPauseBtn = document.getElementById('play-pause-encryption');
+        
+        prevBtn.disabled = this.currentEncryptionStep === 0;
+        nextBtn.disabled = this.currentEncryptionStep === this.encryptionSteps.length;
+        
+        // アニメーション完了時は再生ボタンを無効化
+        if (this.currentEncryptionStep === this.encryptionSteps.length) {
+            playPauseBtn.disabled = true;
+            playPauseBtn.textContent = '▶ 再生';
+        } else {
+            playPauseBtn.disabled = false;
+        }
+    }
+
+    updateDecryptionControls() {
+        const prevBtn = document.getElementById('prev-step-decryption');
+        const nextBtn = document.getElementById('next-step-decryption');
+        const playPauseBtn = document.getElementById('play-pause-decryption');
+        
+        prevBtn.disabled = this.currentDecryptionStep === 0;
+        nextBtn.disabled = this.currentDecryptionStep === this.decryptionSteps.length;
+        
+        // アニメーション完了時は再生ボタンを無効化
+        if (this.currentDecryptionStep === this.decryptionSteps.length) {
+            playPauseBtn.disabled = true;
+            playPauseBtn.textContent = '▶ 再生';
+        } else {
+            playPauseBtn.disabled = false;
+        }
+    }
+
+    startEncryptionAnimation() {
+        this.initializeEncryptedPairsDisplay(this.encryptionSteps.length);
+        this.currentEncryptionStep = 0;
+        this.updateEncryptionStepInfo();
+        this.updateEncryptionControls();
+        this.clearMatrix('encryption-matrix');
+        this.toggleEncryptionAnimation();
+    }
+
+    startDecryptionAnimation() {
+        this.initializeDecryptedPairsDisplay(this.decryptionSteps.length);
+        this.currentDecryptionStep = 0;
+        this.updateDecryptionStepInfo();
+        this.updateDecryptionControls();
+        this.clearMatrix('decryption-matrix');
+        this.toggleDecryptionAnimation();
+    }
+
+    toggleEncryptionAnimation() {
+        const playPauseBtn = document.getElementById('play-pause-encryption');
+        
+        if (this.autoPlayTimer) {
+            clearTimeout(this.autoPlayTimer);
+            this.autoPlayTimer = null;
+            playPauseBtn.textContent = '▶ 再生';
+        } else {
+            playPauseBtn.textContent = '⏸ 停止';
+            this.autoPlayEncryption();
+        }
+    }
+
+    toggleDecryptionAnimation() {
+        const playPauseBtn = document.getElementById('play-pause-decryption');
+        
+        if (this.autoPlayTimer) {
+            clearTimeout(this.autoPlayTimer);
+            this.autoPlayTimer = null;
+            playPauseBtn.textContent = '▶ 再生';
+        } else {
+            playPauseBtn.textContent = '⏸ 停止';
+            this.autoPlayDecryption();
+        }
+    }
+
+    autoPlayEncryption() {
+        if (this.currentEncryptionStep < this.encryptionSteps.length) {
+            this.nextEncryptionStep();
+            this.autoPlayTimer = setTimeout(() => {
+                this.autoPlayEncryption();
+            }, 1600); // 800ms * 2 for each step
+        } else {
+            const playPauseBtn = document.getElementById('play-pause-encryption');
+            playPauseBtn.textContent = '▶ 再生';
+            playPauseBtn.disabled = true;
+            this.autoPlayTimer = null;
+        }
+    }
+
+    autoPlayDecryption() {
+        if (this.currentDecryptionStep < this.decryptionSteps.length) {
+            this.nextDecryptionStep();
+            this.autoPlayTimer = setTimeout(() => {
+                this.autoPlayDecryption();
+            }, 1600);
+        } else {
+            const playPauseBtn = document.getElementById('play-pause-decryption');
+            playPauseBtn.textContent = '▶ 再生';
+            playPauseBtn.disabled = true;
+            this.autoPlayTimer = null;
+        }
+    }
+
+    prevEncryptionStep() {
+        if (this.currentEncryptionStep > 0) {
+            this.currentEncryptionStep--;
+            this.updateEncryptionStepInfo();
+            this.updateEncryptionControls();
+            this.refreshEncryptionDisplay();
+        }
+    }
+
+    nextEncryptionStep() {
+        if (this.currentEncryptionStep < this.encryptionSteps.length) {
+            this.showEncryptionStep(this.currentEncryptionStep);
+            this.currentEncryptionStep++;
+            this.updateEncryptionStepInfo();
+            this.updateEncryptionControls();
+        }
+    }
+
+    prevDecryptionStep() {
+        if (this.currentDecryptionStep > 0) {
+            this.currentDecryptionStep--;
+            this.updateDecryptionStepInfo();
+            this.updateDecryptionControls();
+            this.refreshDecryptionDisplay();
+        }
+    }
+
+    nextDecryptionStep() {
+        if (this.currentDecryptionStep < this.decryptionSteps.length) {
+            this.showDecryptionStep(this.currentDecryptionStep);
+            this.currentDecryptionStep++;
+            this.updateDecryptionStepInfo();
+            this.updateDecryptionControls();
+        }
+    }
+
+    async showEncryptionStep(stepIndex) {
+        const step = this.encryptionSteps[stepIndex];
+        if (step) {
+            await this.animatePair(step.originalPair, step.encryptedPair, 'encryption-matrix', step.index);
+        }
+    }
+
+    async showDecryptionStep(stepIndex) {
+        const step = this.decryptionSteps[stepIndex];
+        if (step) {
+            await this.animatePair(step.originalPair, step.decryptedPair, 'decryption-matrix', step.index);
+        }
+    }
+
+    clearMatrix(matrixId) {
+        const matrix = document.getElementById(matrixId);
+        const cells = matrix.querySelectorAll('.matrix-cell');
+        cells.forEach(cell => {
+            cell.classList.remove('highlight-source', 'highlight-target');
+        });
+    }
+
+    refreshEncryptionDisplay() {
+        this.initializeEncryptedPairsDisplay(this.encryptionSteps.length);
+        this.clearMatrix('encryption-matrix');
+        
+        // Show all steps up to current step
+        for (let i = 0; i < this.currentEncryptionStep; i++) {
+            const step = this.encryptionSteps[i];
+            this.updateEncryptedPairDisplay(i, step.encryptedPair);
+        }
+    }
+
+    refreshDecryptionDisplay() {
+        this.initializeDecryptedPairsDisplay(this.decryptionSteps.length);
+        this.clearMatrix('decryption-matrix');
+        
+        // Show all steps up to current step
+        for (let i = 0; i < this.currentDecryptionStep; i++) {
+            const step = this.decryptionSteps[i];
+            this.updateDecryptedPairDisplay(i, step.decryptedPair);
+        }
+    }
+
+    initializeEncryptedPairsDisplay(pairCount) {
+        const container = document.getElementById('encrypted-pair-display');
+        container.innerHTML = '';
+        
+        for (let i = 0; i < pairCount; i++) {
+            const span = document.createElement('span');
+            span.className = 'pair-slot';
+            span.dataset.index = i;
+            span.textContent = '--';
+            span.style.opacity = '0.3';
+            container.appendChild(span);
+            
+            if (i < pairCount - 1) {
+                container.appendChild(document.createTextNode(' '));
+            }
+        }
+    }
+
+    initializeDecryptedPairsDisplay(pairCount) {
+        const container = document.getElementById('decrypted-pair-display');
+        container.innerHTML = '';
+        
+        for (let i = 0; i < pairCount; i++) {
+            const span = document.createElement('span');
+            span.className = 'pair-slot';
+            span.dataset.index = i;
+            span.textContent = '--';
+            span.style.opacity = '0.3';
+            container.appendChild(span);
+            
+            if (i < pairCount - 1) {
+                container.appendChild(document.createTextNode(' '));
+            }
+        }
+    }
+
+    updateEncryptedPairDisplay(index, encryptedPair) {
+        const container = document.getElementById('encrypted-pair-display');
+        const slot = container.querySelector(`span[data-index="${index}"]`);
+        
+        if (slot) {
+            slot.textContent = encryptedPair;
+            slot.className = 'encrypted-pair';
+            slot.style.opacity = '1';
+        }
+    }
+
+    updateDecryptedPairDisplay(index, decryptedPair) {
+        const container = document.getElementById('decrypted-pair-display');
+        const slot = container.querySelector(`span[data-index="${index}"]`);
+        
+        if (slot) {
+            slot.textContent = decryptedPair;
+            slot.className = 'decrypted-pair';
+            slot.style.opacity = '1';
+        }
+    }
+
+    restartEncryptionAnimation() {
+        // 自動再生を停止
+        if (this.autoPlayTimer) {
+            clearTimeout(this.autoPlayTimer);
+            this.autoPlayTimer = null;
+        }
+        
+        // 初期状態にリセット
+        this.currentEncryptionStep = 0;
+        this.updateEncryptionStepInfo();
+        this.updateEncryptionControls();
+        this.refreshEncryptionDisplay();
+        
+        // 再生ボタンを有効化
+        const playPauseBtn = document.getElementById('play-pause-encryption');
+        playPauseBtn.textContent = '▶ 再生';
+        playPauseBtn.disabled = false;
+    }
+
+    restartDecryptionAnimation() {
+        // 自動再生を停止
+        if (this.autoPlayTimer) {
+            clearTimeout(this.autoPlayTimer);
+            this.autoPlayTimer = null;
+        }
+        
+        // 初期状態にリセット
+        this.currentDecryptionStep = 0;
+        this.updateDecryptionStepInfo();
+        this.updateDecryptionControls();
+        this.refreshDecryptionDisplay();
+        
+        // 再生ボタンを有効化
+        const playPauseBtn = document.getElementById('play-pause-decryption');
+        playPauseBtn.textContent = '▶ 再生';
+        playPauseBtn.disabled = false;
     }
 }

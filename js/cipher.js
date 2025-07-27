@@ -92,12 +92,24 @@ class PlayfairCipher {
         return pairs;
     }
 
-    encryptPair(pair) {
+    encryptPair(pair, samePairRule = 'no-change') {
         const pos1 = this.findPosition(pair[0]);
         const pos2 = this.findPosition(pair[1]);
         
         if (!pos1 || !pos2) {
             return pair;
+        }
+        
+        // 同一文字ペアの特別処理
+        if (pair[0] === pair[1]) {
+            if (samePairRule === 'bottom-right') {
+                // マトリクス右下の文字（位置[4,4]）に置換
+                const bottomRightChar = this.matrix[4][4];
+                return bottomRightChar + bottomRightChar;
+            } else {
+                // 変化なし
+                return pair;
+            }
         }
         
         let encrypted = '';
@@ -140,10 +152,10 @@ class PlayfairCipher {
         return decrypted;
     }
 
-    encrypt(plaintext, paddingChar = 'X', samePairPadding = true) {
+    encrypt(plaintext, paddingChar = 'X', samePairPadding = true, samePairRule = 'no-change') {
         const processed = this.preprocessText(plaintext, paddingChar, samePairPadding);
         const pairs = this.createPairs(processed);
-        const encryptedPairs = pairs.map(pair => this.encryptPair(pair));
+        const encryptedPairs = pairs.map(pair => this.encryptPair(pair, samePairRule));
         return {
             processed,
             pairs,

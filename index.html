@@ -8,8 +8,15 @@
 </head>
 <body>
     <header>
-        <h1>Playfair CipherLab</h1>
-        <p>ビジュアルで学ぶプレイフェア暗号ツール</p>
+        <div class="header-content">
+            <div>
+                <h1>Playfair CipherLab</h1>
+                <p>ビジュアルで学ぶプレイフェア暗号ツール</p>
+            </div>
+            <button id="theme-toggle" class="theme-toggle" aria-label="ダークモード切り替え">
+                <span class="theme-icon">🌙</span>
+            </button>
+        </div>
     </header>
 
     <main>
@@ -47,11 +54,16 @@
                 </div>
                 
                 <div class="settings-section">
-                    <label class="switch-container">
-                        <input type="checkbox" id="same-pair-padding" checked>
-                        <span>同一ペア補完モード</span>
-                    </label>
-                    <div id="padding-char-container">
+                    <div class="toggle-container">
+                        <label for="same-pair-mode">同一ペア処理モード</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="same-pair-mode" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div id="mode-on-settings" class="mode-settings">
+                        <div class="mode-label">補完文字を挿入</div>
                         <div class="padding-char-wrapper">
                             <label>補完文字:</label>
                             <div class="radio-group">
@@ -61,15 +73,43 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <div id="mode-off-settings" class="mode-settings hidden">
+                        <div class="mode-label">特別ルール選択</div>
+                        <div class="radio-group-vertical">
+                            <label><input type="radio" name="same-pair-rule" value="no-change" checked> 変化なし（同じ文字のまま）</label>
+                            <label><input type="radio" name="same-pair-rule" value="bottom-right"> マトリクス右下の文字に置換</label>
+                        </div>
+                    </div>
                 </div>
 
                 <button id="encrypt-btn" class="btn btn-primary">暗号化</button>
 
                 <div id="encryption-process" class="process-section hidden">
-                    <h3>処理過程</h3>
-                    <div id="pair-display" class="pair-display"></div>
+                    <div class="process-header">
+                        <h3>処理過程</h3>
+                        <div class="animation-controls">
+                            <button id="prev-step-encryption" class="btn btn-secondary btn-small" disabled>◀ 前</button>
+                            <button id="play-pause-encryption" class="btn btn-secondary btn-small">▶ 再生</button>
+                            <button id="next-step-encryption" class="btn btn-secondary btn-small" disabled>次 ▶</button>
+                            <span id="step-info-encryption" class="step-info">0 / 0</span>
+                        </div>
+                    </div>
+                    <div class="intermediate-states">
+                        <div class="state-container">
+                            <label>変換前（2文字ペア）:</label>
+                            <div id="pair-display" class="pair-display"></div>
+                        </div>
+                        <div class="state-container">
+                            <label>変換後（2文字ペア）:</label>
+                            <div id="encrypted-pair-display" class="pair-display encrypted-pairs"></div>
+                        </div>
+                    </div>
                     <div id="encryption-matrix" class="matrix-grid"></div>
                     <div id="encryption-message" class="info-message"></div>
+                    <div class="restart-section">
+                        <button id="restart-encryption" class="btn btn-outline btn-small">🔄 最初から再生</button>
+                    </div>
                 </div>
 
                 <div id="ciphertext-section" class="output-section hidden">
@@ -93,9 +133,29 @@
                 <button id="decrypt-btn" class="btn btn-primary">復号</button>
 
                 <div id="decryption-process" class="process-section hidden">
-                    <h3>処理過程</h3>
-                    <div id="decrypt-pair-display" class="pair-display"></div>
+                    <div class="process-header">
+                        <h3>処理過程</h3>
+                        <div class="animation-controls">
+                            <button id="prev-step-decryption" class="btn btn-secondary btn-small" disabled>◀ 前</button>
+                            <button id="play-pause-decryption" class="btn btn-secondary btn-small">▶ 再生</button>
+                            <button id="next-step-decryption" class="btn btn-secondary btn-small" disabled>次 ▶</button>
+                            <span id="step-info-decryption" class="step-info">0 / 0</span>
+                        </div>
+                    </div>
+                    <div class="intermediate-states">
+                        <div class="state-container">
+                            <label>変換前（2文字ペア）:</label>
+                            <div id="decrypt-pair-display" class="pair-display"></div>
+                        </div>
+                        <div class="state-container">
+                            <label>変換後（2文字ペア）:</label>
+                            <div id="decrypted-pair-display" class="pair-display decrypted-pairs"></div>
+                        </div>
+                    </div>
                     <div id="decryption-matrix" class="matrix-grid"></div>
+                    <div class="restart-section">
+                        <button id="restart-decryption" class="btn btn-outline btn-small">🔄 最初から再生</button>
+                    </div>
                 </div>
 
                 <div id="plaintext-section" class="output-section hidden">
@@ -124,6 +184,7 @@
     <script src="js/cipher.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/animations.js"></script>
+    <script src="js/theme.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>
