@@ -1,3 +1,37 @@
+<!--
+---
+id: day027
+slug: playfair-cipherlab
+
+title: "Playfair CipherLab"
+
+subtitle_ja: "ビジュアルで学ぶプレイフェア暗号ツール"
+subtitle_en: "Visual Learning Tool for Playfair Cipher"
+
+description_ja: "プレイフェア暗号の暗号化・復号過程をステップバイステップのアニメーションで視覚的に学べる教育ツール。段階的なチャレンジシステムとヒント機能で、古典暗号の仕組みを楽しく理解できます。"
+description_en: "An educational tool to visually learn the Playfair cipher encryption and decryption process through step-by-step animations. Features a progressive challenge system with hints to help understand classical cryptography concepts."
+
+category_ja:
+  - 古典暗号
+  - 換字式暗号
+category_en:
+  - Classical Cryptography
+  - Substitution Cipher
+
+difficulty: 2
+
+tags:
+  - visualization
+  - education
+  - ctf
+
+repo_url: "https://github.com/ipusiron/playfair-cipherlab"
+demo_url: "https://ipusiron.github.io/playfair-cipherlab/"
+
+hub: true
+---
+-->
+
 # Playfair CipherLab - ビジュアルで学ぶプレイフェア暗号ツール
 
 ![GitHub Repo stars](https://img.shields.io/github/stars/ipusiron/playfair-cipherlab?style=social)

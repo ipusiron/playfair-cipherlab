@@ -4,106 +4,72 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Playfair CipherLab is a visual learning tool for the Playfair cipher, a classical cryptography method. The project is part of the "100 Security Tools with Generative AI" initiative (Day 027).
+Playfair CipherLab is a visual learning tool for the Playfair cipher, a classical cryptography method. Part of the "100 Security Tools with Generative AI" initiative (Day 027). Deployed as a static site on GitHub Pages.
 
-## Project Status
+**Live demo**: https://ipusiron.github.io/playfair-cipherlab/
 
-This is currently a greenfield project with specifications documented in README.md but no implementation yet. The project is intended to be deployed as a static site on GitHub Pages.
+## Development Commands
 
-## Key Implementation Requirements
-
-### Technology Stack
-- Frontend: HTML/CSS/JavaScript (vanilla or lightweight framework)
-- Deployment: GitHub Pages (static site)
-- No backend required - all processing client-side
-
-### Core Features to Implement
-
-1. **Key Generation Tab**
-   - 5×5 matrix editor (A-Z excluding J)
-   - Text-based editing with validation
-   - I/J combination handling
-
-2. **Encryption Tab**
-   - Plaintext input with preprocessing
-   - Visual pair-based encryption with animations
-   - Configurable padding character (x/q/z)
-
-3. **Decryption Tab**
-   - Ciphertext processing
-   - Step-by-step visual decryption
-   - Result display with I/J ambiguity notice
-
-### Development Commands
-
-Since this is a static site project, consider these common setups:
-
-**If using vanilla HTML/CSS/JS:**
 ```bash
-# Serve locally (if python is available)
+# Serve locally
 python -m http.server 8000
-
-# Or using Node.js http-server (if installed)
+# or
 npx http-server
 ```
 
-**If setting up with a build system:**
-```bash
-# Initialize npm project
-npm init -y
+No build step required - vanilla HTML/CSS/JavaScript.
 
-# Common development setup
-npm install --save-dev vite
-npm run dev  # If using Vite
+## Architecture
 
-# Build for production
-npm run build
-```
+### Core Modules (in load order)
 
-## Architecture Guidelines
+1. **cipher.js** - `PlayfairCipher` class: core encryption/decryption algorithm
+   - 5×5 matrix management (I/J combined as "I")
+   - Keyword-to-matrix generation
+   - Pair-based encryption/decryption with three same-pair rules
 
-### File Structure (Recommended)
-```
-/
-├── index.html          # Main entry point
-├── css/
-│   └── styles.css      # Main styles
-├── js/
-│   ├── cipher.js       # Core cipher logic
-│   ├── ui.js           # UI interactions
-│   └── animations.js   # Visual animations
-└── assets/             # Any images/icons
-```
+2. **exercises.js** - `ExerciseManager` class: challenge/practice data and progress
+   - LocalStorage-based progress persistence
+   - Level unlock system (3 levels)
+   - Answer validation with flexible matching
 
-### Key Implementation Notes
+3. **ui.js** - `UI` class (1600+ lines): main controller
+   - Tab management and form handling
+   - Animation step control for encryption/decryption visualization
+   - Challenge flow with hint system
 
-1. **Matrix Representation**: Use a 2D array or flat array with index calculations for the 5×5 matrix
-2. **Character Handling**: Normalize all input to uppercase, handle I/J substitution consistently
-3. **Animation System**: Implement a queue-based animation system for sequential pair processing
-4. **State Management**: Keep cipher key matrix in a central state accessible to all tabs
+4. **animations.js** - `AnimationManager`: fade/highlight effects
 
-### GitHub Pages Deployment
+5. **theme.js** - Dark mode toggle with localStorage persistence
 
-The project includes a `.nojekyll` file to prevent Jekyll processing. Deploy by:
-1. Pushing to main branch
-2. Enabling GitHub Pages in repository settings
-3. Selecting source as root (`/`) on main branch
+6. **help.js** - Help modal control
 
-### Security Considerations
+7. **i18n.js** - `I18nManager` (730+ lines): full Japanese/English localization
 
-This is an educational tool for a classical cipher. Make it clear in the UI that Playfair cipher is NOT secure for modern cryptographic use and is for educational purposes only.
+8. **main.js** - Entry point, initializes i18n then UI
 
-## Testing Approach
+### Key State
 
-Consider implementing:
-- Unit tests for cipher logic (encryption/decryption functions)
-- Visual regression tests for UI components
-- Manual testing checklist for animations and interactions
+- `UI.cipher` - Current PlayfairCipher instance with active matrix
+- `ExerciseManager.progress` - Saved in `localStorage['playfair-progress']`
+- `I18nManager.currentLang` - Saved in `localStorage['playfair-lang']`
 
-## Common Development Tasks
+### Encryption Rules
 
-When implementing features:
-1. Start with the cipher logic module - pure functions for encryption/decryption
-2. Build the UI layer on top of the logic
-3. Add animations last to avoid complexity during initial development
-4. Test with known Playfair cipher examples from cryptography resources
+| Position | Transformation |
+|----------|---------------|
+| Same row | Right shift (wrap) |
+| Same column | Down shift (wrap) |
+| Rectangle | Diagonal swap |
+
+Same-pair handling options:
+- **Padding mode ON**: Insert X/Q/Z between same letters
+- **Padding mode OFF**: No-change / Right-shift / Bottom-right rules
+
+## GitHub Pages Deployment
+
+`.nojekyll` file prevents Jekyll processing. Push to main branch and enable Pages from repository settings.
+
+## Educational Context
+
+This is an educational tool for a classical cipher. The Playfair cipher is NOT secure for modern use - ensure this is clear in any UI additions.
