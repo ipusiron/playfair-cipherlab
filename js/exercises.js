@@ -1,115 +1,68 @@
+const ExerciseCore = typeof module !== 'undefined' && module.exports
+    ? require('./cipher.js').PlayfairCore : PlayfairCore;
+
 class ExerciseManager {
-    constructor() {
+    constructor(storage = { getItem: () => null, setItem: () => {} }) {
+        this.storage = storage;
         this.exercises = {
             encryption: {
                 examples: [
                     {
                         id: "basic-01",
-                        category: "基本単語",
-                        title: "挨拶",
+                        category: "basic",
+                        title: "basic-01",
                         plaintext: "HELLO",
-                        description: "最も基本的な英単語を暗号化してみましょう"
+                        description: "exercise.basic-01.description"
                     },
                     {
                         id: "basic-02",
-                        category: "基本単語",
-                        title: "秘密",
+                        category: "basic",
+                        title: "basic-02",
                         plaintext: "SECRET",
-                        description: "「秘密」を意味する英単語"
+                        description: "exercise.basic-02.description"
                     },
                     {
                         id: "basic-03",
-                        category: "基本単語",
-                        title: "暗号",
+                        category: "basic",
+                        title: "basic-03",
                         plaintext: "CIPHER",
-                        description: "「暗号」を意味する英単語"
+                        description: "exercise.basic-03.description"
                     },
                     {
                         id: "phrase-01",
-                        category: "定型文",
-                        title: "夜明けの攻撃",
+                        category: "phrase",
+                        title: "phrase-01",
                         plaintext: "ATTACK AT DAWN",
-                        description: "歴史的な軍事暗号として使われた文"
+                        description: "exercise.phrase-01.description"
                     },
                     {
                         id: "phrase-02",
-                        category: "定型文",
-                        title: "秘密の待ち合わせ",
+                        category: "phrase",
+                        title: "phrase-02",
                         plaintext: "MEET ME TONIGHT",
-                        description: "スパイ小説でよく使われる文"
+                        description: "exercise.phrase-02.description"
                     },
                     {
                         id: "phrase-03",
-                        category: "定型文",
-                        title: "即座に撤退",
+                        category: "phrase",
+                        title: "phrase-03",
                         plaintext: "RETREAT IMMEDIATELY",
-                        description: "緊急時の軍事指令"
+                        description: "exercise.phrase-03.description"
                     },
                     {
                         id: "historical-01",
-                        category: "歴史的文書",
-                        title: "有名なパングラム",
+                        category: "known",
+                        title: "historical-01",
                         plaintext: "THE QUICK BROWN FOX",
-                        description: "全てのアルファベットを含む有名な文"
+                        description: "exercise.historical-01.description"
                     },
                     {
                         id: "historical-02",
-                        category: "歴史的文書",
-                        title: "外交暗号",
-                        plaintext: "NEGOTIATIONS PROCEEDING",
-                        description: "外交文書で使われた暗号文"
-                    }
-                ],
-                challenges: [
-                    {
-                        id: "challenge-01",
-                        level: 1,
-                        title: "基本の暗号化",
-                        plaintext: "CAT",
-                        keyword: null,
-                        hint: "デフォルトの鍵を使用してください",
-                        points: 5,
-                        description: "最も簡単な暗号化課題"
-                    },
-                    {
-                        id: "challenge-02",
-                        level: 1,
-                        title: "短い文の暗号化",
-                        plaintext: "HELP ME",
-                        keyword: null,
-                        hint: "デフォルトの鍵を使用してください",
-                        points: 10,
-                        description: "2つの単語を暗号化"
-                    },
-                    {
-                        id: "challenge-03",
-                        level: 2,
-                        title: "キーワード暗号",
-                        plaintext: "MEET AT NOON",
-                        keyword: "EXAMPLE",
-                        hint: "キーワード「EXAMPLE」を使用してください",
-                        points: 15,
-                        description: "指定されたキーワードで暗号化"
-                    },
-                    {
-                        id: "challenge-04",
-                        level: 2,
-                        title: "長文暗号化",
-                        plaintext: "THE ENEMY IS APPROACHING",
-                        keyword: "SECRET",
-                        hint: "キーワード「SECRET」を使用してください",
-                        points: 20,
-                        description: "長い文章の暗号化"
-                    },
-                    {
-                        id: "challenge-05",
-                        level: 3,
-                        title: "複雑な暗号化",
-                        plaintext: "OPERATION OVERLORD BEGINS",
-                        keyword: "NORMANDY",
-                        hint: "第二次大戦に関連するキーワードです",
-                        points: 25,
-                        description: "歴史的作戦の暗号化"
+                        category: "known",
+                        title: "historical-02",
+                        plaintext: "HIDE THE GOLD IN THE TREE STUMP",
+                        keyword: "PLAYFAIR EXAMPLE",
+                        description: "exercise.historical-02.description"
                     }
                 ]
             },
@@ -117,83 +70,83 @@ class ExerciseManager {
                 practices: [
                     {
                         id: "decrypt-01",
-                        category: "基本復号",
-                        title: "挨拶の復号",
-                        ciphertext: "KCMMNY",
-                        answer: "HELLOX",
+                        category: "practice",
+                        title: "decrypt-01",
+                        ciphertext: "KCNVMP",
+                        answer: "HELLO",
                         keyword: null,
-                        hint: "デフォルトの鍵を使用。最後のXは埋め文字です",
-                        description: "最も基本的な復号練習"
+                        hint: "exercise.decrypt-01.hint",
+                        description: "exercise.decrypt-01.description"
                     },
                     {
                         id: "decrypt-02",
-                        category: "基本復号",
-                        title: "短い単語",
+                        category: "practice",
+                        title: "decrypt-02",
                         ciphertext: "UCBSDU",
                         answer: "SECRET",
                         keyword: null,
-                        hint: "デフォルトの鍵を使用",
-                        description: "6文字の単語を復号"
+                        hint: "exercise.decrypt-02.hint",
+                        description: "exercise.decrypt-02.description"
                     },
                     {
                         id: "decrypt-03",
-                        category: "キーワード復号",
-                        title: "動物の名前",
+                        category: "practice",
+                        title: "decrypt-03",
                         ciphertext: "BNSY",
-                        answer: "CATX",
+                        answer: "CAT",
                         keyword: "ANIMAL",
-                        hint: "動物に関連するキーワードを使用。最後のXは埋め文字です",
-                        description: "キーワードを使った復号"
+                        hint: "exercise.decrypt-03.hint",
+                        description: "exercise.decrypt-03.description"
                     }
                 ],
                 challenges: [
                     {
                         id: "mystery-01",
                         level: 1,
-                        title: "謎の単語",
-                        ciphertext: "KCMMNY",
+                        title: "mystery-01",
+                        ciphertext: "KCNVMP",
                         answer: "HELLO",
                         keyword: null,
                         hints: [
-                            "3文字以下の短い単語ではありません",
-                            "挨拶に使われる言葉です",
-                            "デフォルトの鍵が使われています",
-                            "5文字の基本的な英単語です"
+                            "challenge.mystery-01.hint.0",
+                            "challenge.mystery-01.hint.1",
+                            "challenge.mystery-01.hint.2",
+                            "challenge.mystery-01.hint.3"
                         ],
                         points: 10,
-                        description: "基本的な復号チャレンジ"
+                        description: "exercise.mystery-01.description"
                     },
                     {
                         id: "mystery-02",
                         level: 2,
-                        title: "秘密のメッセージ",
-                        ciphertext: "ITWCGUCSPOMBMS",
+                        title: "mystery-02",
+                        ciphertext: "ITCSITEUOHAMCZ",
                         answer: "MEET ME TONIGHT",
                         keyword: "SECRET",
                         hints: [
-                            "鍵マトリクスは「秘密」という意味の英単語をキーワードに生成しています",
-                            "待ち合わせに関する文章",
-                            "3つの単語で構成されています",
-                            "適切なスペースで単語を区切って入力してください"
+                            "challenge.mystery-02.hint.0",
+                            "challenge.mystery-02.hint.1",
+                            "challenge.mystery-02.hint.2",
+                            "challenge.mystery-02.hint.3"
                         ],
                         points: 20,
-                        description: "中級レベルの暗号解読"
+                        description: "exercise.mystery-02.description"
                     },
                     {
                         id: "mystery-03",
                         level: 3,
-                        title: "軍事作戦",
+                        title: "mystery-03",
                         ciphertext: "MAAMDHMAKDUP",
                         answer: "ATTACK AT DAWN",
                         keyword: "MILITARY",
                         hints: [
-                            "鍵マトリクスは軍事に関連する英単語をキーワードに生成しています",
-                            "平文は歴史的に有名な軍事指令です",
-                            "時間に関する単語が含まれています",
-                            "適切なスペースで単語を区切って入力してください"
+                            "challenge.mystery-03.hint.0",
+                            "challenge.mystery-03.hint.1",
+                            "challenge.mystery-03.hint.2",
+                            "challenge.mystery-03.hint.3"
                         ],
                         points: 30,
-                        description: "上級レベルの暗号解読"
+                        description: "exercise.mystery-03.description"
                     }
                 ]
             }
@@ -258,31 +211,45 @@ class ExerciseManager {
     }
     
     // 進捗管理
+    defaultProgress() {
+        return { completedChallenges: [], totalPoints: 0, unlockedLevels: { decryption: 1 } };
+    }
+
     loadProgress() {
         try {
-            const saved = localStorage.getItem('playfair-progress');
-            return saved ? JSON.parse(saved) : {
-                completedChallenges: [],
-                totalPoints: 0,
-                unlockedLevels: { encryption: 1, decryption: 1 }
-            };
-        } catch (error) {
+            const saved = this.storage.getItem('playfair-progress');
+            if (!saved) return this.defaultProgress();
+            const value = JSON.parse(saved);
+            const challenges = this.getChallenges('decryption');
+            if (!value || !Array.isArray(value.completedChallenges)
+                || !value.completedChallenges.every(id => challenges.some(challenge => challenge.id === id))
+                || new Set(value.completedChallenges).size !== value.completedChallenges.length
+                || !Number.isSafeInteger(value.totalPoints) || value.totalPoints < 0
+                || !value.unlockedLevels || !Number.isInteger(value.unlockedLevels.decryption)
+                || value.unlockedLevels.decryption < 1 || value.unlockedLevels.decryption > 3) {
+                return this.defaultProgress();
+            }
+            const points = challenges.filter(challenge => value.completedChallenges.includes(challenge.id))
+                .reduce((sum, challenge) => sum + challenge.points, 0);
+            if (points !== value.totalPoints) return this.defaultProgress();
             return {
-                completedChallenges: [],
-                totalPoints: 0,
-                unlockedLevels: { encryption: 1, decryption: 1 }
+                completedChallenges: [...value.completedChallenges],
+                totalPoints: points,
+                unlockedLevels: { decryption: value.unlockedLevels.decryption }
             };
+        } catch (_error) {
+            return this.defaultProgress();
         }
     }
-    
+
     saveProgress() {
         try {
-            localStorage.setItem('playfair-progress', JSON.stringify(this.progress));
-        } catch (error) {
-            console.warn('進捗の保存に失敗しました:', error);
+            this.storage.setItem('playfair-progress', JSON.stringify(this.progress));
+        } catch (_error) {
+            // 保存できなくても、このページ内の進捗は保持する。
         }
     }
-    
+
     markChallengeCompleted(challengeId, points = 0) {
         if (!this.progress.completedChallenges.includes(challengeId)) {
             this.progress.completedChallenges.push(challengeId);
@@ -297,20 +264,6 @@ class ExerciseManager {
     }
     
     updateUnlockedLevels() {
-        // 暗号化: 前レベルの課題を全てクリアしたら次レベル解放
-        const encryptionChallenges = this.getChallenges('encryption');
-        for (let level = 1; level <= 3; level++) {
-            const levelChallenges = encryptionChallenges.filter(c => c.level === level);
-            const completedCount = levelChallenges.filter(c => this.isChallengeCompleted(c.id)).length;
-            
-            if (completedCount === levelChallenges.length && level < 3) {
-                this.progress.unlockedLevels.encryption = Math.max(
-                    this.progress.unlockedLevels.encryption, 
-                    level + 1
-                );
-            }
-        }
-        
         // 復号: 同様のロジック
         const decryptionChallenges = this.getChallenges('decryption');
         for (let level = 1; level <= 3; level++) {
@@ -335,91 +288,33 @@ class ExerciseManager {
     }
     
     resetProgress() {
-        this.progress = {
-            completedChallenges: [],
-            totalPoints: 0,
-            unlockedLevels: { encryption: 1, decryption: 1 }
-        };
+        this.progress = this.defaultProgress();
         this.saveProgress();
     }
     
     // 課題検証
-    validateAnswer(type, challengeId, userAnswer, userKeyword = null) {
-        let challenge;
-        
-        if (type === 'encryption') {
-            challenge = this.getChallenges('encryption').find(c => c.id === challengeId);
-        } else {
-            challenge = [...this.getChallenges('decryption'), ...this.getPractices()]
-                .find(c => c.id === challengeId);
-        }
-        
-        if (!challenge) return { correct: false, message: '課題が見つかりません' };
-        
-        // キーワードチェック
-        if (challenge.keyword && (!userKeyword || userKeyword.toUpperCase() !== challenge.keyword.toUpperCase())) {
-            const hintText = challenge.hints && challenge.hints.length > 0 ? challenge.hints[0] : challenge.hint || '';
-            return { 
-                correct: false, 
-                message: `正しいキーワードを設定してください。ヒント: ${hintText}` 
-            };
-        }
-        
-        // 答えチェック
-        let expectedAnswer;
-        if (type === 'encryption') {
-            expectedAnswer = this.getExpectedCiphertext(challenge);
-        } else {
-            // スペースを保持して大文字に変換
-            expectedAnswer = challenge.answer.toUpperCase();
-        }
-            
-        const userAnswerUpperCase = userAnswer.toUpperCase();
-        
-        // 完全一致をチェック
-        if (userAnswerUpperCase === expectedAnswer) {
-            if (challenge.points) {
-                this.markChallengeCompleted(challengeId, challenge.points);
-            }
-            return { 
-                correct: true, 
-                message: i18n.t('message.correct'), 
-                points: challenge.points || 0 
-            };
-        }
-        
-        // 復号の場合、末尾の埋め文字を除去した版も受け入れる
-        if (type === 'decryption') {
-            const expectedWithoutPadding = expectedAnswer.replace(/\s*[XQZ]\s*$/, '').trim();
-            if (userAnswerUpperCase === expectedWithoutPadding) {
-                if (challenge.points) {
-                    this.markChallengeCompleted(challengeId, challenge.points);
-                }
-                return { 
-                    correct: true, 
-                    message: i18n.t('message.correct'), 
-                    points: challenge.points || 0 
-                };
-            }
-        }
-        
-        return { 
-            correct: false, 
-            message: i18n.t('message.incorrect') 
-        };
+    validateAnswer(id, userAnswer, currentMatrixString) {
+        const input = ExerciseCore.normalize(userAnswer);
+        if (!input) return { result: 'empty', points: 0 };
+        const challenge = [...this.getChallenges('decryption'), ...this.getPractices()]
+            .find(item => item.id === id);
+        if (!challenge) return { result: 'incorrect', points: 0 };
+        const expectedMatrix = ExerciseCore.matrixFromKeyword(challenge.keyword || '');
+        if (currentMatrixString !== expectedMatrix) return { result: 'wrong-key', points: 0 };
+        const decoded = ExerciseCore.decrypt(expectedMatrix, challenge.ciphertext).plaintext;
+        const candidates = ExerciseCore.paddingCandidates(decoded);
+        const answers = [
+            ExerciseCore.normalize(challenge.answer),
+            decoded,
+            ExerciseCore.stripCandidates(decoded, candidates)
+        ];
+        if (!answers.includes(input)) return { result: 'incorrect', points: 0 };
+        const points = this.isChallengeCompleted(id) ? 0 : (challenge.points || 0);
+        if (challenge.points) this.markChallengeCompleted(id, points);
+        return { result: 'correct', points };
     }
-    
-    getExpectedCiphertext(challenge) {
-        // 実際の暗号化を実行して期待値を取得
-        // PlayfairCipherクラスを使用して暗号化
-        const cipher = new PlayfairCipher();
-        
-        if (challenge.keyword) {
-            const result = cipher.generateMatrixFromKeyword(challenge.keyword);
-            cipher.setMatrix(result.matrix);
-        }
-        
-        const encryptResult = cipher.encrypt(challenge.plaintext);
-        return encryptResult.ciphertext.toUpperCase().replace(/\s/g, '');
-    }
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { ExerciseManager };
 }

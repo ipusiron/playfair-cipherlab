@@ -1,7 +1,14 @@
 class UI {
     constructor() {
         this.cipher = new PlayfairCipher();
-        this.exerciseManager = new ExerciseManager();
+        this.exerciseManager = new ExerciseManager({
+            getItem(key) {
+                try { return localStorage.getItem(key); } catch (_error) { return null; }
+            },
+            setItem(key, value) {
+                try { localStorage.setItem(key, value); } catch (_error) { /* Keep in-memory progress. */ }
+            }
+        });
         this.currentTab = 'key-generation';
         this.animationQueue = [];
         this.isAnimating = false;
@@ -1407,20 +1414,19 @@ class UI {
             return;
         }
 
-        const userKeyword = this.getCurrentKeyword();
+        const currentMatrix = this.getCurrentMatrixString();
         
         const result = this.exerciseManager.validateAnswer(
-            'decryption', 
             this.currentChallenge.id, 
             userAnswer, 
-            userKeyword
+            currentMatrix
         );
 
         const resultDiv = document.getElementById('answer-result');
-        resultDiv.textContent = result.message;
-        resultDiv.className = 'answer-result ' + (result.correct ? 'correct' : 'incorrect');
+        resultDiv.textContent = i18n.t(`answer.${result.result}`);
+        resultDiv.className = 'answer-result ' + (result.result === 'correct' ? 'correct' : 'incorrect');
 
-        if (result.correct && result.points) {
+        if (result.result === 'correct') {
             this.showToast(`${i18n.t('message.correct')} ${result.points}${i18n.getCurrentLanguage() === 'ja' ? 'ポイント獲得しました！' : ' points earned!'}`);
             this.updateProgressDisplay();
             this.refreshDecryptionChallenges();
@@ -1474,15 +1480,8 @@ class UI {
         }
     }
 
-    getCurrentKeyword() {
-        // チャレンジ解答時は、チャレンジのキーワードを使用
-        if (this.currentChallenge && this.currentChallenge.keyword) {
-            return this.currentChallenge.keyword;
-        }
-        
-        // 現在設定されているマトリクスからキーワードを推測するのは困難なので、
-        // ここでは空文字を返す（将来的に改善可能）
-        return '';
+    getCurrentMatrixString() {
+        return this.cipher.getMatrix().flat().join('');
     }
 
     setupProgressDisplay() {
@@ -1525,9 +1524,8 @@ class UI {
         document.getElementById('total-points').textContent = progress.totalPoints;
         document.getElementById('completed-challenges').textContent = progress.completedChallenges.length;
         
-        const encryptionLevel = progress.unlockedLevels.encryption;
         const decryptionLevel = progress.unlockedLevels.decryption;
-        const maxLevel = Math.max(encryptionLevel, decryptionLevel);
+        const maxLevel = decryptionLevel;
         document.getElementById('unlocked-levels').textContent = `${maxLevel}/3`;
         
         this.updateProgressSummary();
@@ -1535,9 +1533,8 @@ class UI {
 
     updateProgressSummary() {
         const progress = this.exerciseManager.getProgress();
-        const encryptionLevel = progress.unlockedLevels.encryption;
         const decryptionLevel = progress.unlockedLevels.decryption;
-        const maxLevel = Math.max(encryptionLevel, decryptionLevel);
+        const maxLevel = decryptionLevel;
         
         const summary = i18n.t('progress.summary', {
             points: progress.totalPoints,
