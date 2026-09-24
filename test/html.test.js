@@ -31,7 +31,7 @@ test('G-2 ordered deferred head scripts with only synchronous early theme in bod
     const body = html.match(/<body>([\s\S]*?)<\/body>/)[1];
     const headScripts = [...head.matchAll(/<script\b[^>]*>/g)].map(match => match[0]);
     assert.deepEqual(headScripts.map(tag => attribute(tag, 'src')), [
-        'js/cipher.js', 'js/analysis.js', 'js/exercises.js', 'js/progress.js', 'js/guide.js',
+        'js/cipher.js', 'js/analysis.js', 'js/recovery.js', 'js/exercises.js', 'js/progress.js', 'js/guide.js',
         'js/ui.js', 'js/theme.js', 'js/help.js', 'js/i18n.js', 'js/main.js'
     ]);
     headScripts.forEach(tag => assert.match(tag, /\sdefer(?:\s|>)/));

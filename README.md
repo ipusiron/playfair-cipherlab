@@ -417,6 +417,7 @@ GitHub Actionsでもpushとpull_requestごとにNode 22で実行します。
 |---|---|
 | test/cipher.test.js | 鍵表・前処理・標準・変種・往復・埋め文字候補・固定シード200例 |
 | test/analysis.test.js | 暗号文の必要条件・逆順の組・頻度・固定シード200例 |
+| test/recovery.test.js | 鍵表復元3問の参照値・推論・ヒント・循環シフトの性質 |
 | test/exercises.test.js | 6問の暗号文・正誤判定・副作用のない得点の返却 |
 | test/i18n.test.js | 日英のキー・値・初期言語・日本語の直書き・ヘルプ |
 | test/html.test.js | CSP・referrer・ARIA・ラベル・4タブ・deferの順・ナビの構造・インライン属性 |
@@ -456,6 +457,7 @@ playfair-cipherlab/                # プロジェクトのルート
 ├── js/                            # classic script（file://対応）
 │   ├── cipher.js                  # 暗号の中核（標準・変種・候補。DOM非依存）
 │   ├── analysis.js                # 解析の中核（必要条件・逆順の組。DOM非依存）
+│   ├── recovery.js                # 鍵表の復元の中核（DOM非依存）
 │   ├── exercises.js               # 例文・課題・正誤判定（DOM非依存）
 │   ├── progress.js                # ミッションと達成判定・保存形式（DOM非依存）
 │   ├── guide.js                   # ナビのカードと「この場所へ移動」
@@ -468,6 +470,7 @@ playfair-cipherlab/                # プロジェクトのルート
 └── test/                          # 自動テスト（node --test）
     ├── cipher.test.js             # 鍵表・前処理・暗号化・変種・往復・候補
     ├── analysis.test.js           # 解析の参照値・逆順の組・頻度・200例の性質検査
+    ├── recovery.test.js           # 復元3問の参照値・推論・ヒント・循環シフトの検査
     ├── exercises.test.js          # 課題データ・正誤判定
     ├── i18n.test.js               # 辞書のキー・初期言語・日本語の直書き・ヘルプの検査
     ├── html.test.js               # CSP・referrer・ARIA・属性の静的検証
