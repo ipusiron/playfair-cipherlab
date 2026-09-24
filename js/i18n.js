@@ -984,6 +984,7 @@ automatically.</p>
         // Update encryption copy and restart buttons
         this.updateElement('#copy-ciphertext', 'encrypt.copy');
         this.updateElement('#restart-encryption', 'encrypt.restart');
+        this.updateElement('#finish-encryption', 'playback.finish');
 
         // Update decryption tab
         this.updateElement('#decryption h2', 'decrypt.title');
@@ -998,9 +999,11 @@ automatically.</p>
         // Update decryption copy and restart buttons
         this.updateElement('#copy-plaintext', 'encrypt.copy');
         this.updateElement('#restart-decryption', 'encrypt.restart');
+        this.updateElement('#finish-decryption', 'playback.finish');
         
         // Update decryption result labels
         this.updateElement('label[for="challenge-answer"]', 'decrypt.answer-input');
+        this.updateElement('#candidate-label', 'padding.stripped');
 
         // Update placeholders
         this.updatePlaceholder('#keyword-text', 'key.keyword.placeholder');

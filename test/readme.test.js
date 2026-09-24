@@ -13,6 +13,94 @@ const readme = read('README.md');
 const ja = vm.runInNewContext(read('js/i18n.js') + ';i18n.translations.ja;', {});
 const challenges = new ExerciseManager().exercises.decryption.challenges;
 
+const headingPairs = [
+    ['## 🌐 デモページ', '## 🌐 Demo'],
+    ['## 📸 スクリーンショット', '## 📸 Screenshots'],
+    ['## ✨ 機能', '## ✨ Features'],
+    ['### 📊 学習進捗管理', '### 📊 Learning progress'],
+    ['### 🔑 鍵生成', '### 🔑 Key generation'],
+    ['### 🔐 暗号化・復号', '### 🔐 Encryption and decryption'],
+    ['### 🎬 再生と表示', '### 🎬 Playback and display'],
+    ['## 🗺️ 学習ロードマップ', '## 🗺️ Learning roadmap'],
+    ['## 📖 使い方', '## 📖 How to use'],
+    ['### 🔑 鍵生成', '### 🔑 Key generation'],
+    ['### 🔐 暗号化で学習', '### 🔐 Learn with encryption'],
+    ['### 🔓 復号でチャレンジ', '### 🔓 Take on decryption challenges'],
+    ['## 🧠 プレイフェア暗号とは', '## 🧠 About the Playfair cipher'],
+    ['### 🔎 背景と歴史', '### 🔎 Background and history'],
+    ['### ⚙ 仕組みの概要', '### ⚙ How it works'],
+    ['### 🧭 古典暗号における位置づけ', '### 🧭 Place among classical ciphers'],
+    ['### 🧩 解読のされやすさと弱点', '### 🧩 Strengths and weaknesses'],
+    ['#### ✅ 強み', '#### ✅ Strengths'],
+    ['#### ⚠️ 弱み', '#### ⚠️ Weaknesses'],
+    ['## 🔬 規則と既知解答', '## 🔬 Rules and known answers'],
+    ['### 現行版からの変更点', '### Changes from the previous version'],
+    ['## 🏆 チャレンジ一覧', '## 🏆 Challenges'],
+    ['## 🔒 セキュリティ', '## 🔒 Security'],
+    ['## 📚 教育利用', '## 📚 Educational use'],
+    ['### 対象レベル', '### Target levels'],
+    ['### 活用シーン', '### Use cases'],
+    ['## 🔗 参考', '## 🔗 References'],
+    ['## 🧪 テスト', '## 🧪 Tests'],
+    ['## 📁 ディレクトリー構造', '## 📁 Directory structure'],
+    ['## 💻 動作環境', '## 💻 Requirements'],
+    ['## 📄 ライセンス', '## 📄 License'],
+    ['## 🛠️ このツールについて', '## 🛠️ About this tool']
+];
+
+test('D-1 bilingual heading text, count, order and levels match the complete mapping', () => {
+    for (const [index, source] of [readme, read('README.en.md')].entries()) {
+        const headings = source.match(/^#{2,4} .+$/gm);
+        assert.equal(headingPairs.length, 32);
+        assert.deepEqual(headings, headingPairs.map(pair => pair[index]));
+    }
+});
+
+test('D-2 history describes tactical use without the former strong-cipher claim', () => {
+    const history = section('🧠 プレイフェア暗号とは');
+    assert.doesNotMatch(history, /強力な暗号/);
+    assert.match(history, /第二次ボーア戦争/);
+    assert.match(history, /フリードマン/);
+    const english = section('🧠 About the Playfair cipher', read('README.en.md'));
+    assert.match(english, /Second Boer War/);
+    assert.match(english, /1942, William Friedman/);
+    assert.match(english, /very little security/);
+});
+
+test('D-2 all three Japanese book titles have an English language note', () => {
+    const references = section('🔗 References', read('README.en.md'));
+    const books = references.split('\n').filter(line => line.startsWith('- 『'));
+    assert.deepEqual(books, [
+        '- 『暗号の秘密』 (Japanese-language book), pp. 70–72',
+        '- 『暗号解読事典』 (Japanese-language book), pp. 181–183',
+        '- 『暗号事典』 (Japanese-language book), pp. 556–559'
+    ]);
+});
+
+test('D-3 Japanese text in English README is confined to its switch and reference lines', () => {
+    const english = read('README.en.md');
+    const allowedBooks = section('🔗 References', english).split('\n')
+        .filter(line => /^- 『[^』]+』 \(Japanese-language book\), pp\. [\d–]+$/.test(line));
+    const japaneseLines = english.split('\n')
+        .filter(line => /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]/u.test(line));
+    assert.equal(english.split('\n')[0], 'English · [日本語](README.md)');
+    assert.deepEqual(japaneseLines, ['English · [日本語](README.md)', ...allowedBooks]);
+});
+
+test('A-2 bilingual sections retain matching bullet, step and table structures', () => {
+    const blocks = source => source.split(/^#{2,4} .+\n/gm).slice(1);
+    const japanese = blocks(readme);
+    const english = blocks(read('README.en.md'));
+    for (let index = 0; index < headingPairs.length; index++) {
+        const structure = block => block.split('\n')
+            .filter(line => /^(?:- |\d+\. |\|)/.test(line))
+            .map(line => line.startsWith('|') ? line.split('|').length : line.match(/^(?:- |\d+\. )/)[0]);
+        assert.deepEqual(structure(english[index]), structure(japanese[index]), headingPairs[index][0]);
+    }
+    const files = (heading, source) => table(heading, source).map(row => row[0]);
+    assert.deepEqual(files('🧪 Tests', read('README.en.md')), files('🧪 テスト', readme));
+});
+
 function section(heading, source = readme) {
     const start = source.indexOf(`## ${heading}\n`);
     assert.ok(start >= 0, heading);

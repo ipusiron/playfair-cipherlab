@@ -10,15 +10,15 @@ English · [日本語](README.md)
 
 **Day027 - 100 Security Tools with Generative AI**
 
-Playfair CipherLab teaches a classical cipher with an editable 5×5 key matrix and pair-by-pair playback.
-A nine-mission learning roadmap and an on-screen guide show what to do next.
-The interface is available in Japanese and English, with hints for three decryption challenges.
+Playfair CipherLab is a web tool for visually learning the Playfair cipher, a classical cipher.
+Build a 5×5 key matrix and play through encryption and decryption one pair of letters at a time.
+It offers a Japanese/English interface, a nine-mission learning roadmap, an on-screen guide that points to controls, and decryption challenges with hints.
 
 ## 🌐 Demo
 
-[Open Playfair CipherLab in English](https://ipusiron.github.io/playfair-cipherlab/?lang=en)
+👉 [Open Playfair CipherLab in English](https://ipusiron.github.io/playfair-cipherlab/?lang=en)
 
-You can also download the files and open index.html directly. No server or build step is required.
+Use it directly in your browser. You can also download the files and open index.html directly.
 
 ## 📸 Screenshots
 
@@ -36,23 +36,46 @@ You can also download the files and open index.html directly. No server or build
 
 ![C2 matrix match and correct answer](assets/en/screenshot3.png)
 
-> *C2 was loaded with “Start challenge” and solved with the SECRET matrix. The required matrix, current matrix, match and answer are visible.*
+> *mystery-02 was loaded with “Start challenge” and solved with the SECRET matrix. The required matrix, current matrix, match indicator and answer field are visible.*
 
 1280×1000px, 33,762 bytes.
 
+[Dark English keyword preview](assets/screenshot3.png)
+
+> *PLAYFAIR EXAMPLE is entered in the dark English interface, with letters from the keyword highlighted in a different color.*
+
+1280×1000px, 44,910 bytes.
+
 ## ✨ Features
 
-- Nine automatically checked missions: one key-matrix mission, three encryption missions, two decryption missions and three challenges
-- A recommended next mission, a step guide with focus and target outlines, and replayable guides
-- Three challenges worth 10, 20 and 30 points; only the first correct answer earns points
-- No penalty for guides or hints; a star for a first correct answer without decryption hints
-- Keyword generation, direct 25-letter matrix entry, live previews and restoration of the default matrix
-- Eight plaintext examples, three decryption practices and three decryption challenges
-- Standard Playfair with X/Q/Z padding, plus three explicitly nonstandard identical-pair variants
-- Padding and candidate marks; candidate-stripped text shown separately, never silently deleting genuine letters
+### 📊 Learning progress
+
+- Points for three challenges (10, 20 and 30 points, awarded only once per challenge)
+- Complete, next, incomplete and locked states for nine missions (one key-matrix mission, three encryption missions, two decryption missions and three challenges), with a recommended next action
+- A guide that checks steps automatically as you work, and a ★ for a first correct answer without hints
+- C1 → C2 → C3 unlocking, and a progress reset with a confirmation dialog
+- Progress saved in the same browser, with strict validation of stored values and migration from the old format; the page remains usable without storage
+
+### 🔑 Key generation
+
+- Keyword-based generation and direct entry of a 25-letter matrix
+- A live preview of the 5×5 matrix
+- J → I merging, duplicate detection and letter-count validation
+
+### 🔐 Encryption and decryption
+
+- Standard Playfair with a choice of X, Q or Z as padding
+- Three nonstandard variants (leave unchanged, shift right and move diagonally)
+- Eight examples, three decryption practices and three decryption challenges
+- Decryption results that never automatically delete padding, with candidate marks and text with candidates removed
+
+### 🎬 Playback and display
+
+- Previous, Play/Pause, Next, Restart Animation and Go to end controls
+- Explanations of each pair's rule, underlined padding and highlights on up to four cells
 - Independent encryption/decryption playback, with stale output hidden after key, input or setting changes
-- Japanese/English, light/dark, keyboard support, reduced motion and responsive layouts
-- Local progress with strict validation and migration from the old format; storage is optional
+- Japanese/English, light/dark, keyboard operation and mobile layouts
+- All pair results shown without automatic playback when reduced motion is enabled
 
 ## 🗺️ Learning roadmap
 
@@ -71,7 +94,7 @@ You can also download the files and open index.html directly. No server or build
 M1–M6 can be completed in any order. “Next” recommends the first incomplete unlocked mission.
 Completing everything shows 9/9 and 60/60pt, followed by a suggestion to compare the same text under variant rules.
 
-“Start guide” opens the card at the bottom of the screen.
+“Start guide” in the recommendation banner or a mission opens the steps in the card below.
 “Go to this step” opens the appropriate tab, outlines the control and moves focus.
 It never fills in an answer, keyword or plaintext.
 Steps update automatically from the current screen; completing a later step also checks earlier steps.
@@ -95,7 +118,7 @@ The challenge information shows the required matrix, current matrix and whether 
 
 If you are unsure where to start, open the progress panel and press “Start guide” for the “Next” mission.
 
-### Key generation
+### 🔑 Key generation
 
 1. Press “Edit”.
 2. Enter a keyword, or choose direct matrix entry and enter 25 letters.
@@ -104,17 +127,17 @@ If you are unsure where to start, open the progress panel and press “Start gui
 “Restore default matrix” returns to the no-keyword matrix.
 The Encryption and Decryption tabs describe the source of the current matrix.
 
-### Encryption
+### 🔐 Learn with encryption
 
-1. Type plaintext or load an example.
+1. Type plaintext or select and load an example from a category.
 2. Leave Same Pair Processing Mode ON for standard preparation and choose X, Q or Z as padding.
-3. Press “Encrypt” and inspect the prepared pairs, rule and matrix highlights.
-4. Use Previous, Next, Restart Animation, Go to end and Play/Pause to change the current pair.
+3. Press “Encrypt” and inspect each pair's explanation and positions in the matrix.
+4. Use Previous, Next, Restart Animation and Go to end to change the displayed pair, and Play/Pause to toggle automatic playback.
 
 Turning padding mode OFF selects a nonstandard variant.
-Loading the Wikipedia example also sets the matrix to PLAYFAIR EXAMPLE.
+Loading the Wikipedia text from “Known Examples” also sets the matrix to PLAYFAIR EXAMPLE.
 
-### Decryption challenges
+### 🔓 Take on decryption challenges
 
 1. Press “Start challenge” in the roadmap, or load a challenge from the Decryption tab.
 2. Read hints if needed and save the matching matrix on the Key Generation tab.
@@ -127,23 +150,83 @@ Appending an unrelated final letter is not accepted.
 
 ## 🧠 About the Playfair cipher
 
-Playfair is a classical digraph substitution cipher: it transforms pairs of letters with a 5×5 key matrix.
-Charles Wheatstone devised it in 1854; Lord Playfair promoted it.
-It is useful for teaching classical cryptography, not for protecting modern secrets.
+The **Playfair cipher** is a classical cipher devised in the mid-19th century.
 
-Treating pairs instead of single letters makes simple single-letter frequency analysis less direct.
-Repeated pairs still leave statistical patterns, and modern analysis can recover keys from suitable ciphertext.
-Use it for classroom demonstrations, self-study, group exercises and introductory CTF practice.
+A cipher that divides plaintext into groups of several letters and substitutes each group is called a polygraphic substitution cipher.
+Playfair belongs to this family and divides the text into two-letter pairs, or digraphs.
+
+Its use of **digraph substitution** makes it more complex than simpler substitution ciphers.
+
+---
+
+### 🔎 Background and history
+
+**Charles Wheatstone** invented the cipher in 1854. His friend **Lord Playfair** promoted it, raising its profile, and it became widely known as the Playfair cipher.
+
+The British Army used Playfair for tactical communications in the Second Boer War and the First World War, and the British and Australian armies used it in the Second World War. It was considered insecure even before the First World War; in 1942, William Friedman described it as offering “very little security.” It remained in use because it was quick to operate with just paper and pencil, and was adequate for messages whose contents would no longer be useful by the time an enemy had spent hours deciphering them.
+
+---
+
+### ⚙ How it works
+
+Playfair encrypts pairs of letters using a **5×5 matrix (the key matrix)**.
+It combines `I` and `J` to reduce the alphabet to 25 letters, then applies these rules.
+
+| Positions of the two letters | Operation |
+|---|---|
+| Same row | Move one letter to the right (wrap from the right edge to the left) |
+| Same column | Move one letter down (wrap from the bottom edge to the top) |
+| Rectangle (different rows and columns) | Exchange columns with the other letter at the opposite corner |
+
+During encryption, padding letters such as `X` or `Z` are inserted to separate identical letters within a pair or to complete a single letter at the end.
+
+---
+
+### 🧭 Place among classical ciphers
+
+Playfair is more advanced than simple substitution ciphers (Caesar and monoalphabetic substitution) in the following respects.
+
+- **Pairwise substitution** makes frequency analysis harder
+- Working with **two letters at a time**, rather than one, prevents direct single-letter frequency analysis
+- The key matrix has a **visually apparent structure**, making it well suited to teaching
+
+For these reasons, Playfair serves as an **intermediate-level teaching cipher** among classical ciphers.
+
+---
+
+### 🧩 Strengths and weaknesses
+
+Playfair has the following **structural strengths and weaknesses**.
+
+---
+
+#### ✅ Strengths
+
+- Difficult to decipher using simple frequency analysis
+- Two-letter substitution makes single-letter guesses harder
+- Flexible keyword-based key generation; a keyword is easier to remember than an entire key matrix
+
+---
+
+#### ⚠️ Weaknesses
+
+- The encryption rules are simple, so **enough ciphertext allows guesses to be tested by brute force**
+- **The same plaintext pair produces the same ciphertext pair**, making patterns likely to appear
+- The **two-letter structure** is vulnerable to statistical information such as frequent ciphertext pairs
+
+Today, computers can **readily break the cipher**. It has **little practical use**, but it frequently appears in education and CTF challenges.
+
+---
 
 ## 🔬 Rules and known answers
 
 Normalize to uppercase, merge J into I and discard nonletters.
 Read left to right in pairs. Split identical letters only within the current pair and pad an odd final letter.
-Do not split identical letters across pair boundaries: SEEN stays SE EN.
+Do not split identical letters across pair boundaries.
 
 Padding may be X, Q or Z. If the source letter equals the selected padding, use Q for X and X for other padding.
 For the same row move right; for the same column move down; for a rectangle exchange columns.
-Wrap at matrix edges. Decryption moves left or up.
+Decryption moves left or up.
 
 | Keyword | Plaintext | Prepared text | Ciphertext |
 |---|---|---|---|
@@ -154,15 +237,21 @@ Wrap at matrix edges. Decryption moves left or up.
 | PLAYFAIR EXAMPLE | HIDE THE GOLD IN THE TREE STUMP | HIDETHEGOLDINTHETREXESTUMP | BMODZBXDNABEKUDMUIXMMOUVIF |
 
 The default matrix is `ABCDEFGHIKLMNOPQRSTUVWXYZ`.
-Leave-unchanged, right-shift and bottom-right identical-pair handling are nonstandard variants.
+Leave-unchanged, right-shift and bottom-right handling are nonstandard variants that process identical-letter pairs without splitting them.
 
-Decryption cannot reliably distinguish padding from genuine letters.
+Decryption cannot uniquely distinguish padding from genuine letters, so only candidates are underlined.
 An X at the end of THE QUICK BROWN FOX is genuine but still looks like a candidate.
 The candidate-stripped result is not a guarantee of the original text.
 
 Standard ciphertext has no identical-letter pair.
 With the same matrix, reversing the order within a pair reverses its encrypted pair.
 These properties concern two-letter pairs, not arbitrary adjacent letters or an entire message.
+
+### Changes from the previous version
+
+A bug that inserted padding between identical letters across pair boundaries has been fixed.
+Exercise ciphertexts have been regenerated with the standard rules, and answer checks now verify the actual key matrix as well.
+Known answers, exercise data and the README tables are checked using the same cipher implementation.
 
 ## 🏆 Challenges
 
@@ -218,22 +307,40 @@ Playfair is an educational classical cipher and must not be used to protect secr
 
 The meta CSP allows scripts and styles only from self, without unsafe-inline.
 The referrer policy is no-referrer. Dynamic content uses DOM APIs and textContent.
-Only fixed dictionary help/footer templates use HTML insertion.
+Only fixed dictionary help templates use HTML insertion.
 There are no style attributes or inline handlers. Unsupported meta frame-ancestors is not added.
 
-Only progress, language and theme are saved in the same browser.
-Keys and input/output text are never saved. Storage failures do not prevent use, but changes then last only for the current page.
-A failed clipboard write produces a failure notification.
-
+Only progress, language and theme are saved in localStorage, and they are retained only in the same browser.
 Initial language follows a valid `?lang=ja|en`, then a saved choice, then the browser language (Japanese for ja, English otherwise).
 A URL override is not automatically saved; only the language toggle saves a choice.
+Keys, input text and decryption results are never saved. Storage failures do not prevent use, but reloading then resets settings and progress.
+A failed clipboard write produces a failure notification.
+
+## 📚 Educational use
+
+### Target levels
+
+- **Middle and high school students**: Learning about ciphers in computing classes
+- **University students**: Introductory information security courses
+- **General audiences**: Programming education and STEAM education
+
+---
+
+### Use cases
+
+- 📖 **Classroom demonstrations**: Demonstrations using a projector
+- 💻 **Self-study**: Understanding ciphers at your own pace
+- 👥 **Group work**: Team-based codebreaking competitions
+- 🏆 **Contests**: Practice problems for CTF beginners
+
+---
 
 ## 🔗 References
 
 - [Wikipedia: Playfair cipher](https://en.wikipedia.org/wiki/Playfair_cipher)
-- 『暗号の秘密』, pp. 70–72
-- 『暗号解読事典』, pp. 181–183
-- 『暗号事典』, pp. 556–559
+- 『暗号の秘密』 (Japanese-language book), pp. 70–72
+- 『暗号解読事典』 (Japanese-language book), pp. 181–183
+- 『暗号事典』 (Japanese-language book), pp. 556–559
 
 ## 🧪 Tests
 
@@ -243,7 +350,7 @@ Use Node.js 22 or newer. Do not install dependencies.
 npm test
 ```
 
-GitHub Actions runs the tests on push and pull_request.
+GitHub Actions also runs the tests on push and pull_request with Node 22.
 Both READMEs are checked against ProgressCore, PlayfairCore, exercise data and dictionaries:
 nine missions, five known answers, three challenges and their exact hints.
 
@@ -251,12 +358,12 @@ nine missions, five known answers, three challenges and their exact hints.
 |---|---|
 | test/cipher.test.js | Matrices, preparation, standard rules, variants, candidates and 200 seeded roundtrips |
 | test/exercises.test.js | Six exercises, answer acceptance/rejection and side-effect-free points |
-| test/progress.test.js | Mission events, migration, locks, stars, guide steps and blocked storage |
-| test/i18n.test.js | Matching keys, translations, initial language and help |
+| test/i18n.test.js | Matching keys, translations, initial language, Japanese literal policy and help |
 | test/html.test.js | CSP, referrer, ARIA, labels, guide structure and inline attribute restrictions |
-| test/contrast.test.js | Light/dark text combinations and guide outline contrast |
-| test/format.test.js | Maximum line lengths and readable source line counts |
+| test/contrast.test.js | All 18 text contrast pairs in light and dark modes meet 4.5:1 |
+| test/format.test.js | Maximum line lengths, line counts and minification detection |
 | test/readme.test.js | Bilingual tables, hints, YAML structure, complete trees and image references |
+| test/progress.test.js | Mission completion rules, migration, locks, stars, guide steps and blocked storage |
 
 ## 📁 Directory structure
 
@@ -269,7 +376,7 @@ playfair-cipherlab/                # Project root
 ├── .nojekyll                      # Disable Jekyll processing
 ├── CLAUDE.md                      # Architecture, rules and development guidance
 ├── LICENSE                        # MIT license
-├── README.md                      # Japanese usage, rules, known answers and tests
+├── README.md                      # Japanese usage, rules, known answers, tests and structure
 ├── README.en.md                   # English README
 ├── package.json                   # Dependency-free npm test command
 ├── index.html                     # Three tabs, playback, guide, help and meta CSP
@@ -283,14 +390,14 @@ playfair-cipherlab/                # Project root
 │   ├── screenshot3.png            # Dark English keyword preview
 │   └── screenshot4.png            # Japanese roadmap and M3 guide
 ├── css/                           # Stylesheets
-│   └── styles.css                 # Light/dark colors and responsive layout
+│   └── styles.css                 # Color variables, dark mode and responsive layout
 ├── js/                            # Classic scripts compatible with file URLs
 │   ├── cipher.js                  # Pure standard cipher, variants and padding candidates
 │   ├── exercises.js               # Examples, exercises and pure answer validation
-│   ├── progress.js                # Pure missions, completion rules and storage migration
+│   ├── progress.js                # Pure missions, completion rules and storage format
 │   ├── guide.js                   # Guide card and Go to this step navigation
 │   ├── ui.js                      # Tabs, matrix editing, playback, exercises and progress recording
-│   ├── i18n.js                    # Japanese/English dictionaries, initial language and switching
+│   ├── i18n.js                    # Japanese/English dictionaries, initial language and switching, including help
 │   ├── theme-init.js              # Apply the theme before the first paint
 │   ├── theme.js                   # Theme switching
 │   ├── help.js                    # Help dialog
@@ -299,9 +406,9 @@ playfair-cipherlab/                # Project root
     ├── cipher.test.js             # Matrices, preparation, variants, roundtrips and candidates
     ├── exercises.test.js          # Exercise data and answer validation
     ├── i18n.test.js               # Dictionary coverage, language choice, literal policy and help
-    ├── html.test.js               # CSP, referrer, ARIA, structure and attributes
+    ├── html.test.js               # Static checks for CSP, referrer, ARIA and attributes
     ├── contrast.test.js           # All 18 light/dark text contrast pairs
-    ├── format.test.js             # Line length and readable source line counts
+    ├── format.test.js             # Minification detection through line lengths and line counts
     ├── progress.test.js           # Missions, migration, locks, guide steps and storage exceptions
     └── readme.test.js             # Bilingual tables, YAML, trees and images
 ```
@@ -310,7 +417,7 @@ playfair-cipherlab/                # Project root
 
 A modern browser with HTML5, CSS3 and JavaScript.
 No build step is needed. The tool works over HTTP and directly from file://.
-Checks use the existing Chromium at 1280, 768, 390 and 320px in both languages.
+Both access methods and both languages have been checked with the existing Chromium at 1280, 768, 390 and 320px.
 
 ```bash
 python -m http.server 8000
@@ -323,6 +430,7 @@ MIT License. See [LICENSE](LICENSE).
 ## 🛠️ About this tool
 
 This tool is part of the **100 Security Tools with Generative AI** project.
-The project develops and publishes security tools with AI assistance over 100 days, covering classical and modern cryptography, networking and malware analysis.
+The project develops and publishes a variety of security-related tools with AI assistance over 100 days.
+It covers fields ranging from classical and modern cryptography to network security and malware analysis.
 
-[Project details and other tools](https://akademeia.info/?page_id=42163)
+🔗 [Project details and other tools](https://akademeia.info/?page_id=42163)
