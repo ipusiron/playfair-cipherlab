@@ -5,6 +5,20 @@ const path = require('node:path');
 const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
 const attribute = (tag, name) => tag.match(new RegExp(`\\b${name}="([^"]*)"`))?.[1];
 
+test('G-2 ordered deferred head scripts with only synchronous early theme in body', () => {
+    const head = html.match(/<head>([\s\S]*?)<\/head>/)[1];
+    const body = html.match(/<body>([\s\S]*?)<\/body>/)[1];
+    const headScripts = [...head.matchAll(/<script\b[^>]*>/g)].map(match => match[0]);
+    assert.deepEqual(headScripts.map(tag => attribute(tag, 'src')), [
+        'js/cipher.js', 'js/analysis.js', 'js/exercises.js', 'js/progress.js', 'js/guide.js',
+        'js/ui.js', 'js/theme.js', 'js/help.js', 'js/i18n.js', 'js/main.js'
+    ]);
+    headScripts.forEach(tag => assert.match(tag, /\sdefer(?:\s|>)/));
+    assert.match(body, /^\s*<script src="js\/theme-init\.js"><\/script>/);
+    assert.deepEqual([...body.matchAll(/<script\b[^>]*>/g)].map(match => match[0]), ['<script src="js/theme-init.js">']);
+    assert.doesNotMatch(html, /<script\b[^>]*(?:\sasync(?:\s|=|>)|type="module")/);
+});
+
 test('C-1 desktop header uses a symmetric grid from 769px', () => {
     const css = fs.readFileSync(path.join(__dirname, '../css/styles.css'), 'utf8');
     const desktopHeader = css.match(/@media\s*\(min-width:\s*769px\)\s*\{\s*\.header-content\s*\{([^}]+)\}/);

@@ -357,6 +357,7 @@ nine missions, five known answers, three challenges and their exact hints.
 | Test file | Coverage |
 |---|---|
 | test/cipher.test.js | Matrices, preparation, standard rules, variants, candidates and 200 seeded roundtrips |
+| test/analysis.test.js | Necessary ciphertext conditions, reversed pairs, frequency and 200 seeded cases |
 | test/exercises.test.js | Six exercises, answer acceptance/rejection and side-effect-free points |
 | test/i18n.test.js | Matching keys, translations, initial language, Japanese literal policy and help |
 | test/html.test.js | CSP, referrer, ARIA, labels, guide structure and inline attribute restrictions |
@@ -393,6 +394,7 @@ playfair-cipherlab/                # Project root
 │   └── styles.css                 # Color variables, dark mode and responsive layout
 ├── js/                            # Classic scripts compatible with file URLs
 │   ├── cipher.js                  # Pure standard cipher, variants and padding candidates
+│   ├── analysis.js                # DOM-independent necessary-condition and reversed-pair analysis
 │   ├── exercises.js               # Examples, exercises and pure answer validation
 │   ├── progress.js                # Pure missions, completion rules and storage format
 │   ├── guide.js                   # Guide card and Go to this step navigation
@@ -404,6 +406,7 @@ playfair-cipherlab/                # Project root
 │   └── main.js                    # Startup
 └── test/                          # Automated tests using node --test
     ├── cipher.test.js             # Matrices, preparation, variants, roundtrips and candidates
+    ├── analysis.test.js           # Analysis examples, reversed pairs, frequency and 200 seeded cases
     ├── exercises.test.js          # Exercise data and answer validation
     ├── i18n.test.js               # Dictionary coverage, language choice, literal policy and help
     ├── html.test.js               # Static checks for CSP, referrer, ARIA and attributes
