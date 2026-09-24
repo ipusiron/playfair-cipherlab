@@ -27,6 +27,17 @@ test('Recovery G-2 labelled section, controls and live status exist once', () =>
     assert.ok(html.indexOf('id="recovery"') > html.indexOf('id="analysis-result"'));
 });
 
+test('Challenges F/G-2 recovery conflict status follows the grid and narrow pairs have two unwrapped columns', () => {
+    assert.equal([...html.matchAll(/\bid="recovery-conflicts"/g)].length, 1);
+    assert.match(html, /id="recovery-grid"[^>]*><\/div>\s*<p id="recovery-conflicts"[^>]*aria-live="polite"[^>]*hidden/);
+    const css = fs.readFileSync(path.join(__dirname, '../css/styles.css'), 'utf8');
+    const narrow = css.slice(css.indexOf('@media (max-width: 480px)'));
+    assert.match(narrow, /\.recovery-pairs\s*\{\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+    assert.match(narrow, /\.recovery-pair\s*\{[^}]*white-space: nowrap/);
+    const ui = fs.readFileSync(path.join(__dirname, '../js/ui.js'), 'utf8');
+    assert.match(ui, /li\.setAttribute\('aria-label',/);
+});
+
 test('Polish C-2 Day009 link is safe, initially hidden and follows the existing analysis output', () => {
     const tag = html.match(/<a\b[^>]*id="analysis-open-frequency"[^>]*>/)[0];
     assert.equal(attribute(tag, 'target'), '_blank');

@@ -3,6 +3,10 @@ class I18nManager {
         this.currentLang = this.loadLanguage();
         this.translations = {
             ja: {
+                'recovery.conflicts': '矛盾している組: {pairs}',
+                'recovery.kind.row': '行',
+                'recovery.kind.column': '列',
+                'recovery.kind.rectangle': '長方形',
                 'encipher.heading': '暗号化チャレンジ',
                 'encipher.choose': '挑戦する課題',
                 'encipher.answer': '手で求めた暗号文:',
@@ -630,6 +634,10 @@ class I18nManager {
                 'help.warning.desc': '<strong>このツールは教育目的です。</strong>プレイフェア暗号は古典暗号であり、現代の暗号学的用途には適していません。'
             },
             en: {
+                'recovery.conflicts': 'Conflicting pairs: {pairs}',
+                'recovery.kind.row': 'row',
+                'recovery.kind.column': 'col',
+                'recovery.kind.rectangle': 'rect',
                 'encipher.heading': 'Encryption challenges',
                 'encipher.choose': 'Choose a challenge',
                 'encipher.answer': 'Ciphertext calculated by hand:',

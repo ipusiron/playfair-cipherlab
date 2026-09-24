@@ -225,13 +225,33 @@ class UI {
             button.setAttribute('aria-label', i18n.t(used ? 'recovery.letter.used' : 'recovery.letter', { letter }));
         }
         const statuses = s.p.pairs.map(pair => PlayfairRecovery.pairStatus(s.grid, pair));
+        const conflicts = s.p.pairs.filter((_pair, index) => statuses[index] === 'ng');
+        const conflictNode = document.getElementById('recovery-conflicts');
+        const conflictMessage = conflicts.length ? i18n.t('recovery.conflicts', {
+            pairs: conflicts.map(pair => `${pair.plain}→${pair.cipher}`).join(i18n.currentLang === 'ja' ? String.fromCodePoint(0x3001) : ', ')
+        }) : '';
+        if (conflictNode.textContent !== conflictMessage) conflictNode.textContent = conflictMessage;
+        conflictNode.hidden = !conflicts.length;
         document.getElementById('recovery-pairs').replaceChildren(...s.p.pairs.map((pair, index) => {
             const li = document.createElement('li');
             li.dataset.pair = pair.plain;
             li.dataset.state = statuses[index];
             li.className = 'recovery-pair recovery-' + statuses[index];
-            li.textContent = `${pair.plain}→${pair.cipher} ` + i18n.t(`recovery.pair.${statuses[index]}`);
-            if (count >= 2) li.textContent += ' · ' + i18n.t(`rule.name.${pair.kind}`);
+            const status = i18n.t(`recovery.pair.${statuses[index]}`);
+            const rule = count >= 2 ? ' · ' + i18n.t(`rule.name.${pair.kind}`) : '';
+            li.setAttribute('aria-label', `${pair.plain}→${pair.cipher} ` + status + rule);
+            li.textContent = `${pair.plain}→${pair.cipher} ` + status[0];
+            const description = document.createElement('span');
+            description.className = 'recovery-pair-description';
+            description.textContent = status.slice(1) + rule;
+            li.appendChild(description);
+            if (count >= 2) {
+                const compact = document.createElement('span');
+                compact.className = 'recovery-kind-compact';
+                compact.setAttribute('aria-hidden', 'true');
+                compact.textContent = ' ' + i18n.t(`recovery.kind.${pair.kind}`);
+                li.appendChild(compact);
+            }
             return li;
         }));
         document.getElementById('recovery-rules').hidden = !count;
