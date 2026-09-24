@@ -87,6 +87,8 @@ Use it directly in your browser. You can also download the files and open index.
 | M4 | Encryption | Identical letters across pair boundaries | Do not insert X between EE across pair boundaries (ME ET ME …). | Encrypt MEET ME TONIGHT with the default matrix and standard rules | 0 |
 | M5 | Decryption | Identify possible padding | An X in decrypted text is only a candidate. It may be a genuine X. | Decrypt KCNVMP with the default matrix and standard rules | 0 |
 | M6 | Decryption | Set the keyword yourself and decrypt | Decryption needs the same matrix as encryption. | Decrypt BNSY with the ANIMAL matrix and standard rules | 0 |
+| M7 | Analysis | Identify ciphertext impossible in Playfair | Odd length, J and identical-letter pairs are impossible under standard rules. | Analyze text classified as impossible | 0 |
+| M8 | Analysis | Find reversed pairs | Ciphertext AB and BA also become reversed pairs in plaintext. | Select an entry in the reversed-pair list | 0 |
 | C1 | Decryption challenges | Mystery word | Decode without a keyword. | Solve mystery-01 with the default matrix | 10 |
 | C2 | Decryption challenges | Secret message | Infer the keyword from hints and decode. | After C1, solve mystery-02 with the SECRET matrix | 20 |
 | C3 | Decryption challenges | Military operation | Infer the keyword from hints and decode. | After C2, solve mystery-03 with the MILITARY matrix | 30 |

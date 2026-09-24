@@ -8,6 +8,8 @@ const ProgressCore = (() => {
         { id: 'M4', group: 'encryption', points: 0 },
         { id: 'M5', group: 'decryption', challengeId: 'decrypt-01', points: 0 },
         { id: 'M6', group: 'decryption', challengeId: 'decrypt-03', points: 0 },
+        { id: 'M7', group: 'analysis', points: 0 },
+        { id: 'M8', group: 'analysis', points: 0 },
         { id: 'C1', group: 'challenge', challengeId: 'mystery-01', points: 10 },
         { id: 'C2', group: 'challenge', challengeId: 'mystery-02', points: 20, requires: 'C1' },
         { id: 'C3', group: 'challenge', challengeId: 'mystery-03', points: 30, requires: 'C2' }
@@ -35,7 +37,10 @@ const ProgressCore = (() => {
         M4: [['reset-matrix-btn', 'key-generation'], ['plaintext', 'encryption'], ['encrypt-btn', 'encryption']],
         M5: [['reset-matrix-btn', 'key-generation'], ['practice-type', 'decryption'], ['decrypt-btn', 'decryption']],
         M6: [['edit-matrix-btn', 'key-generation'], ['keyword-text', 'key-generation'],
-            ['practice-type', 'decryption'], ['decrypt-btn', 'decryption']]
+            ['practice-type', 'decryption'], ['decrypt-btn', 'decryption']],
+        M7: [['tab-analysis', 'analysis'], ['analysis-sample', 'analysis'], ['analyze-btn', 'analysis']],
+        M8: [['tab-analysis', 'analysis'], ['analysis-sample', 'analysis'], ['analyze-btn', 'analysis'],
+            ['analysis-reversed-list', 'analysis']]
     };
     for (const mission of challenges) {
         STEPS[mission.id] = [['tab-key-generation', 'key-generation'], ['challenge-start-' + mission.challengeId, null],
@@ -66,7 +71,7 @@ const ProgressCore = (() => {
 
     function valid(value) {
         if (!keys(value, ['version', 'missions', 'challenges', 'rulesSeen'], true) || value.version !== 2) return false;
-        if (!keys(value.missions, MISSIONS.slice(0, 6).map(item => item.id))
+        if (!keys(value.missions, MISSIONS.filter(item => item.group !== 'challenge').map(item => item.id))
             || !Object.values(value.missions).every(flag => flag === true)) return false;
         if (!keys(value.challenges, challenges.map(item => item.challengeId))) return false;
         for (const mission of challenges) {
@@ -134,6 +139,8 @@ const ProgressCore = (() => {
             if (event.ciphertext === 'KCNVMP' && event.matrix === matrices.default) next.missions.M5 = true;
             if (event.ciphertext === 'BNSY' && event.matrix === matrices.animal) next.missions.M6 = true;
         }
+        if (event.type === 'analyzed' && event.verdict === 'impossible') next.missions.M7 = true;
+        if (event.type === 'reversed-selected') next.missions.M8 = true;
         if (event.type === 'challenge-correct') {
             const mission = challenges.find(item => item.challengeId === event.id);
             if (mission && !isLocked(progress, event.id) && !Object.hasOwn(next.challenges, event.id)
@@ -161,7 +168,7 @@ const ProgressCore = (() => {
     function summary(progress) {
         const items = statuses(progress);
         return {
-            done: items.filter(item => item.state === 'done').length, total: 9,
+            done: items.filter(item => item.state === 'done').length, total: MISSIONS.length,
             points: Object.values(progress.challenges).reduce((sum, item) => sum + item.points, 0), maxPoints: 60,
             next: items.find(item => item.state === 'next')?.id || null
         };
@@ -184,7 +191,10 @@ const ProgressCore = (() => {
             M5: () => [s.matrix === matrices.default, s.ciphertextDraft === 'KCNVMP',
                 matches(s.decryption, 'ciphertext', 'KCNVMP', matrices.default)],
             M6: () => [s.editorOpen, s.matrix === matrices.animal, s.ciphertextDraft === 'BNSY',
-                matches(s.decryption, 'ciphertext', 'BNSY', matrices.animal)]
+                matches(s.decryption, 'ciphertext', 'BNSY', matrices.animal)],
+            M7: () => [s.activeTab === 'analysis', !!s.analysisDraft, s.analysis?.verdict === 'impossible'],
+            M8: () => [s.activeTab === 'analysis', !!s.analysisDraft, (s.analysis?.reversed?.length || 0) > 0,
+                s.selectedReversed != null]
         };
         const mission = challenges.find(item => item.id === id);
         const predicates = mission ? [

@@ -318,6 +318,7 @@ class UI {
         this.selectedReversed = null;
         this.analysisEmpty = result.verdict === 'empty';
         this.renderAnalysis();
+        this.recordProgress({ type: 'analyzed', verdict: result.verdict, reversedCount: result.reversed.length });
     }
 
     analysisBadge(index) {
@@ -398,6 +399,7 @@ class UI {
             button.addEventListener('click', () => {
                 this.selectedReversed = entry;
                 this.renderAnalysisSelection();
+                this.recordProgress({ type: 'reversed-selected' });
             });
             list.appendChild(button);
         });
@@ -1354,6 +1356,8 @@ class UI {
             keywordDraft: PlayfairCore.normalize(document.getElementById('keyword-text').value),
             plaintextDraft: PlayfairCore.normalize(document.getElementById('plaintext').value),
             ciphertextDraft: PlayfairCore.normalize(document.getElementById('ciphertext-input').value),
+            analysisDraft: document.getElementById('analysis-input').value.trim(),
+            analysis: this.analysisResult, selectedReversed: this.selectedReversed,
             matrix: this.getCurrentMatrixString(), loaded: this.loaded,
             encryption: this.results.encryption, decryption: this.results.decryption,
             rulesSeenNow: [...this.rulesSeenNow], lastCorrect: this.lastCorrect
@@ -1431,7 +1435,7 @@ class UI {
     updateProgressDisplay() {
         const list = document.getElementById('mission-list');
         const statuses = ProgressCore.statuses(this.progress);
-        for (const group of ['key', 'encryption', 'decryption', 'challenge']) {
+        for (const group of ['key', 'encryption', 'decryption', 'analysis', 'challenge']) {
             let section = document.getElementById('mission-group-' + group);
             if (!section) {
                 section = document.createElement('section');
