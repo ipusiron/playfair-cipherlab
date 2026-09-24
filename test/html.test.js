@@ -108,6 +108,11 @@ test('H-2 roadmap and matrix controls exist; answers are outside the result', ()
     assert.doesNotMatch(html, /id="mission-M\d"/);
 });
 
+test('E-3 header subtitle keeps words intact', () => {
+    const css = fs.readFileSync(path.join(__dirname, '../css/styles.css'), 'utf8');
+    assert.match(css, /header p\s*\{[^}]*word-break:\s*keep-all\s*;/);
+});
+
 test('H-2 guide markup and script order', () => {
     assert.match(html, /<section id="guide"[^>]*hidden[^>]*aria-labelledby="guide-title"/);
     assert.match(html, /id="guide-status"[^>]*aria-live="polite"/);

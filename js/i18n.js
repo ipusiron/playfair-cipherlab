@@ -271,8 +271,16 @@ class I18nManager {
 <p>「Day009で頻度分析（新しいタブ）」を押したときだけ暗号文をURLに含めてDay009の入力欄へ渡し、移動先の「📊 頻度分析」で分析します（5,000文字まで）。</p>
 <p>Day009の二重字は語ごとに1文字ずつずらして数えるため、ここでの2文字ずつ区切った組とは数え方が違います。</p>
 </section>
+<section><h3>🧩 鍵表の復元</h3>
+<p>解析タブで既知の平文と暗号文から5×5の鍵表を復元します。置き字は動かせません。R1は置き字16文字と組11個、R2は8文字と14個、R3は3文字と27個です。</p>
+<p>同じ行なら右隣、同じ列なら下隣、長方形なら同じ行の相手の列へ変わります。平文と暗号文の1文字目どうし、2文字目どうしは、それぞれ同じ行か同じ列にあるので、位置を絞れます。</p>
+<p>マスを選び、文字キーか文字の一覧で置きます。矢印で移動し、BackspaceかDeleteで消します。25マスが答えと一致すると、復元した表で隠された暗号文を復号します。埋め文字の候補は本物の文字かもしれないため、自動では消しません。</p>
+<p>ヒントは①規則の説明、②組の種類、③間違ったマスの指摘、なければ1文字の配置です。3段目は何度でも使えます。減点はなく、ヒントなしの初回成功には★が付きます。</p>
+<p>表全体の行と列を循環してずらした25通りは同じ暗号になります。この演習では置き字で向きを固定し、指定の表を復元します。</p>
+<p>手作業による復元の出典：米陸軍FM 34-40-2第7章。</p>
+</section>
 <section><h3>学習進捗とナビ</h3>
-<p>11個のミッションを画面の操作で達成します。「次はこれ」はおすすめ順で、M1〜M8は自由に進められます。</p>
+<p>14個のミッションを画面の操作で達成します。「次はこれ」はおすすめ順で、M1〜M8は自由に進められます。</p>
 <ul>
 <li>M1：鍵語から鍵表を作る。鍵語の文字を重複なしで並べ、残りのアルファベットで埋める。IとJは同じマス</li>
 <li>M2：埋め文字が入るところを見る。組の2文字が同じならXを挟む（HELLO → HE LX LO）</li>
@@ -290,6 +298,7 @@ class I18nManager {
 <li>R3：鍵表の復元（上級）。置き字3文字と既知の組27個から推理する</li>
 </ul>
 <p>C1、C2、C3は順に10、20、30点で計60点です。C1を達成するとC2、C2を達成するとC3が開きます。得点は各課題の初回正解だけです。</p>
+<p>R1、R2、R3も順に10、20、30点です。R1でR2、R2でR3が開きます。復元を含む全14ミッションの合計は120点です。</p>
 <p>帯や各行の「ナビ開始」で下のカードを開きます。手順は操作に合わせて自動で済みになります。あとの手順を済ませた場合、前の手順も済みになります。</p>
 <p>「この場所へ移動」はタブを開いて対象を枠で示し、フォーカスを移します。答え、鍵語、平文は入力しません。ナビによる減点はありません。</p>
 <p>「次」か「再生」で見た暗号化の規則だけをM3に数えます。「最後まで」や動きを減らす設定で飛ばした組は数えません。</p>
@@ -846,8 +855,21 @@ Use “Send to analysis” beside encryption output or below decryption input to
 press its Frequency Analysis button to analyze them. Day009 counts overlapping digrams within words,
 unlike the fixed two-letter pairs here.</p>
 </section>
+<section><h3>🧩 Key-square recovery</h3>
+<p>Recover a 5×5 key square from known plaintext and ciphertext on the Analysis tab. Givens cannot move.
+R1 has 16 givens and 11 pairs, R2 has 8 givens and 14 pairs, and R3 has 3 givens and 27 pairs.</p>
+<p>A same-row pair moves right, a same-column pair moves down, and a rectangle uses the other letter’s column in the same row.
+The first plaintext and ciphertext letters share a row or column, as do the second letters. Use these constraints to narrow positions.</p>
+<p>Select a cell and type a letter or use the palette. Move with arrow keys and erase with Backspace or Delete.
+Matching all 25 cells decrypts the hidden ciphertext with your recovered square. Possible padding is never removed automatically because it may be genuine.</p>
+<p>Hints show (1) the rules, (2) pair types, then (3) a wrong cell, or place one letter if no cell is wrong.
+Repeat the third hint as needed. Hints cost no points; a first success without hints earns a star (★).</p>
+<p>Cyclically shifting all rows and columns gives 25 equivalent squares that produce the same cipher.
+These puzzles fix the orientation with givens and require the specified square.</p>
+<p>Source for the manual recovery method: U.S. Army FM 34-40-2, Chapter 7.</p>
+</section>
 <section><h3>Learning roadmap and guide</h3>
-<p>Complete eleven missions through screen actions. “Next” recommends an order; M1–M8 remain freely available.</p>
+<p>Complete fourteen missions through screen actions. “Next” recommends an order; M1–M8 remain freely available.</p>
 <ul>
 <li>M1: Build a matrix from a keyword. Remove repeated keyword letters, then fill with the remaining alphabet. I and J share a cell.</li>
 <li>M2: See where padding is inserted. Insert X between identical letters in a pair (HELLO → HE LX LO).</li>
@@ -865,6 +887,7 @@ unlike the fixed two-letter pairs here.</p>
 <li>R3: Recover a key square (Advanced). Deduce positions from 3 givens and 27 known pairs.</li>
 </ul>
 <p>C1, C2 and C3 award 10, 20 and 30 points, for 60 total. C1 unlocks C2; C2 unlocks C3. Only the first correct answer earns points.</p>
+<p>R1, R2 and R3 also award 10, 20 and 30 points. R1 unlocks R2; R2 unlocks R3. All fourteen missions together award 120 points.</p>
 <p>Open the bottom card with “Start guide” in the summary or a mission row. Steps are checked automatically from screen state.</p>
 <p>Completing a later step also checks earlier steps. “Go to this step” switches tabs, outlines the control and moves focus.</p>
 <p>The guide never enters an answer, keyword or plaintext. It costs no points. Use “Next mission” after completing a mission.</p>

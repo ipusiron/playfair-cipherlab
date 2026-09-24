@@ -12,7 +12,7 @@ English · [日本語](README.md)
 
 Playfair CipherLab is a web tool for visually learning the Playfair cipher, a classical cipher.
 Build a 5×5 key matrix and play through encryption and decryption one pair of letters at a time.
-It offers a Japanese/English interface, ciphertext analysis, an eleven-mission learning roadmap, an on-screen guide that points to controls, and decryption challenges with hints.
+It offers a Japanese/English interface, ciphertext analysis, three key-square recovery puzzles, a fourteen-mission learning roadmap, an on-screen guide that points to controls, and decryption challenges with hints.
 
 ## 🌐 Demo
 
@@ -26,7 +26,7 @@ Use it directly in your browser. You can also download the files and open index.
 
 > *M1 and M2 are complete. The M3 guide highlights the example category selector.*
 
-1280×1800px, 117,070 bytes.
+1280×2200px, 141,185 bytes.
 
 ![Wikipedia example at pair 10 of 13](assets/en/screenshot2.png)
 
@@ -44,22 +44,28 @@ Use it directly in your browser. You can also download the files and open index.
 
 > *PLAYFAIR EXAMPLE is entered in the dark English interface, with letters from the keyword highlighted in a different color.*
 
-1280×1000px, 45,670 bytes.
+1280×1000px, 45,798 bytes.
 
 ![Ciphertext analysis and reversed pairs](assets/en/screenshot4.png)
 
 > *TCITIGCTSMCTCBBCCT is analyzed with the SECRET matrix and entry ① selected. CT→ER and TC→RE show reversal after decryption.*
 
-1280×1600px, 79,195 bytes.
+1280×1600px, 86,078 bytes.
+
+![R1 solved with the recovered square and hidden plaintext](assets/en/screenshot5.png)
+
+> *All 25 cells match. The recovered square decrypts the hidden ciphertext, with possible padding identified separately.*
+
+1280×1800px, 94,590 bytes.
 
 ## ✨ Features
 
 ### 📊 Learning progress
 
-- Points for three challenges (10, 20 and 30 points, awarded only once per challenge)
-- Complete, next, incomplete and locked states for eleven missions (one key-matrix mission, three encryption missions, two decryption missions, two analysis missions and three challenges), with a recommended next action
+- Points for three challenges and three recovery puzzles (10, 20 and 30 points each, 120 in total, awarded only once per problem)
+- Complete, next, incomplete and locked states for fourteen missions (one key-matrix mission, three encryption missions, two decryption missions, two analysis missions, three challenges and three recovery puzzles), with a recommended next action
 - A guide that checks steps automatically as you work, and a ★ for a first correct answer without hints
-- C1 → C2 → C3 unlocking, and a progress reset with a confirmation dialog
+- Separate C1 → C2 → C3 and R1 → R2 → R3 unlock chains, and a progress reset with a confirmation dialog
 - Progress saved in the same browser, with strict validation of stored values and migration from the old format; the page remains usable without storage
 
 ### 🔑 Key generation
@@ -83,6 +89,7 @@ Use it directly in your browser. You can also download the files and open index.
 - The five most frequent pairs, distinct-letter count and ignored characters
 - Send encryption output or decryption input to analysis; editing the input or sample hides stale results
 - Send ciphertext to [Day009 (Frequency Analyzer)](https://ipusiron.github.io/frequency-analyzer/) to analyze letter and digram frequencies; its overlapping digrams differ from the fixed pairs counted here
+- Three known-plaintext key-square recovery puzzles, with fixed givens, per-pair ✓/✗/… states, three hint levels and hidden ciphertext decrypted with the recovered square
 
 ### 🎬 Playback and display
 
@@ -125,8 +132,8 @@ M3 counts only rules actually displayed as the current encryption pair.
 Use “Restart Animation” and then “Next” or “Play” to view the rules.
 The guide's live step state is separate from saved mission achievements.
 
-Guides and decryption hints never subtract points.
-A challenge's first correct answer earns a star only if no decryption hints were shown.
+Guides and decryption or recovery hints never subtract points.
+A problem's first correct answer earns a star only if no hints were shown.
 Later answers do not replace the first points or hint count.
 Old progress is migrated without stars because it did not record hint use.
 
@@ -183,6 +190,17 @@ Click “Open in Day009 Frequency Analyzer (new tab)” below the results to fil
 Press its Frequency Analysis button to examine letter and digram frequencies.
 Day009 counts digrams with a one-letter sliding window within words, unlike the fixed two-letter pairs here.
 The original ciphertext, with only leading and trailing whitespace trimmed, is passed in the URL. The link is hidden above 5,000 characters.
+
+**🧩 Recover a key square from known plaintext**
+
+1. Select R1 in the recovery section of the Analysis tab. Solving R1 unlocks R2; solving R2 unlocks R3.
+2. Select an empty cell and type A–Z or choose from the palette (J becomes I). Givens cannot move; a previously placed letter moves from its old cell.
+3. Move with arrow keys and erase with Backspace or Delete. Check each pair’s ✓ (consistent), ✗ (contradiction) or … (undetermined) state.
+4. Use hints if needed: level 1 explains the rules, level 2 shows pair types, and level 3 points to a wrong cell or places one letter. Level 3 can be repeated.
+5. When all 25 cells match, your square decrypts the hidden ciphertext. Possible padding is never removed automatically because it may be genuine.
+
+“Start over” restores only the givens without resetting the hint count.
+The partial square and inputs are not saved; only first-success points and hint use are stored as progress.
 
 ## 🧠 About the Playfair cipher
 
@@ -293,6 +311,17 @@ With the same matrix, reversed ciphertext pairs decrypt into reversed plaintext 
 Analyzing `TCITIGCTSMCTCBBCCT` with the SECRET matrix gives CT↔TC → ER/RE and BC↔CB → DE/ED.
 This demonstrates the property with the current matrix; it does not recover a key or automatically break the cipher.
 
+**Key-square recovery from known plaintext**
+
+Use same-row, same-column and rectangle relationships to narrow letter positions.
+The first plaintext and ciphertext letters share a row or column, as do the second letters.
+Cyclically shifting all rows and columns produces 25 equivalent squares with the same cipher. Givens fix the orientation in these puzzles.
+Source for the manual recovery method: U.S. Army FM 34-40-2, Chapter 7.
+
+- R1 (recover-01): 16 givens, 11 known pairs, 10 points.
+- R2 (recover-02): 8 givens, 14 known pairs, 20 points.
+- R3 (recover-03): 3 givens, 27 known pairs, 30 points.
+
 ### Changes from the previous version
 
 A bug that inserted padding between identical letters across pair boundaries has been fixed.
@@ -399,7 +428,8 @@ npm test
 
 GitHub Actions also runs the tests on push and pull_request with Node 22.
 Both READMEs are checked against ProgressCore, PlayfairCore, exercise data and dictionaries:
-eleven missions, five known answers, three challenges and their exact hints, plus the reversed-pair examples computed by PlayfairAnalysis.
+fourteen missions, five known answers, three challenges and their exact hints, the reversed-pair examples computed by PlayfairAnalysis,
+and given and pair counts for all three puzzles from PlayfairRecovery.
 
 | Test file | Coverage |
 |---|---|
@@ -409,7 +439,7 @@ eleven missions, five known answers, three challenges and their exact hints, plu
 | test/exercises.test.js | Six exercises, answer acceptance/rejection and side-effect-free points |
 | test/i18n.test.js | Matching keys, translations, initial language, Japanese literal policy and help |
 | test/html.test.js | CSP, referrer, ARIA, labels, four tabs, defer order, guide structure and inline attribute restrictions |
-| test/contrast.test.js | All 18 existing text pairs and the analysis highlight in light and dark modes meet 4.5:1 |
+| test/contrast.test.js | All 18 existing text pairs plus analysis and recovery text colors in light and dark modes meet 4.5:1 |
 | test/format.test.js | Maximum line lengths, line counts and minification detection |
 | test/readme.test.js | Bilingual tables, hints, YAML structure, complete trees and image references |
 | test/progress.test.js | Mission completion rules, migration, locks, stars, guide steps and blocked storage |
@@ -434,12 +464,14 @@ playfair-cipherlab/                # Project root
 │   │   ├── screenshot.png         # English roadmap and M3 guide
 │   │   ├── screenshot2.png        # English Wikipedia playback at pair 10
 │   │   ├── screenshot3.png        # English C2 matrix match and correct answer
-│   │   └── screenshot4.png        # English analysis with SECRET and reversed entry one selected
+│   │   ├── screenshot4.png        # English analysis with SECRET and reversed entry one selected
+│   │   └── screenshot5.png        # English R1 success and hidden plaintext
 │   ├── screenshot.png             # Japanese Wikipedia playback at pair 10
 │   ├── screenshot2.png            # Japanese C2 matrix match and correct answer
 │   ├── screenshot3.png            # Dark English keyword preview
 │   ├── screenshot4.png            # Japanese roadmap and M3 guide
-│   └── screenshot5.png            # Japanese analysis with SECRET and reversed entry one selected
+│   ├── screenshot5.png            # Japanese analysis with SECRET and reversed entry one selected
+│   └── screenshot6.png            # Japanese R1 in progress with hint-two pair types
 ├── css/                           # Stylesheets
 │   └── styles.css                 # Color variables, dark mode and responsive layout
 ├── js/                            # Classic scripts compatible with file URLs
@@ -462,7 +494,7 @@ playfair-cipherlab/                # Project root
     ├── exercises.test.js          # Exercise data and answer validation
     ├── i18n.test.js               # Dictionary coverage, language choice, literal policy and help
     ├── html.test.js               # Static checks for CSP, referrer, ARIA and attributes
-    ├── contrast.test.js           # All 18 existing pairs and the analysis highlight contrast
+    ├── contrast.test.js           # All 18 existing pairs plus analysis and recovery contrast
     ├── format.test.js             # Minification detection through line lengths and line counts
     ├── progress.test.js           # Missions, migration, locks, guide steps and storage exceptions
     └── readme.test.js             # Bilingual tables, YAML, trees and images
@@ -472,7 +504,7 @@ playfair-cipherlab/                # Project root
 
 A modern browser with HTML5, CSS3 and JavaScript.
 No build step is needed. The tool works over HTTP and directly from file://.
-Both access methods and both languages have been checked with the existing Chromium at 1280, 768, 390 and 320px.
+Both access methods and both languages have been checked with the existing Chromium at 1280, 768, 390, 360 and 320px.
 
 ```bash
 python -m http.server 8000
