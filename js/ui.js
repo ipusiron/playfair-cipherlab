@@ -1077,7 +1077,7 @@ class UI {
             ? i18n.t('matrix.practice', { keyword: challenge.keyword })
             : i18n.t(challenge.keyword ? 'matrix.required-hint' : 'matrix.required-default');
         document.getElementById('challenge-required').textContent = required;
-        document.getElementById('challenge-matrix').textContent = i18n.t('matrix.current') + ': ' + this.matrixDescription();
+        document.getElementById('challenge-matrix').textContent = i18n.t('matrix.current-line', { description: this.matrixDescription() });
         const matches = this.getCurrentMatrixString() === PlayfairCore.matrixFromKeyword(challenge.keyword || '');
         document.getElementById('challenge-match').textContent = (matches ? '✅ ' : '✗ ') + i18n.t(matches ? 'matrix.match' : 'matrix.mismatch');
         document.querySelector('.challenge-points').textContent = practice ? '' : challenge.points + 'pt';
@@ -1366,7 +1366,7 @@ class UI {
 
     updateMatrixStatus() {
         for (const tab of ['encryption', 'decryption']) {
-            document.getElementById('matrix-status-' + tab).textContent = this.matrixDescription();
+            document.getElementById('matrix-status-' + tab).textContent = i18n.t('matrix.status', { description: this.matrixDescription() });
         }
         this.updateChallengeInfoDisplay();
     }

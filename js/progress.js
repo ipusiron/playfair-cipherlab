@@ -30,7 +30,8 @@ const ProgressCore = (() => {
     const STEPS = {
         M1: [['edit-matrix-btn', 'key-generation'], ['keyword-text', 'key-generation'], ['save-matrix-btn', 'key-generation']],
         M2: [['reset-matrix-btn', 'key-generation'], ['plaintext', 'encryption'], ['encrypt-btn', 'encryption']],
-        M3: [['example-category', 'encryption'], ['encrypt-btn', 'encryption'], ['next-step-encryption', 'encryption']],
+        M3: [['example-category', 'encryption'], ['encrypt-btn', 'encryption'],
+            ['next-step-encryption', 'encryption', Object.freeze({ disabledAlt: 'restart-encryption', disabledKey: 'guide.restart' })]],
         M4: [['reset-matrix-btn', 'key-generation'], ['plaintext', 'encryption'], ['encrypt-btn', 'encryption']],
         M5: [['reset-matrix-btn', 'key-generation'], ['practice-type', 'decryption'], ['decrypt-btn', 'decryption']],
         M6: [['edit-matrix-btn', 'key-generation'], ['keyword-text', 'key-generation'],

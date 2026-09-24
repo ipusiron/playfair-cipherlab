@@ -163,6 +163,27 @@ test('H-1 every mission text and guide target exists', () => {
     }
 });
 
+test('E-1 only M3 step three has a disabled alternative, with matching dictionary keys', () => {
+    const fs = require('node:fs');
+    const path = require('node:path');
+    const vm = require('node:vm');
+    const source = fs.readFileSync(path.join(__dirname, '../js/i18n.js'), 'utf8');
+    const dictionaries = vm.runInNewContext(source + '; i18n.translations;', {});
+    assert.deepEqual(core.STEPS.M3[2][2], { disabledAlt: 'restart-encryption', disabledKey: 'guide.restart' });
+    assert.ok(Object.isFrozen(core.STEPS.M3[2][2]));
+    for (const [id, steps] of Object.entries(core.STEPS)) {
+        steps.forEach((step, index) => {
+            if (id !== 'M3' || index !== 2) assert.equal(step[2]?.disabledAlt, undefined, id + ':' + index);
+        });
+    }
+    for (const dictionary of Object.values(dictionaries)) {
+        for (const key of ['guide.restart', 'guide.disabled', 'guide.m3.remaining', 'guide.m3.missing',
+            'rule.name.row', 'rule.name.column', 'rule.name.rectangle', 'matrix.status', 'matrix.current-line']) {
+            assert.ok(dictionary[key], key);
+        }
+    }
+});
+
 test('H-3 moved corrupt storage examples reset and blocked storage keeps in-memory progress', () => {
     const fs = require('node:fs');
     const path = require('node:path');

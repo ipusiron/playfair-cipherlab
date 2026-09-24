@@ -84,3 +84,11 @@ test('E-1 initial language priority never writes storage', () => {
         localStorage: { getItem: () => { throw Error('blocked'); } } };
     assert.equal(vm.runInNewContext(read('js/i18n.js') + '; i18n.currentLang;', context), 'ja');
 });
+
+test('E-2 matrix descriptions have no duplicate label prefix', () => {
+    const jaPrefix = String.fromCodePoint(0x9375, 0x8868);
+    for (const key of ['matrix.default', 'matrix.keyword', 'matrix.matrix']) {
+        assert.equal(dictionaries.ja[key].startsWith(jaPrefix), false, key);
+        assert.equal(dictionaries.en[key].startsWith('Matrix'), false, key);
+    }
+});
