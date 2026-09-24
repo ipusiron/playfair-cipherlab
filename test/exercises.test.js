@@ -50,7 +50,6 @@ test('encryption challenges are removed and examples use keys', () => {
     const manager = new ExerciseManager();
     assert.deepEqual(manager.getChallenges('encryption'), []);
     assert.equal(manager.getExpectedCiphertext, undefined);
-    assert.equal('encryption' in manager.getProgress().unlockedLevels, false);
     assert.equal(manager.getExamples('encryption').length, 8);
     for (const challenge of manager.getChallenges('decryption')) {
         assert.equal(challenge.hints.length, 4);
@@ -58,28 +57,11 @@ test('encryption challenges are removed and examples use keys', () => {
     }
 });
 
-test('points are awarded once, next level is unlocked, and valid progress loads', () => {
-    let saved;
-    const storage = { getItem: () => saved, setItem: (_key, value) => { saved = value; } };
-    const manager = new ExerciseManager(storage);
-    assert.deepEqual(manager.validateAnswer('mystery-01', 'HELLO', core.ALPHABET), { result: 'correct', points: 10 });
-    assert.deepEqual(manager.validateAnswer('mystery-01', 'HELLO', core.ALPHABET), { result: 'correct', points: 0 });
-    assert.deepEqual(manager.getProgress(), {
-        completedChallenges: ['mystery-01'], totalPoints: 10, unlockedLevels: { decryption: 2 }
-    });
-    assert.deepEqual(new ExerciseManager(storage).getProgress(), manager.getProgress());
-    manager.resetProgress();
-    assert.deepEqual(manager.getProgress(), new ExerciseManager().getProgress());
-});
-
-test('throwing storage and malformed progress cannot stop the manager', () => {
-    const throwing = { getItem() { throw Error('blocked'); }, setItem() { throw Error('blocked'); } };
-    const manager = new ExerciseManager(throwing);
-    assert.deepEqual(manager.getProgress(), new ExerciseManager().getProgress());
-    assert.equal(manager.validateAnswer('mystery-01', 'HELLO', core.ALPHABET).result, 'correct');
-    for (const saved of ['{', 'null', '[]', '{"completedChallenges":"x"}',
-        '{"completedChallenges":[],"totalPoints":-1,"unlockedLevels":{"decryption":1}}']) {
-        const broken = new ExerciseManager({ getItem: () => saved, setItem() {} });
-        assert.deepEqual(broken.getProgress(), new ExerciseManager().getProgress());
+test('answer validation has no progress side effects and always returns the challenge points', () => {
+    const manager = new ExerciseManager();
+    for (let i = 0; i < 2; i += 1) {
+        assert.deepEqual(manager.validateAnswer('mystery-01', 'HELLO', core.ALPHABET), { result: 'correct', points: 10 });
     }
+    assert.equal(manager.getProgress, undefined);
+    assert.equal(manager.progress, undefined);
 });

@@ -140,3 +140,46 @@ test('H-1 matrices, locks, variants and all guide final conditions', () => {
         ['C1', { lastCorrect: 'mystery-01' }], ['C2', { lastCorrect: 'mystery-02' }], ['C3', { lastCorrect: 'mystery-03' }]
     ]) assert.ok(core.stepStates(id, snapshot).every(state => state === 'done'), id);
 });
+
+test('H-1 every mission text and guide target exists', () => {
+    const fs = require('node:fs');
+    const path = require('node:path');
+    const vm = require('node:vm');
+    const read = file => fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
+    const dictionaries = vm.runInNewContext(read('js/i18n.js') + '; i18n.translations;', {});
+    const html = read('index.html');
+    for (const mission of core.MISSIONS) {
+        for (const dictionary of Object.values(dictionaries)) {
+            for (const suffix of ['title', 'learn', ...core.STEPS[mission.id].map((_step, i) => 'step.' + (i + 1))]) {
+                assert.ok(dictionary[`mission.${mission.id}.${suffix}`], `${mission.id}.${suffix}`);
+            }
+            if (mission.group === 'challenge') {
+                assert.equal(dictionary[`mission.${mission.id}.title`], dictionary[`example.${mission.challengeId}`]);
+            }
+        }
+        for (const [id] of core.STEPS[mission.id]) {
+            if (!id.startsWith('challenge-start-')) assert.ok(html.includes(`id="${id}"`), id);
+        }
+    }
+});
+
+test('H-3 moved corrupt storage examples reset and blocked storage keeps in-memory progress', () => {
+    const fs = require('node:fs');
+    const path = require('node:path');
+    const vm = require('node:vm');
+    const UI = vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../js/ui.js'), 'utf8') + '; UI;', {
+        ProgressCore: core,
+        localStorage: { getItem() { throw Error('blocked'); }, setItem() { throw Error('blocked'); } }
+    });
+    const ui = Object.create(UI.prototype);
+    ui.progress = ui.loadProgress();
+    assert.deepEqual(ui.progress, core.initial());
+    ui.updateProgressDisplay = () => {};
+    ui.recordProgress({ type: 'challenge-correct', id: 'mystery-01', hintsUsed: 0 });
+    assert.equal(core.summary(ui.progress).points, 10);
+    assert.doesNotThrow(() => ui.saveProgress());
+    for (const raw of ['{', 'null', '[]', '{"completedChallenges":"x"}',
+        '{"completedChallenges":[],"totalPoints":-1,"unlockedLevels":{"decryption":1}}']) {
+        assert.deepEqual(core.migrate(raw), core.initial());
+    }
+});

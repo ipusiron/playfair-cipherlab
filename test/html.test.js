@@ -40,3 +40,15 @@ test('K-5 tabs, dialog, labels, button types, and external links', () => {
         if (label.includes('same-pair-rule')) assert.doesNotMatch(label, /（標準）|・標準/);
     }
 });
+
+test('H-2 roadmap and matrix controls exist; answers are outside the result', () => {
+    for (const id of ['reset-matrix-btn', 'matrix-status-encryption', 'matrix-status-decryption', 'progress-next-guide']) {
+        assert.ok(html.includes(`id="${id}"`), id);
+    }
+    assert.doesNotMatch(html, /id="(?:unlocked-levels|total-points|completed-challenges)"/);
+    assert.ok(html.indexOf('id="answer-check"') > html.indexOf('id="challenge-info"'));
+    assert.ok(html.indexOf('id="answer-check"') < html.indexOf('id="plaintext-section"'));
+    assert.ok(html.indexOf('src="js/progress.js"') > html.indexOf('src="js/exercises.js"'));
+    assert.doesNotMatch(html.match(/id="progress-toggle"[\s\S]*?<\/button>/)[0], /id="progress-next-guide"/);
+    assert.doesNotMatch(html, /id="mission-M\d"/);
+});

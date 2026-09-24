@@ -1,14 +1,14 @@
 class UI {
     constructor() {
         this.cipher = new PlayfairCipher();
-        this.exerciseManager = new ExerciseManager({
-            getItem(key) {
-                try { return localStorage.getItem(key); } catch (_error) { return null; }
-            },
-            setItem(key, value) {
-                try { localStorage.setItem(key, value); } catch (_error) { /* Keep in-memory progress. */ }
-            }
-        });
+        this.exerciseManager = new ExerciseManager();
+        this.progress = this.loadProgress();
+        this.matrixSource = { type: 'default' };
+        this.loaded = null;
+        this.hintsUsed = {};
+        this.rulesSeenNow = [];
+        this.lastCorrect = null;
+        this.renderedDone = { encryption: 0, decryption: 0 };
         this.currentTab = 'key-generation';
         this.playback = {
             encryption: { steps: [], done: 0, playing: false, timerId: null },
@@ -29,6 +29,7 @@ class UI {
         this.setupPlaybackControls();
         this.displayMatrix('key-matrix');
         this.setupI18n();
+        this.updateMatrixStatus();
     }
 
     setupI18n() {
@@ -47,7 +48,8 @@ class UI {
         // Update example categories
         this.updateExampleCategories();
         // Update progress summary
-        this.updateProgressSummary();
+        this.updateProgressDisplay();
+        this.updateMatrixStatus();
         // Update any dynamic hint texts
         this.updateHintButton();
         // Force update dropdown contents
@@ -90,12 +92,16 @@ class UI {
         // Re-trigger category population to update with translations
         const categorySelect = document.getElementById('example-category');
         if (categorySelect && categorySelect.value) {
+            const value = document.getElementById('example-list').value;
             this.populateExampleList(categorySelect.value);
+            document.getElementById('example-list').value = value;
         }
         
         const practiceTypeSelect = document.getElementById('practice-type');
         if (practiceTypeSelect && practiceTypeSelect.value) {
+            const value = document.getElementById('practice-list').value;
             this.populatePracticeList(practiceTypeSelect.value);
+            document.getElementById('practice-list').value = value;
         }
     }
 
@@ -156,13 +162,13 @@ class UI {
                         : challenge.title;
                     option.textContent = `${translatedTitle} (${challenge.points}pt)`;
                     
-                    if (!this.exerciseManager.isLevelUnlocked('decryption', parseInt(level))) {
+                    if (ProgressCore.isLocked(this.progress, challenge.id)) {
                         option.disabled = true;
                         const lockText = i18n.t('level.locked');
                         option.textContent += lockText;
                     }
                     
-                    if (this.exerciseManager.isChallengeCompleted(challenge.id)) {
+                    if (Object.hasOwn(this.progress.challenges, challenge.id)) {
                         option.textContent += ' ✓';
                     }
                     
@@ -359,6 +365,7 @@ class UI {
                 
                 const result = this.cipher.generateMatrixFromKeyword(keyword);
                 this.cipher.setMatrix(result.matrix);
+                this.matrixSource = { type: 'keyword', keyword: keyword.toUpperCase().trim().replace(/\s+/g, ' ') };
                 
             } else {
                 const text = textArea.value;
@@ -376,6 +383,7 @@ class UI {
                 
                 const newMatrix = this.cipher.textToMatrix(text);
                 this.cipher.setMatrix(newMatrix);
+                this.matrixSource = { type: 'matrix' };
             }
             
             this.invalidateAll();
@@ -387,6 +395,22 @@ class UI {
             editBtn.classList.remove('hidden');
             editor.classList.add('hidden');
             errorDiv.textContent = '';
+            delete this.notices['matrix-error'];
+            this.updateMatrixStatus();
+            this.recordProgress({ type: 'matrix-saved', matrix: this.getCurrentMatrixString() });
+        });
+        document.getElementById('reset-matrix-btn').addEventListener('click', () => {
+            this.cipher.setMatrix(this.cipher.textToMatrix(PlayfairCore.ALPHABET));
+            this.matrixSource = { type: 'default' };
+            this.invalidateAll();
+            this.displayMatrix('key-matrix');
+            document.getElementById('key-matrix').classList.remove('hidden');
+            editBtn.classList.remove('hidden');
+            editor.classList.add('hidden');
+            errorDiv.textContent = '';
+            delete this.notices['matrix-error'];
+            this.updateMatrixStatus();
+            this.recordProgress({ type: 'matrix-saved', matrix: this.getCurrentMatrixString() });
         });
     }
 
@@ -453,6 +477,8 @@ class UI {
             const result = this.cipher.encrypt(plaintext, paddingChar, samePairMode, samePairRule);
             
             this.startPlayback('encryption', result, samePairMode ? null : samePairRule);
+            this.recordProgress({ type: 'encrypted', input: PlayfairCore.normalize(plaintext),
+                variant: samePairMode ? null : samePairRule, matrix: this.getCurrentMatrixString() });
 
         });
         
@@ -507,6 +533,8 @@ class UI {
             }
             
             this.startPlayback('decryption', result, variant);
+            this.recordProgress({ type: 'decrypted', ciphertext: PlayfairCore.normalize(ciphertext),
+                variant, matrix: this.getCurrentMatrixString() });
 
         });
         
@@ -679,7 +707,10 @@ class UI {
 
     startPlayback(tab, result, variant) {
         this.stopPlayback(tab);
-        this.results[tab] = { ...result, variant };
+        this.renderedDone[tab] = 0;
+        const input = PlayfairCore.normalize(document.getElementById(tab === 'encryption' ? 'plaintext' : 'ciphertext-input').value);
+        this.results[tab] = { ...result, variant, matrix: this.getCurrentMatrixString(),
+            ...(tab === 'encryption' ? { input } : { ciphertext: input }) };
         const state = this.playback[tab];
         state.steps = result.pairs.map((pair, index) => ({
             pair, output: result.outPairs[index], rule: result.rules[index]
@@ -759,6 +790,16 @@ class UI {
         playButton.disabled = !result || state.done === state.steps.length;
         playButton.textContent = i18n.t(state.playing ? 'playback.pause' : 'playback.play');
         document.getElementById(`finish-${tab}`).textContent = i18n.t('playback.finish');
+        if (this.renderedDone[tab] !== state.done) {
+            this.renderedDone[tab] = state.done;
+            if (state.done > 0 && result.variant === null) {
+                const rule = state.steps[state.done - 1].rule;
+                if (tab === 'encryption' && ['row', 'column', 'rectangle'].includes(rule) && !this.rulesSeenNow.includes(rule)) {
+                    this.rulesSeenNow.push(rule);
+                }
+                this.recordProgress({ type: 'step-rendered', tab, rule });
+            }
+        }
         if (!result) return;
         const source = document.getElementById(encryption ? 'pair-display' : 'decrypt-pair-display');
         source.replaceChildren();
@@ -888,6 +929,8 @@ class UI {
                     this.invalidateAll();
                     const result = this.cipher.generateMatrixFromKeyword(selectedExample.keyword);
                     this.cipher.setMatrix(result.matrix);
+                    this.matrixSource = { type: 'keyword', keyword: selectedExample.keyword };
+                    this.updateMatrixStatus();
                     this.displayMatrix('key-matrix');
                     this.displayMatrix('encryption-matrix');
                     this.displayMatrix('decryption-matrix');
@@ -920,6 +963,7 @@ class UI {
             answerCheck.classList.add('hidden');
             this.currentChallenge = null;
             this.selectedChallenge = null;
+            this.loaded = null;
 
             if (selectedType === 'practice') {
                 const practices = this.exerciseManager.getPracticesByCategory();
@@ -955,7 +999,7 @@ class UI {
                         option.textContent = `${translatedTitle} (${challenge.points}pt)`;
                         
                         // ロックされているレベルかチェック
-                        if (!this.exerciseManager.isLevelUnlocked('decryption', parseInt(level))) {
+                        if (ProgressCore.isLocked(this.progress, challenge.id)) {
                             option.disabled = true;
                             const lockText = i18n.t('level.locked');
                             option.textContent += lockText;
@@ -971,6 +1015,10 @@ class UI {
 
         practiceSelect.addEventListener('change', () => {
             const selectedId = practiceSelect.value;
+            this.currentChallenge = null;
+            this.selectedChallenge = null;
+            this.loaded = null;
+            answerCheck.classList.add('hidden');
             loadButton.disabled = !selectedId;
             challengeInfo.classList.add('hidden');
 
@@ -1019,48 +1067,38 @@ class UI {
     }
 
     displayChallengeInfo(challenge) {
-        const details = document.querySelector('.challenge-details');
-        const translatedTitle = i18n.t(`example.${challenge.title}`) !== `example.${challenge.title}` 
-            ? i18n.t(`example.${challenge.title}`) 
-            : challenge.title;
-        details.querySelector('.challenge-title').textContent = translatedTitle;
-        
-        // 説明文の翻訳（もし翻訳キーが存在すれば）
-        const descKey = `challenge.${challenge.id}.description`;
-        const translatedDesc = i18n.t(descKey) !== descKey ? i18n.t(descKey) : challenge.description;
-        details.querySelector('.challenge-description').textContent = translatedDesc;
-        
-        // ヒントの翻訳（最初のヒント）
-        const hintKey = `challenge.${challenge.id}.hint.0`;
-        const translatedHint = i18n.t(hintKey) !== hintKey ? i18n.t(hintKey) : challenge.hints[0];
-        details.querySelector('.challenge-hint').textContent = `${i18n.t('challenge.hint-label')}${translatedHint}`;
-        
-        details.querySelector('.challenge-points').textContent = `${i18n.t('challenge.points-label')}${challenge.points}${i18n.t('challenge.points-unit')}`;
+        const practice = !challenge.points;
+        document.getElementById('challenge-info').classList.remove('hidden');
+        document.querySelector('.challenge-title').textContent = i18n.t(`example.${challenge.title}`);
+        document.querySelector('.challenge-description').textContent = i18n.t(challenge.description);
+        const required = practice && challenge.keyword
+            ? i18n.t('matrix.practice', { keyword: challenge.keyword })
+            : i18n.t(challenge.keyword ? 'matrix.required-hint' : 'matrix.required-default');
+        document.getElementById('challenge-required').textContent = required;
+        document.getElementById('challenge-matrix').textContent = i18n.t('matrix.current') + ': ' + this.matrixDescription();
+        const matches = this.getCurrentMatrixString() === PlayfairCore.matrixFromKeyword(challenge.keyword || '');
+        document.getElementById('challenge-match').textContent = (matches ? '✅ ' : '✗ ') + i18n.t(matches ? 'matrix.match' : 'matrix.mismatch');
+        document.querySelector('.challenge-points').textContent = practice ? '' : challenge.points + 'pt';
+        document.getElementById('challenge-guide').hidden = practice;
     }
 
     loadPractice(practice) {
-        this.invalidateAll();
+        this.invalidate('decryption');
         document.getElementById('ciphertext-input').value = practice.ciphertext;
-        
-        // キーワードがある場合は設定
-        if (practice.keyword) {
-            const result = this.cipher.generateMatrixFromKeyword(practice.keyword);
-            this.cipher.setMatrix(result.matrix);
-            this.displayMatrix('key-matrix');
-            this.displayMatrix('encryption-matrix');
-            this.displayMatrix('decryption-matrix');
-        }
-
-        const translatedTitle = i18n.t(`example.${practice.title}`) !== `example.${practice.title}` 
-            ? i18n.t(`example.${practice.title}`) 
-            : practice.title;
-        this.showToast(i18n.t('exercise.loaded.practice', { title: translatedTitle }));
+        this.showToast(i18n.t('exercise.loaded.practice', { title: i18n.t(`example.${practice.title}`) }));
         document.getElementById('decrypt-btn').disabled = false;
         document.getElementById('answer-check').classList.add('hidden');
         this.currentChallenge = null;
+        this.selectedChallenge = practice;
+        this.loaded = { kind: 'practice', id: practice.id };
+        this.displayChallengeInfo(practice);
     }
 
     loadChallenge(challenge) {
+        if (ProgressCore.isLocked(this.progress, challenge.id)) return;
+        this.selectedChallenge = challenge;
+        this.loaded = { kind: 'challenge', id: challenge.id };
+        this.displayChallengeInfo(challenge);
         this.invalidate('decryption');
         document.getElementById('ciphertext-input').value = challenge.ciphertext;
         
@@ -1085,11 +1123,12 @@ class UI {
         document.getElementById('answer-result').textContent = '';
         document.getElementById('hint-display').replaceChildren();
         document.getElementById('hint-display').classList.add('hidden');
-        document.getElementById('hint-display').dataset.hintIndex = '0';
+        document.getElementById('hint-display').dataset.hintIndex = this.hintsUsed[challenge.id] || 0;
         
         document.getElementById('decrypt-btn').disabled = false;
         document.getElementById('answer-check').classList.remove('hidden');
         this.currentChallenge = challenge;
+        this.renderHints();
         this.updateHintButton();
     }
 
@@ -1117,8 +1156,11 @@ class UI {
         resultDiv.className = 'answer-result ' + (result.result === 'correct' ? 'correct' : 'incorrect');
 
         if (result.result === 'correct') {
-            this.showToast(i18n.t('points.earned', { points: result.points }));
-            this.updateProgressDisplay();
+            const previousPoints = ProgressCore.summary(this.progress).points;
+            this.lastCorrect = this.currentChallenge.id;
+            this.recordProgress({ type: 'challenge-correct', id: this.currentChallenge.id,
+                hintsUsed: this.hintsUsed[this.currentChallenge.id] || 0 });
+            this.showToast(i18n.t('points.earned', { points: ProgressCore.summary(this.progress).points - previousPoints }));
             this.refreshDecryptionChallenges();
             
             // 正解時は解答入力欄を無効化
@@ -1132,6 +1174,7 @@ class UI {
         const display = document.getElementById('hint-display');
         const shown = Number(display.dataset.hintIndex || 0);
         display.dataset.hintIndex = Math.min(shown + 1, this.currentChallenge.hints.length);
+        this.hintsUsed[this.currentChallenge.id] = Number(display.dataset.hintIndex);
         this.renderHints();
         this.updateHintButton();
     }
@@ -1140,124 +1183,193 @@ class UI {
         return this.cipher.getMatrix().flat().join('');
     }
 
+
+    loadProgress() {
+        try { return ProgressCore.migrate(localStorage.getItem('playfair-progress')); }
+        catch (_error) { return ProgressCore.initial(); }
+    }
+
+    saveProgress() {
+        try { localStorage.setItem('playfair-progress', ProgressCore.serialize(this.progress)); }
+        catch (_error) { /* Keep progress in this page when storage is blocked. */ }
+    }
+
+    recordProgress(event) {
+        this.progress = ProgressCore.reduce(this.progress, event);
+        this.saveProgress();
+        this.updateProgressDisplay();
+        this.guide?.render();
+    }
+
+    requestGuide(id, opener) {
+        this.guide?.open(id, opener);
+    }
+
     setupProgressDisplay() {
-        const progressToggle = document.getElementById('progress-toggle');
-        const progressContent = document.getElementById('progress-content');
-        const resetButton = document.getElementById('reset-progress');
-        
-        // アコーディオン開閉
-        progressToggle.addEventListener('click', () => {
-            const isExpanded = !progressContent.classList.contains('hidden');
-            progressToggle.setAttribute('aria-expanded', String(!isExpanded));
-            
-            if (isExpanded) {
-                progressContent.classList.add('hidden');
-                progressToggle.classList.remove('expanded');
-            } else {
-                progressContent.classList.remove('hidden');
-                progressToggle.classList.add('expanded');
-            }
+        document.getElementById('progress-toggle').addEventListener('click', () => {
+            this.openProgress(document.getElementById('progress-content').classList.contains('hidden'));
         });
-        
-        // リセット機能
-        resetButton.addEventListener('click', () => {
-            const confirmed = confirm(i18n.t('message.reset-confirm'));
-            
-            if (confirmed) {
-                this.exerciseManager.resetProgress();
-                this.updateProgressDisplay();
-                this.updateProgressSummary();
-                this.showToast(i18n.t('message.reset-success'));
-                
-                // UI状態もリセット
-                this.resetExerciseUI();
-            }
+        document.getElementById('progress-next-guide').addEventListener('click', event => {
+            this.requestGuide(ProgressCore.summary(this.progress).next, event.currentTarget);
+        });
+        document.getElementById('challenge-guide').addEventListener('click', event => {
+            const mission = ProgressCore.MISSIONS.find(item => item.challengeId === this.selectedChallenge?.id);
+            if (mission) this.requestGuide(mission.id, event.currentTarget);
+        });
+        document.getElementById('reset-progress').addEventListener('click', () => {
+            if (!confirm(i18n.t('message.reset-confirm'))) return;
+            this.progress = ProgressCore.initial();
+            this.saveProgress();
+            this.rulesSeenNow = [];
+            this.lastCorrect = null;
+            this.hintsUsed = {};
+            this.invalidateAll();
+            this.resetExerciseUI();
+            this.updateProgressDisplay();
+            this.guide?.close();
+            this.showToast(i18n.t('message.reset-success'));
         });
     }
 
+    openProgress(open = true) {
+        const toggle = document.getElementById('progress-toggle');
+        toggle.setAttribute('aria-expanded', String(open));
+        toggle.classList.toggle('expanded', open);
+        document.getElementById('progress-content').classList.toggle('hidden', !open);
+    }
+
+    startChallenge(id) {
+        if (ProgressCore.isLocked(this.progress, id)) return;
+        const challenge = this.exerciseManager.getChallenges('decryption').find(item => item.id === id);
+        if (!challenge) return;
+        document.getElementById('tab-decryption').click();
+        document.getElementById('practice-type').value = 'challenge';
+        this.populatePracticeList('challenge');
+        document.getElementById('practice-list').disabled = false;
+        document.getElementById('practice-list').value = id;
+        document.getElementById('load-practice').disabled = false;
+        this.loadChallenge(challenge);
+        document.getElementById('challenge-heading').focus();
+    }
+
     updateProgressDisplay() {
-        const progress = this.exerciseManager.getProgress();
-        
-        document.getElementById('total-points').textContent = progress.totalPoints;
-        document.getElementById('completed-challenges').textContent = progress.completedChallenges.length;
-        
-        const decryptionLevel = progress.unlockedLevels.decryption;
-        const maxLevel = decryptionLevel;
-        document.getElementById('unlocked-levels').textContent = `${maxLevel}/3`;
-        
+        const list = document.getElementById('mission-list');
+        const statuses = ProgressCore.statuses(this.progress);
+        for (const group of ['key', 'encryption', 'decryption', 'challenge']) {
+            let section = document.getElementById('mission-group-' + group);
+            if (!section) {
+                section = document.createElement('section');
+                section.id = 'mission-group-' + group;
+                section.className = 'mission-group';
+                section.appendChild(document.createElement('h3'));
+                list.appendChild(section);
+            }
+            section.querySelector('h3').textContent = i18n.t(`mission.group.${group}`);
+            for (const mission of ProgressCore.MISSIONS.filter(item => item.group === group)) {
+                const status = statuses.find(item => item.id === mission.id);
+                let row = document.getElementById('mission-' + mission.id);
+                if (!row) {
+                    row = document.createElement('div');
+                    row.id = 'mission-' + mission.id;
+                    row.className = 'mission-row';
+                    for (const name of ['state', 'title', 'learn', 'points', 'lock']) {
+                        const text = document.createElement('p');
+                        text.className = 'mission-' + name;
+                        row.appendChild(text);
+                    }
+                    const buttons = document.createElement('div');
+                    buttons.className = 'mission-actions';
+                    row.appendChild(buttons);
+                    section.appendChild(row);
+                }
+                row.dataset.state = status.state;
+                if (status.state === 'next') row.setAttribute('aria-current', 'step');
+                else row.removeAttribute('aria-current');
+                const symbols = { done: '✅', next: '▶', open: '○', locked: '🔒' };
+                row.querySelector('.mission-state').textContent = symbols[status.state] + ' ' + i18n.t(`mission.state.${status.state}`);
+                row.querySelector('.mission-title').textContent = mission.id + ' ' + i18n.t(`mission.${mission.id}.title`);
+                row.querySelector('.mission-learn').textContent = i18n.t(`mission.${mission.id}.learn`);
+                row.querySelector('.mission-points').textContent = mission.points
+                    ? mission.points + 'pt' + (status.star ? ' ★ ' + i18n.t('mission.star') : '') : '';
+                row.querySelector('.mission-lock').textContent = status.state === 'locked'
+                    ? i18n.t('mission.unlock', { title: i18n.t(`mission.${mission.requires}.title`) }) : '';
+                const buttons = row.querySelector('.mission-actions');
+                if (status.state === 'locked') {
+                    buttons.replaceChildren();
+                    continue;
+                }
+                let guide = document.getElementById('mission-guide-' + mission.id);
+                if (!guide) {
+                    guide = document.createElement('button');
+                    guide.type = 'button';
+                    guide.id = 'mission-guide-' + mission.id;
+                    guide.className = 'btn btn-secondary';
+                    guide.addEventListener('click', event => this.requestGuide(mission.id, event.currentTarget));
+                    buttons.appendChild(guide);
+                }
+                guide.textContent = i18n.t(status.state === 'done' ? 'guide.again' : 'guide.start');
+                if (mission.group === 'challenge') {
+                    let start = document.getElementById('challenge-start-' + mission.challengeId);
+                    if (!start) {
+                        start = document.createElement('button');
+                        start.type = 'button';
+                        start.id = 'challenge-start-' + mission.challengeId;
+                        start.className = 'btn btn-primary';
+                        start.addEventListener('click', () => this.startChallenge(mission.challengeId));
+                        buttons.appendChild(start);
+                    }
+                    start.textContent = i18n.t('mission.challenge');
+                }
+            }
+        }
         this.updateProgressSummary();
     }
 
     updateProgressSummary() {
-        const progress = this.exerciseManager.getProgress();
-        const decryptionLevel = progress.unlockedLevels.decryption;
-        const maxLevel = decryptionLevel;
-        
-        const summary = i18n.t('progress.summary', {
-            points: progress.totalPoints,
-            challenges: progress.completedChallenges.length,
-            level: maxLevel
-        });
-        document.getElementById('progress-summary').textContent = summary;
+        const summary = ProgressCore.summary(this.progress);
+        document.getElementById('progress-summary').textContent = i18n.t('roadmap.summary', summary);
+        document.getElementById('progress-next-title').textContent = summary.next
+            ? i18n.t('roadmap.next', { title: i18n.t(`mission.${summary.next}.title`) }) : i18n.t('roadmap.complete');
+        document.getElementById('progress-next-guide').hidden = !summary.next;
+        const complete = document.getElementById('progress-complete');
+        complete.hidden = !!summary.next;
+        complete.textContent = i18n.t('roadmap.explore');
     }
 
     refreshDecryptionChallenges() {
-        const typeSelect = document.getElementById('practice-type');
-        const practiceSelect = document.getElementById('practice-list');
-        
-        // チャレンジタイプが選択されている場合のみ更新
-        if (typeSelect.value === 'challenge') {
-            this.resetSelect(practiceSelect, 'dropdown.select-task');
-            
-            const challenges = this.exerciseManager.getChallengesByLevel('decryption');
-            Object.keys(challenges).sort().forEach(level => {
-                const optgroup = document.createElement('optgroup');
-                optgroup.label = i18n.t('level.label', { level });
-                challenges[level].forEach(challenge => {
-                    const option = document.createElement('option');
-                    option.value = challenge.id;
-                    const translatedTitle = i18n.t(`example.${challenge.title}`) !== `example.${challenge.title}` 
-                        ? i18n.t(`example.${challenge.title}`) 
-                        : challenge.title;
-                    option.textContent = `${translatedTitle} (${challenge.points}pt)`;
-                    
-                    // ロックされているレベルかチェック
-                    if (!this.exerciseManager.isLevelUnlocked('decryption', parseInt(level))) {
-                        option.disabled = true;
-                        const lockText = i18n.t('level.locked');
-                        option.textContent += lockText;
-                    }
-                    
-                    // 完了済みチャレンジにマーク
-                    if (this.exerciseManager.isChallengeCompleted(challenge.id)) {
-                        option.textContent += ' ✓';
-                    }
-                    
-                    optgroup.appendChild(option);
-                });
-                practiceSelect.appendChild(optgroup);
-            });
+        const type = document.getElementById('practice-type').value;
+        if (type !== 'challenge') return;
+        const select = document.getElementById('practice-list');
+        const value = select.value;
+        this.populatePracticeList(type);
+        select.value = value;
+    }
+
+    matrixDescription() {
+        return i18n.t(`matrix.${this.matrixSource.type}`, this.matrixSource);
+    }
+
+    updateMatrixStatus() {
+        for (const tab of ['encryption', 'decryption']) {
+            document.getElementById('matrix-status-' + tab).textContent = this.matrixDescription();
         }
+        this.updateChallengeInfoDisplay();
     }
 
     resetExerciseUI() {
-        // 例文選択をリセット
         document.getElementById('example-category').selectedIndex = 0;
         this.resetSelect(document.getElementById('example-list'), 'dropdown.select-example');
         document.getElementById('example-list').disabled = true;
         document.getElementById('load-example').disabled = true;
-        
-        // 課題選択をリセット
         document.getElementById('practice-type').selectedIndex = 0;
         this.resetSelect(document.getElementById('practice-list'), 'dropdown.select-task');
         document.getElementById('practice-list').disabled = true;
         document.getElementById('load-practice').disabled = true;
-        
-        // チャレンジ情報とチェック結果を隠す
         document.getElementById('challenge-info').classList.add('hidden');
         document.getElementById('answer-check').classList.add('hidden');
         document.getElementById('answer-result').textContent = '';
-        
         this.currentChallenge = null;
+        this.selectedChallenge = null;
+        this.loaded = null;
     }
 }
