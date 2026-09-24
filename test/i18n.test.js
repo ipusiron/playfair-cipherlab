@@ -16,6 +16,18 @@ test('K-4 dictionary keys match and no value is empty', () => {
         }
     }
 });
+test('E-3 Japanese dictionary text has no spaces at Japanese and ASCII boundaries', () => {
+    const ranges = [[0x3000, 0x303f], [0x3040, 0x30ff], [0x4e00, 0x9fff], [0xff01, 0xff60]];
+    const jp = '[' + ranges.map(([a, b]) => String.fromCodePoint(a) + '-' + String.fromCodePoint(b)).join('') + ']';
+    const tick = String.fromCodePoint(0x60);
+    const pattern = new RegExp(jp + ' +[A-Za-z0-9{' + tick + ']|[A-Za-z0-9}' + tick + '] +' + jp, 'g');
+
+    for (const [key, value] of Object.entries(dictionaries.ja)) {
+        const text = value.replace(/<[^>]*>/g, '').replace(/https?:\/\/[^\s<>)]+/g, '');
+        assert.deepEqual([...text.matchAll(pattern)].map(match => match[0]), [], key);
+    }
+});
+
 
 test('K-4 all literal translation calls exist', () => {
     for (const file of fs.readdirSync(path.join(root, 'js')).filter(file => file.endsWith('.js'))) {

@@ -190,3 +190,14 @@ test('H-5 mutual links, English text, complete parallel trees and seven image re
         .filter(file => file.endsWith('.png')).map(file => folder + '/' + file));
     assert.deepEqual(pngs.sort(), referenced.sort());
 });
+test('E-3 Japanese README prose has no spaces at Japanese and ASCII boundaries', () => {
+    const ranges = [[0x3000, 0x303f], [0x3040, 0x30ff], [0x4e00, 0x9fff], [0xff01, 0xff60]];
+    const jp = '[' + ranges.map(([a, b]) => String.fromCodePoint(a) + '-' + String.fromCodePoint(b)).join('') + ']';
+    const tick = String.fromCodePoint(0x60);
+    const pattern = new RegExp(jp + ' +[A-Za-z0-9{' + tick + ']|[A-Za-z0-9}' + tick + '] +' + jp, 'g');
+
+    const inline = new RegExp('(' + tick + '+)[^' + tick + ']*?\\1', 'g');
+    const prose = readme.replace(/<!--[\s\S]*?-->/g, '').replace(/```[\s\S]*?```/g, '')
+        .replace(inline, tick + tick).replace(/https?:\/\/[^\s<>)]+/g, '').replace(/<[^>]*>/g, '');
+    assert.deepEqual([...prose.matchAll(pattern)].map(match => match[0]), []);
+});

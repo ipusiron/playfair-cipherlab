@@ -1302,7 +1302,10 @@ class UI {
                 else row.removeAttribute('aria-current');
                 const symbols = { done: '✅', next: '▶', open: '○', locked: '🔒' };
                 row.querySelector('.mission-state').textContent = symbols[status.state] + ' ' + i18n.t(`mission.state.${status.state}`);
-                row.querySelector('.mission-title').textContent = mission.id + ' ' + i18n.t(`mission.${mission.id}.title`);
+                const title = i18n.t(`mission.${mission.id}.title`);
+                row.querySelector('.mission-title').textContent = i18n.t('mission.label', {
+                    id: mission.id, title, separator: /^[A-Za-z0-9]/.test(title) ? ' ' : ''
+                });
                 row.querySelector('.mission-learn').textContent = i18n.t(`mission.${mission.id}.learn`);
                 row.querySelector('.mission-points').textContent = mission.points
                     ? mission.points + 'pt' + (status.star ? ' ★ ' + i18n.t('mission.star') : '') : '';
