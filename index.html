@@ -2,11 +2,17 @@
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
+    <meta http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'">
+    <meta name="referrer" content="no-referrer">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Playfair CipherLab - ビジュアルで学ぶプレイフェア暗号ツール</title>
     <link rel="stylesheet" href="css/styles.css" />
+    <link rel="icon" href="data:," />
   </head>
   <body>
+    <script src="js/theme-init.js"></script>
+    <noscript>このツールを使うにはJavaScriptを有効にしてください。<br>Please enable JavaScript to use this tool.</noscript>
     <header>
       <div class="header-content">
         <div>
@@ -14,13 +20,13 @@
           <p>ビジュアルで学ぶプレイフェア暗号ツール</p>
         </div>
         <div class="header-buttons">
-          <button id="lang-toggle" class="header-btn" aria-label="言語切り替え / Switch Language">
+          <button type="button" id="lang-toggle" class="header-btn" aria-label="言語切り替え / Switch Language">
             <span class="lang-text">JA</span>
           </button>
-          <button id="help-toggle" class="header-btn" aria-label="ヘルプを表示">
+          <button type="button" id="help-toggle" class="header-btn" aria-label="ヘルプを表示">
             <span class="header-icon">❓</span>
           </button>
-          <button
+          <button type="button"
             id="theme-toggle"
             class="header-btn"
             aria-label="ダークモード切り替え"
@@ -34,7 +40,7 @@
     <main>
       <!-- Progress Accordion -->
       <div class="progress-accordion">
-        <button id="progress-toggle" class="progress-toggle">
+        <button type="button" id="progress-toggle" aria-expanded="false" aria-controls="progress-content" class="progress-toggle">
           <span class="progress-title">📊 学習進捗</span>
           <span class="progress-summary" id="progress-summary">総ポイント: 0 | クリア課題: 0 | レベル: 1/3</span>
           <span class="progress-arrow">▼</span>
@@ -55,28 +61,31 @@
             </div>
           </div>
           <div class="progress-actions">
-            <button id="reset-progress" class="btn btn-secondary btn-small">
+            <button type="button" id="reset-progress" class="btn btn-secondary btn-small">
               🔄 進捗をリセット
             </button>
           </div>
         </div>
       </div>
 
-      <div class="tabs">
-        <button class="tab-button active" data-tab="key-generation">
+      <div class="tabs" role="tablist" aria-label="機能" data-i18n-aria="tabs.label">
+        <button type="button" class="tab-button active" id="tab-key-generation" data-tab="key-generation" role="tab"
+          aria-selected="true" aria-controls="key-generation" tabindex="0">
           🔑 鍵生成
         </button>
-        <button class="tab-button" data-tab="encryption">🔐 暗号化</button>
-        <button class="tab-button" data-tab="decryption">🔓 復号</button>
+        <button type="button" class="tab-button" id="tab-encryption" data-tab="encryption" role="tab"
+          aria-selected="false" aria-controls="encryption" tabindex="-1">🔐 暗号化</button>
+        <button type="button" class="tab-button" id="tab-decryption" data-tab="decryption" role="tab"
+          aria-selected="false" aria-controls="decryption" tabindex="-1">🔓 復号</button>
       </div>
 
       <div class="tab-content">
         <!-- Key Generation Tab -->
-        <div id="key-generation" class="tab-panel active">
+        <div id="key-generation" role="tabpanel" aria-labelledby="tab-key-generation" class="tab-panel active">
           <h2>鍵マトリクスの生成</h2>
           <div class="key-matrix-container">
             <div id="key-matrix" class="matrix-grid"></div>
-            <button id="edit-matrix-btn" class="btn btn-primary">編集</button>
+            <button type="button" id="edit-matrix-btn" class="btn btn-primary">編集</button>
           </div>
           <div id="matrix-editor" class="matrix-editor hidden">
             <div class="edit-mode-selector">
@@ -98,7 +107,7 @@
                 placeholder="例: PLAYFAIR EXAMPLE"
               />
               <div class="keyword-preview">
-                <label>生成されるマトリクス:</label>
+                <span class="field-heading">生成されるマトリクス:</span>
                 <div id="keyword-matrix-preview" class="matrix-preview"></div>
               </div>
             </div>
@@ -114,30 +123,30 @@
             </div>
             
             <div class="editor-buttons">
-              <button id="save-matrix-btn" class="btn btn-success">保存</button>
-              <button id="cancel-edit-btn" class="btn btn-secondary">
+              <button type="button" id="save-matrix-btn" class="btn btn-success">保存</button>
+              <button type="button" id="cancel-edit-btn" class="btn btn-secondary">
                 キャンセル
               </button>
             </div>
-            <div id="matrix-error" class="error-message"></div>
+            <div id="matrix-error" aria-live="polite" class="error-message"></div>
           </div>
         </div>
 
         <!-- Encryption Tab -->
-        <div id="encryption" class="tab-panel">
+        <div id="encryption" role="tabpanel" aria-labelledby="tab-encryption" class="tab-panel">
           <h2>暗号化</h2>
           
           <!-- Exercise Selection -->
           <div class="exercise-section">
             <h3>例文から選択</h3>
             <div class="exercise-controls">
-              <select id="example-category" class="exercise-select">
+              <select id="example-category" aria-label="example-category" data-i18n-aria="select.example-category" class="exercise-select">
                 <option value="">カテゴリを選択...</option>
               </select>
-              <select id="example-list" class="exercise-select" disabled>
+              <select id="example-list" aria-label="example-list" data-i18n-aria="select.example-list" class="exercise-select" disabled>
                 <option value="">例文を選択...</option>
               </select>
-              <button id="load-example" class="btn btn-secondary btn-small" disabled>読み込み</button>
+              <button type="button" id="load-example" class="btn btn-secondary btn-small" disabled>読み込み</button>
             </div>
           </div>
           
@@ -148,7 +157,7 @@
               rows="4"
               placeholder="暗号化したいテキストを入力"
             ></textarea>
-            <div id="plaintext-error" class="error-message"></div>
+            <div id="plaintext-error" aria-live="polite" class="error-message"></div>
           </div>
 
           <div class="settings-section">
@@ -163,7 +172,7 @@
             <div id="mode-on-settings" class="mode-settings">
               <div class="mode-label">補完文字を挿入</div>
               <div class="padding-char-wrapper">
-                <label>補完文字:</label>
+                <span class="field-heading">補完文字:</span>
                 <div class="radio-group">
                   <label
                     ><input
@@ -172,7 +181,7 @@
                       value="X"
                       checked
                     />
-                    X</label
+                    <span>X</span></label
                   >
                   <label
                     ><input type="radio" name="padding-char" value="Q" />
@@ -195,7 +204,7 @@
                     name="same-pair-rule"
                     value="no-change"
                   />
-                  変化なし（同じ文字のまま）</label
+                  <span>変種: 変化なし（同じ文字のまま）</span></label
                 >
                 <label
                   ><input
@@ -204,7 +213,7 @@
                     value="right-shift"
                     checked
                   />
-                  右隣の文字に置換（標準）</label
+                  <span>右隣の文字に置換（変種）</span></label
                 >
                 <label
                   ><input
@@ -212,48 +221,49 @@
                     name="same-pair-rule"
                     value="bottom-right"
                   />
-                  1つ右、1つ下の位置に移動</label
+                  <span>1つ右、1つ下の位置に移動</span></label
                 >
               </div>
             </div>
           </div>
 
-          <button id="encrypt-btn" class="btn btn-primary">暗号化</button>
+          <button type="button" id="encrypt-btn" class="btn btn-primary">暗号化</button>
 
           <div id="encryption-process" class="process-section hidden">
             <div class="process-header">
               <h3>処理過程</h3>
               <div class="animation-controls">
-                <button
+                <button type="button"
                   id="prev-step-encryption"
                   class="btn btn-secondary btn-small"
                   disabled
                 >
                   ◀ 前
                 </button>
-                <button
+                <button type="button"
                   id="play-pause-encryption"
                   class="btn btn-secondary btn-small"
                 >
                   ▶ 再生
                 </button>
-                <button
+                <button type="button"
                   id="next-step-encryption"
                   class="btn btn-secondary btn-small"
                   disabled
                 >
                   次 ▶
                 </button>
+                <button type="button" id="finish-encryption" class="btn btn-secondary btn-small">最後まで</button>
                 <span id="step-info-encryption" class="step-info">0 / 0</span>
               </div>
             </div>
             <div class="intermediate-states">
               <div class="state-container">
-                <label>変換前（2文字ペア）:</label>
+                <span class="field-heading">変換前（2文字ペア）:</span>
                 <div id="pair-display" class="pair-display"></div>
               </div>
               <div class="state-container">
-                <label>変換後（2文字ペア）:</label>
+                <span class="field-heading">変換後（2文字ペア）:</span>
                 <div
                   id="encrypted-pair-display"
                   class="pair-display encrypted-pairs"
@@ -261,9 +271,10 @@
               </div>
             </div>
             <div id="encryption-matrix" class="matrix-grid"></div>
+            <p id="step-description-encryption" class="step-description" aria-live="polite"></p>
             <div id="encryption-message" class="info-message"></div>
             <div class="restart-section">
-              <button id="restart-encryption" class="btn btn-outline btn-small">
+              <button type="button" id="restart-encryption" class="btn btn-outline btn-small">
                 🔄 最初から再生
               </button>
             </div>
@@ -273,7 +284,7 @@
             <h3>暗号文</h3>
             <div class="output-container">
               <div id="ciphertext" class="output-text"></div>
-              <button id="copy-ciphertext" class="btn btn-secondary">
+              <button type="button" id="copy-ciphertext" class="btn btn-secondary">
                 コピー
               </button>
             </div>
@@ -281,22 +292,22 @@
         </div>
 
         <!-- Decryption Tab -->
-        <div id="decryption" class="tab-panel">
+        <div id="decryption" role="tabpanel" aria-labelledby="tab-decryption" class="tab-panel">
           <h2>復号</h2>
           
           <!-- Exercise Selection -->
           <div class="exercise-section">
             <h3>練習・課題から選択</h3>
             <div class="exercise-controls">
-              <select id="practice-type" class="exercise-select">
+              <select id="practice-type" aria-label="practice-type" data-i18n-aria="select.practice-type" class="exercise-select">
                 <option value="">タイプを選択...</option>
                 <option value="practice">復号練習</option>
                 <option value="challenge">解読チャレンジ</option>
               </select>
-              <select id="practice-list" class="exercise-select" disabled>
+              <select id="practice-list" aria-label="practice-list" data-i18n-aria="select.practice-list" class="exercise-select" disabled>
                 <option value="">課題を選択...</option>
               </select>
-              <button id="load-practice" class="btn btn-secondary btn-small" disabled>読み込み</button>
+              <button type="button" id="load-practice" class="btn btn-secondary btn-small" disabled>読み込み</button>
             </div>
             <div id="challenge-info" class="challenge-info hidden">
               <div class="challenge-details">
@@ -315,28 +326,29 @@
               rows="4"
               placeholder="復号したい暗号文を入力"
             ></textarea>
-            <div id="ciphertext-error" class="error-message"></div>
+            <div id="ciphertext-error" aria-live="polite" class="error-message"></div>
           </div>
 
           <div class="settings-section">
             <div class="mode-label">同一ペア処理ルール</div>
             <div class="radio-group-vertical">
+              <label><input type="radio" name="decrypt-same-pair-rule" value="standard" checked>
+                <span>標準のプレイフェア</span></label>
               <label
                 ><input
                   type="radio"
                   name="decrypt-same-pair-rule"
                   value="no-change"
                 />
-                変化なし（同じ文字のまま）</label
+                <span>変化なし（同じ文字のまま）</span></label
               >
               <label
                 ><input
                   type="radio"
                   name="decrypt-same-pair-rule"
                   value="right-shift"
-                  checked
                 />
-                右隣の文字から復元（左の文字に変換・標準）</label
+                <span>右隣の文字から復元（変種）</span></label
               >
               <label
                 ><input
@@ -344,47 +356,48 @@
                   name="decrypt-same-pair-rule"
                   value="bottom-right"
                 />
-                1つ右、1つ下の位置から復元（1つ左、1つ上に変換）</label
+                <span>1つ右、1つ下の位置から復元（1つ左、1つ上に変換）</span></label
               >
             </div>
           </div>
 
-          <button id="decrypt-btn" class="btn btn-primary">復号</button>
+          <button type="button" id="decrypt-btn" class="btn btn-primary">復号</button>
 
           <div id="decryption-process" class="process-section hidden">
             <div class="process-header">
               <h3>処理過程</h3>
               <div class="animation-controls">
-                <button
+                <button type="button"
                   id="prev-step-decryption"
                   class="btn btn-secondary btn-small"
                   disabled
                 >
                   ◀ 前
                 </button>
-                <button
+                <button type="button"
                   id="play-pause-decryption"
                   class="btn btn-secondary btn-small"
                 >
                   ▶ 再生
                 </button>
-                <button
+                <button type="button"
                   id="next-step-decryption"
                   class="btn btn-secondary btn-small"
                   disabled
                 >
                   次 ▶
                 </button>
+                <button type="button" id="finish-decryption" class="btn btn-secondary btn-small">最後まで</button>
                 <span id="step-info-decryption" class="step-info">0 / 0</span>
               </div>
             </div>
             <div class="intermediate-states">
               <div class="state-container">
-                <label>変換前（2文字ペア）:</label>
+                <span class="field-heading">変換前（2文字ペア）:</span>
                 <div id="decrypt-pair-display" class="pair-display"></div>
               </div>
               <div class="state-container">
-                <label>変換後（2文字ペア）:</label>
+                <span class="field-heading">変換後（2文字ペア）:</span>
                 <div
                   id="decrypted-pair-display"
                   class="pair-display decrypted-pairs"
@@ -392,8 +405,9 @@
               </div>
             </div>
             <div id="decryption-matrix" class="matrix-grid"></div>
+            <p id="step-description-decryption" class="step-description" aria-live="polite"></p>
             <div class="restart-section">
-              <button id="restart-decryption" class="btn btn-outline btn-small">
+              <button type="button" id="restart-decryption" class="btn btn-outline btn-small">
                 🔄 最初から再生
               </button>
             </div>
@@ -403,11 +417,13 @@
             <h3>復号結果</h3>
             <div class="output-container">
               <div id="decrypted-text" class="output-text"></div>
-              <button id="copy-plaintext" class="btn btn-secondary">
+              <button type="button" id="copy-plaintext" class="btn btn-secondary">
                 コピー
               </button>
             </div>
             <div id="decryption-notes" class="info-message"></div>
+            <p><span id="candidate-label">候補を除いた文</span></p>
+            <div id="candidate-plain" class="output-text"></div>
             <div id="answer-check" class="answer-check hidden">
               <h4>解読チャレンジ解答</h4>
               <div class="answer-input-section">
@@ -420,10 +436,10 @@
                 />
               </div>
               <div class="answer-actions">
-                <button id="check-answer" class="btn btn-success">解答をチェック</button>
-                <button id="hint-button" class="btn btn-secondary">ヒントを見る <span id="hint-counter" class="hint-counter hidden">(1/4)</span></button>
+                <button type="button" id="check-answer" class="btn btn-success">解答をチェック</button>
+                <button type="button" id="hint-button" class="btn btn-secondary">ヒントを見る <span id="hint-counter" class="hint-counter hidden">(1/4)</span></button>
               </div>
-              <div id="answer-result" class="answer-result"></div>
+              <div id="answer-result" aria-live="polite" class="answer-result"></div>
               <div id="hint-display" class="hint-display hidden"></div>
             </div>
           </div>
@@ -436,242 +452,23 @@
         🔗 GitHubリポジトリはこちら（
         <a
           href="https://github.com/ipusiron/playfair-cipherlab"
-          target="_blank"
+          target="_blank" rel="noopener noreferrer"
         >ipusiron/playfair-cipherlab</a> ）
       </div>
     </footer>
 
-    <div id="toast" class="toast hidden"></div>
+    <div id="toast" aria-live="polite" class="toast hidden"></div>
 
     <!-- Help Modal -->
-    <div id="help-modal" class="modal hidden">
+    <div id="help-modal" role="dialog" aria-modal="true" aria-labelledby="help-heading" class="modal hidden">
       <div class="modal-overlay"></div>
       <div class="modal-content">
         <div class="modal-header">
-          <h2>Playfair CipherLab ヘルプ</h2>
-          <button id="help-close" class="modal-close">&times;</button>
+          <h2 id="help-heading">Playfair CipherLab ヘルプ</h2>
+          <button type="button" id="help-close" aria-label="閉じる" data-i18n-aria="help.close" class="modal-close">&times;</button>
         </div>
         <div class="modal-body">
-          <section>
-            <h3>📊 学習進捗</h3>
-            <p>タブの上にあるアコーディオン式の進捗パネルで学習状況を確認できます。</p>
-            <ul>
-              <li>
-                <strong>総ポイント</strong>：復号タブの解読チャレンジをクリアすると獲得
-              </li>
-              <li>
-                <strong>クリア課題数</strong>：正解した解読チャレンジの数
-              </li>
-              <li>
-                <strong>解放レベル</strong>：レベル内の全チャレンジクリアで次レベル解放
-              </li>
-              <li>
-                <strong>進捗リセット</strong>：確認ダイアログ付きで全進捗をリセット可能
-              </li>
-            </ul>
-          </section>
-
-          <section>
-            <h3>🔑 鍵生成タブ</h3>
-            <p>プレイフェア暗号で使用する5×5マトリクスを設定します。</p>
-            <ul>
-              <li>
-                <strong>キーワード指定</strong>：英単語からマトリクスを自動生成
-              </li>
-              <li>
-                <strong>マトリクス指定</strong>：25文字を直接入力して設定
-              </li>
-              <li>
-                <strong>文字制限</strong>：A-Zの25文字（Jは使用不可、Iと統合）
-              </li>
-              <li>
-                <strong>重複チェック</strong>：同じ文字が重複している場合はエラー
-              </li>
-            </ul>
-          </section>
-
-          <section>
-            <h3>🔐 暗号化タブ</h3>
-            <p>平文をプレイフェア暗号で暗号化します。</p>
-            <ul>
-              <li>
-                <strong>例文選択</strong>：カテゴリ別の例文を読み込んで学習可能
-              </li>
-              <li>
-                <strong>入力検証</strong>：英字以外は警告表示されますが処理は続行
-              </li>
-              <li>
-                <strong>同一ペア処理モード</strong>：
-                <ul>
-                  <li><strong>ON</strong>：補完文字（X/Q/Z）を挿入して分離</li>
-                  <li><strong>OFF</strong>：3つの特別ルールから選択
-                    <ul>
-                      <li>変化なし（同じ文字のまま）</li>
-                      <li>右隣の文字に置換（標準）</li>
-                      <li>1つ右、1つ下の位置に移動</li>
-                    </ul>
-                  </li>
-                </ul>
-              </li>
-              <li>
-                <strong>変換ルール</strong>：同一行は右シフト、同一列は下シフト、長方形は対角交換
-              </li>
-            </ul>
-          </section>
-
-          <section>
-            <h3>🔓 復号タブ</h3>
-            <p>暗号文をプレイフェア暗号で復号します。</p>
-            <ul>
-              <li>
-                <strong>練習・課題選択</strong>：復号練習と解読チャレンジを選択可能
-              </li>
-              <li>
-                <strong>解読チャレンジ</strong>：正解するとポイント獲得、進捗が記録される
-                <ul>
-                  <li>チャレンジ1: デフォルト鍵による基本復号（10pt）</li>
-                  <li>チャレンジ2: SECRET鍵による中級復号（20pt）</li>
-                  <li>チャレンジ3: MILITARY鍵による上級復号（30pt）</li>
-                </ul>
-              </li>
-              <li>
-                <strong>レベル制限</strong>：前レベルクリアで次レベルが解放される
-              </li>
-              <li>
-                <strong>ヒントシステム</strong>：段階的にヒントを表示
-                <ul>
-                  <li>ヒントボタンに「(現在/総数)」カウンターを表示</li>
-                  <li>複数回クリックで次のヒントを表示</li>
-                  <li>全ヒント表示後はボタンが無効化</li>
-                </ul>
-              </li>
-              <li>
-                <strong>解答検証</strong>：柔軟な答え受け入れ
-                <ul>
-                  <li>完全一致による正解判定</li>
-                  <li>埋め文字の有無を考慮した判定</li>
-                  <li>適切なスペースでの単語区切りが必要</li>
-                </ul>
-              </li>
-              <li>
-                <strong>同一ペア処理ルール</strong>：暗号化時の設定に合わせて選択
-                <ul>
-                  <li>変化なし（同じ文字のまま）</li>
-                  <li>右隣の文字から復元（左の文字に変換・標準）</li>
-                  <li>1つ右、1つ下の位置から復元（1つ左、1つ上に変換）</li>
-                </ul>
-              </li>
-              <li>
-                <strong>入力制限</strong>：英字のみ受け付け（その他はエラー）
-              </li>
-              <li>
-                <strong>変換ルール</strong>：暗号化の逆処理（左シフト、上シフト、対角交換）
-              </li>
-            </ul>
-          </section>
-
-          <section>
-            <h3>🎬 アニメーション制御</h3>
-            <p>暗号化・復号の過程をステップごとに確認できます。</p>
-            <ul>
-              <li><strong>◀ 前</strong>：前のステップに戻る（ハイライト表示付き）</li>
-              <li><strong>▶ 再生 / ⏸ 停止</strong>：自動再生の開始・停止</li>
-              <li><strong>次 ▶</strong>：次のステップに進む</li>
-              <li>
-                <strong>🔄 最初から再生</strong
-                >：アニメーションを最初からリスタート
-              </li>
-              <li><strong>ステップ表示</strong>：現在のステップと総ステップ数を表示</li>
-            </ul>
-            <p>
-              各ステップでマトリクスのハイライトと変換後ペアの表示が連動します。前ボタンでも対応するペアの位置がマトリクスでハイライト表示されます。
-            </p>
-            <p>
-              <strong>中間状態表示</strong>：変換前の2文字ペアと変換後の2文字ペアを段階的に表示し、処理過程を視覚的に理解できます。
-            </p>
-          </section>
-
-          <section>
-            <h3>🌙 その他の機能</h3>
-            <ul>
-              <li>
-                <strong>ダークモード</strong
-                >：右上のボタンでライト/ダークモードを切り替え
-              </li>
-              <li>
-                <strong>コピー機能</strong
-                >：暗号文・復号結果をワンクリックでコピー
-              </li>
-              <li>
-                <strong>レスポンシブ対応</strong
-                >：モバイル端末でも快適に利用可能
-              </li>
-              <li>
-                <strong>自動保存機能</strong
-                >：学習進捗は自動的にブラウザに保存される
-              </li>
-              <li>
-                <strong>動的更新</strong
-                >：チャレンジ成功後、タブ切り替えなしで次のチャレンジが選択可能
-              </li>
-              <li>
-                <strong>完了表示</strong
-                >：クリア済みチャレンジには「✓」マークを表示
-              </li>
-              <li>
-                <strong>多言語対応</strong
-                >：右上のJA/ENボタンで日本語・英語を切り替え可能
-              </li>
-              <li>
-                <strong>アクセシビリティ</strong
-                >：キーボードナビゲーションとスクリーンリーダー対応
-              </li>
-            </ul>
-          </section>
-
-          <section>
-            <h3>🎯 使い方のコツ</h3>
-            <ul>
-              <li>
-                <strong>学習の順序</strong>：鍵生成 → 暗号化 → 復号の順で学習することを推奨
-              </li>
-              <li>
-                <strong>チャレンジ攻略</strong>：ヒントを段階的に表示して解読を楽しむ
-              </li>
-              <li>
-                <strong>アニメーション活用</strong>：前・次ボタンで処理過程を詳しく確認
-              </li>
-              <li>
-                <strong>同一ペア処理</strong>：暗号化と復号で同じルールを選択することが重要
-              </li>
-              <li>
-                <strong>進捗管理</strong>：進捗パネルで学習状況を定期的に確認
-              </li>
-              <li>
-                <strong>例文活用</strong>：暗号化タブの例文から始めて基本操作を習得
-              </li>
-              <li>
-                <strong>エラー対処</strong>：赤字エラーメッセージを読んで適切に修正
-              </li>
-              <li>
-                <strong>マトリクス理解</strong>：鍵生成でキーワード指定とマトリクス指定を両方試す
-              </li>
-              <li>
-                <strong>ペア処理練習</strong>：同一ペア処理の各ルールで結果の違いを確認
-              </li>
-              <li>
-                <strong>チャレンジ戦略</strong>：ヒントを使い過ぎず、まず自力で解読を試す
-              </li>
-            </ul>
-          </section>
-
-          <section>
-            <h3>⚠️ 注意事項</h3>
-            <p>
-              <strong>このツールは教育目的です。</strong
-              >プレイフェア暗号は古典暗号であり、現代の暗号学的用途には適していません。
-            </p>
-          </section>
+          <p>JavaScriptを有効にするとヘルプを表示します。Enable JavaScript to display help.</p>
         </div>
       </div>
     </div>
@@ -679,7 +476,6 @@
     <script src="js/cipher.js"></script>
     <script src="js/exercises.js"></script>
     <script src="js/ui.js"></script>
-    <script src="js/animations.js"></script>
     <script src="js/theme.js"></script>
     <script src="js/help.js"></script>
     <script src="js/i18n.js"></script>

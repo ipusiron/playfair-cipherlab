@@ -29,6 +29,19 @@ class HelpManager {
             if (e.key === 'Escape' && !this.helpModal.classList.contains('hidden')) {
                 this.hideModal();
             }
+            if (e.key === 'Tab' && !this.helpModal.classList.contains('hidden')) {
+                const controls = [...this.helpModal.querySelectorAll('button, a[href], [tabindex="0"]')]
+                    .filter(element => !element.disabled && element.getClientRects().length);
+                const first = controls[0];
+                const last = controls[controls.length - 1];
+                if (e.shiftKey && document.activeElement === first) {
+                    e.preventDefault();
+                    last.focus();
+                } else if (!e.shiftKey && document.activeElement === last) {
+                    e.preventDefault();
+                    first.focus();
+                }
+            }
         });
     }
     
@@ -39,8 +52,9 @@ class HelpManager {
             window.i18n.updateHelpModalContent();
         }
         
+        this.returnFocus = document.activeElement;
         this.helpModal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden'; // スクロールを無効化
+        document.body.classList.add('modal-open'); // スクロールを無効化
         
         // フォーカスをモーダルに移動
         this.helpClose.focus();
@@ -48,10 +62,10 @@ class HelpManager {
     
     hideModal() {
         this.helpModal.classList.add('hidden');
-        document.body.style.overflow = ''; // スクロールを復元
+        document.body.classList.remove('modal-open'); // スクロールを復元
         
         // フォーカスをヘルプボタンに戻す
-        this.helpToggle.focus();
+        (this.returnFocus || this.helpToggle).focus();
     }
 }
 
