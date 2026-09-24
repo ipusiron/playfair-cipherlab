@@ -3,6 +3,14 @@ class I18nManager {
         this.currentLang = this.loadLanguage();
         this.translations = {
             ja: {
+                'error.keyword-empty': 'キーワードを入力してください。',
+                'error.keyword-chars': '許可されていない文字が含まれています: {chars}。英字と空白のみ入力してください。',
+                'error.keyword-letter': '少なくとも1文字の英字を入力してください。',
+                'error.matrix-j': 'J は使用できません。I に置換されます。',
+                'error.matrix-length': '25文字（5×5）で入力してください。',
+                'error.matrix-duplicate': '重複する文字があります。',
+                'error.odd-length': '暗号文の文字数は偶数にしてください。',
+                'error.double-pair': '標準の暗号文に同じ文字の組 {pair} は使用できません。',
                 // Header
                 'header.title': 'Playfair CipherLab',
                 'header.subtitle': 'ビジュアルで学ぶプレイフェア暗号ツール',
@@ -221,6 +229,14 @@ class I18nManager {
                 'help.warning.desc': '<strong>このツールは教育目的です。</strong>プレイフェア暗号は古典暗号であり、現代の暗号学的用途には適していません。'
             },
             en: {
+                'error.keyword-empty': 'Enter a keyword.',
+                'error.keyword-chars': 'Unsupported characters: {chars}. Enter letters and spaces only.',
+                'error.keyword-letter': 'Enter at least one letter.',
+                'error.matrix-j': 'J cannot be used. It will be replaced with I.',
+                'error.matrix-length': 'Enter 25 letters (5 by 5).',
+                'error.matrix-duplicate': 'The matrix contains duplicate letters.',
+                'error.odd-length': 'Ciphertext must contain an even number of letters.',
+                'error.double-pair': 'Standard ciphertext cannot contain the double-letter pair {pair}.',
                 // Header
                 'header.title': 'Playfair CipherLab',
                 'header.subtitle': 'Visual Learning Tool for Playfair Cipher',

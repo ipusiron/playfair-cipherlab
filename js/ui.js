@@ -305,7 +305,7 @@ class UI {
                 const validation = this.cipher.validateKeyword(keyword);
                 
                 if (!validation.valid) {
-                    errorDiv.textContent = validation.error;
+                    errorDiv.textContent = i18n.t(validation.error.key, validation.error.params);
                     return;
                 }
                 
@@ -317,9 +317,9 @@ class UI {
                 const validation = this.cipher.validateMatrix(text);
                 
                 if (!validation.valid) {
-                    errorDiv.textContent = validation.error;
+                    errorDiv.textContent = i18n.t(validation.error.key, validation.error.params);
                     
-                    if (validation.warning) {
+                    if (validation.error.key === 'error.matrix-j') {
                         const correctedText = text.replace(/J/gi, 'I');
                         textArea.value = correctedText;
                     }
@@ -474,7 +474,13 @@ class UI {
             // 復号設定を取得
             const samePairRule = document.querySelector('input[name="decrypt-same-pair-rule"]:checked').value;
             
-            const result = this.cipher.decrypt(ciphertext, samePairRule, 'X', false);
+            const result = this.cipher.decrypt(ciphertext, samePairRule);
+            if (!result.ok) {
+                errorDiv.textContent = i18n.t(result.error.key, result.error.params);
+                processSection.classList.add('hidden');
+                plaintextSection.classList.add('hidden');
+                return;
+            }
             
             this.displayPairs('decrypt-pair-display', result.pairs);
             
@@ -574,6 +580,7 @@ class UI {
     }
 
     displayDecryptionNotes(plaintext) {
+        plaintext = plaintext.toLowerCase();
         const notesDiv = document.getElementById('decryption-notes');
         const notes = [];
         
