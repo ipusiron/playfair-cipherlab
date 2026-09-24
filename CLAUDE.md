@@ -34,10 +34,17 @@ so opening index.html directly through file:// continues to work.
    - Three optional, explicitly nonstandard same-pair variants
    - No DOM, storage, or translation dependency; conditional CommonJS export
 
-2. **exercises.js** - `ExerciseManager` class: challenge/practice data and progress
-   - Injected storage adapter; no direct DOM, localStorage, or i18n access
-   - Level unlock system (3 levels)
+2. **exercises.js** - `ExerciseManager` class: challenge/practice data and pure answer validation
+   - No DOM, localStorage, or i18n access; no progress state or writes
    - Validate the actual matrix before accepting original, prepared, or candidate-stripped answers
+
+2a. **progress.js** - Pure `ProgressCore`: nine missions, event reducer, locks,
+    stars, summary, strict version-2 storage validation and legacy migration.
+    Conditional CommonJS export; no DOM, storage or translation dependency.
+
+2b. **guide.js** - Bottom guide card and navigation using `UI.getSnapshot()`.
+    A step is done if its predicate or any later step predicate is true.
+    The guide never enters an answer, keyword or plaintext automatically.
 
 3. **ui.js** - `UI` class: main controller
    - Tab management and form handling
@@ -54,19 +61,42 @@ so opening index.html directly through file:// continues to work.
 7. **main.js** - Entry point, initializes i18n then UI
 
 Other files: index.html supplies semantic markup and CSP; css/styles.css holds
-the light/dark palette and responsive layout. assets/ contains three README
-screenshots. test/ contains the seven test files listed below.
+the light/dark palette and responsive layout. assets/ contains four Japanese README
+screenshots and assets/en/ contains three English screenshots. test/ has eight files.
 
 ### Key State
 
 - `UI.cipher` - Current PlayfairCipher instance with active matrix
 - `UI.playback.encryption` and `.decryption` - `{ steps, done, playing, timerId }`
-- `ExerciseManager.progress` - Saved in `localStorage['playfair-progress']`
+- `UI.progress` - Version-2 progress saved in `localStorage['playfair-progress']`
+- `UI.matrixSource` - Default, keyword or directly entered matrix; never persisted
+- `UI.getSnapshot()` - Live drafts, editor/tab state, loaded exercise, valid results, rulesSeenNow and lastCorrect
 - `I18nManager.currentLang` - Saved in `localStorage['playfair-language']`
 - Theme - Saved in `localStorage['theme']`
 
 Validate all saved data and catch getItem/setItem failures. Only progress,
 language, and theme are persisted; never save keys or input/output text.
+
+Progress has the shape `{version:2, missions:{}, challenges:{}, rulesSeen:[]}`.
+Missions stores only M1–M6; challenge entries store fixed points and hintsUsed.
+C1/C2/C3 are inferred from mystery-01/02/03 entries and award 10/20/30 points.
+The first correct answer is retained. Zero hints earns a star; migrated legacy
+entries have hintsUsed:null, so they never gain a retrospective star.
+Migration rejects malformed data, unknown keys and invalid ranges.
+
+Record progress only through `UI.recordProgress(event)`: reduce, save, redraw.
+Events: matrix-saved, encrypted, step-rendered, decrypted, challenge-correct.
+Count a rule only when a new nonzero playback position is actually rendered;
+repainting the same pair for language changes does not count. Skipped pairs do
+not count. rulesSeenNow is page-local and separate from saved rulesSeen.
+Invalidate results after key/input/settings changes; keep a loaded challenge's
+answer field outside the decryption output. Practice must not set its key.
+
+M1 saves PLAYFAIR EXAMPLE; M2 encrypts HELLO with the default matrix; M3 sees all
+three encryption rules; M4 encrypts MEET ME TONIGHT with the default matrix;
+M5 decrypts KCNVMP with the default matrix; M6 decrypts BNSY with ANIMAL.
+Use standard rules for M2–M6. Only C2 and C3 are locked, by C1 and C2 respectively.
+Navigation completion comes from the current snapshot, not saved achievements.
 
 ### Encryption Rules
 
@@ -96,7 +126,12 @@ values to make failing tests pass.
 ## Localization and Security
 
 Keep user-facing strings, including validation and hints, in matching ja/en
-dictionaries in i18n.js. Other application JS must not contain Japanese literals
+dictionaries in i18n.js. Initial language: valid ?lang=ja|en, then the saved
+choice, then Japanese for navigator.language starting with ja, otherwise English.
+A URL override must not be saved automatically. Save only an explicit switch.
+Maintain README.en.md alongside README.md, including the same mission/known-answer
+tables, challenge hints, complete file tree, and corresponding screenshots.
+Other application JS must not contain Japanese literals
 (comments are allowed). Update html.lang with the selected language.
 
 The meta CSP allows scripts and styles only from self, without unsafe-inline.
@@ -114,7 +149,8 @@ The Test workflow in .github/workflows/test.yml runs on push and pull_request.
 | File | Responsibility |
 |------|----------------|
 | test/cipher.test.js | Exact known answers, preparation, variants, candidates, validation, 200 seeded roundtrips |
-| test/exercises.test.js | Six exercises, answer acceptance/rejection, points, corrupt or blocked storage |
+| test/exercises.test.js | Six exercises, answer acceptance/rejection, pure fixed-point return |
+| test/progress.test.js | Missions, migration, reducer, locks, stars, snapshot steps, blocked storage |
 | test/i18n.test.js | Matching dictionaries, translation calls, literal policy, help rules |
 | test/html.test.js | CSP, referrer, ARIA, labels, buttons, inline attribute restrictions |
 | test/contrast.test.js | All 18 light/dark text pairs meet 4.5:1 |

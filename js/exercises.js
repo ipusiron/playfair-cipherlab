@@ -2,8 +2,7 @@ const ExerciseCore = typeof module !== 'undefined' && module.exports
     ? require('./cipher.js').PlayfairCore : PlayfairCore;
 
 class ExerciseManager {
-    constructor(storage = { getItem: () => null, setItem: () => {} }) {
-        this.storage = storage;
+    constructor() {
         this.exercises = {
             encryption: {
                 examples: [
@@ -152,7 +151,6 @@ class ExerciseManager {
             }
         };
         
-        this.progress = this.loadProgress();
     }
     
     getExamples(type) {
@@ -210,88 +208,6 @@ class ExerciseManager {
         return grouped;
     }
     
-    // 進捗管理
-    defaultProgress() {
-        return { completedChallenges: [], totalPoints: 0, unlockedLevels: { decryption: 1 } };
-    }
-
-    loadProgress() {
-        try {
-            const saved = this.storage.getItem('playfair-progress');
-            if (!saved) return this.defaultProgress();
-            const value = JSON.parse(saved);
-            const challenges = this.getChallenges('decryption');
-            if (!value || !Array.isArray(value.completedChallenges)
-                || !value.completedChallenges.every(id => challenges.some(challenge => challenge.id === id))
-                || new Set(value.completedChallenges).size !== value.completedChallenges.length
-                || !Number.isSafeInteger(value.totalPoints) || value.totalPoints < 0
-                || !value.unlockedLevels || !Number.isInteger(value.unlockedLevels.decryption)
-                || value.unlockedLevels.decryption < 1 || value.unlockedLevels.decryption > 3) {
-                return this.defaultProgress();
-            }
-            const points = challenges.filter(challenge => value.completedChallenges.includes(challenge.id))
-                .reduce((sum, challenge) => sum + challenge.points, 0);
-            if (points !== value.totalPoints) return this.defaultProgress();
-            return {
-                completedChallenges: [...value.completedChallenges],
-                totalPoints: points,
-                unlockedLevels: { decryption: value.unlockedLevels.decryption }
-            };
-        } catch (_error) {
-            return this.defaultProgress();
-        }
-    }
-
-    saveProgress() {
-        try {
-            this.storage.setItem('playfair-progress', JSON.stringify(this.progress));
-        } catch (_error) {
-            // 保存できなくても、このページ内の進捗は保持する。
-        }
-    }
-
-    markChallengeCompleted(challengeId, points = 0) {
-        if (!this.progress.completedChallenges.includes(challengeId)) {
-            this.progress.completedChallenges.push(challengeId);
-            this.progress.totalPoints += points;
-            this.updateUnlockedLevels();
-            this.saveProgress();
-        }
-    }
-    
-    isChallengeCompleted(challengeId) {
-        return this.progress.completedChallenges.includes(challengeId);
-    }
-    
-    updateUnlockedLevels() {
-        // 復号: 同様のロジック
-        const decryptionChallenges = this.getChallenges('decryption');
-        for (let level = 1; level <= 3; level++) {
-            const levelChallenges = decryptionChallenges.filter(c => c.level === level);
-            const completedCount = levelChallenges.filter(c => this.isChallengeCompleted(c.id)).length;
-            
-            if (completedCount === levelChallenges.length && level < 3) {
-                this.progress.unlockedLevels.decryption = Math.max(
-                    this.progress.unlockedLevels.decryption, 
-                    level + 1
-                );
-            }
-        }
-    }
-    
-    isLevelUnlocked(type, level) {
-        return level <= this.progress.unlockedLevels[type];
-    }
-    
-    getProgress() {
-        return { ...this.progress };
-    }
-    
-    resetProgress() {
-        this.progress = this.defaultProgress();
-        this.saveProgress();
-    }
-    
     // 課題検証
     validateAnswer(id, userAnswer, currentMatrixString) {
         const input = ExerciseCore.normalize(userAnswer);
@@ -309,8 +225,7 @@ class ExerciseManager {
             ExerciseCore.stripCandidates(decoded, candidates)
         ];
         if (!answers.includes(input)) return { result: 'incorrect', points: 0 };
-        const points = this.isChallengeCompleted(id) ? 0 : (challenge.points || 0);
-        if (challenge.points) this.markChallengeCompleted(id, points);
+        const points = challenge.points || 0;
         return { result: 'correct', points };
     }
 }

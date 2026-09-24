@@ -53,7 +53,7 @@ function withoutComments(source) {
 test('K-4 no Japanese literals outside the dictionary', () => {
     const ranges = [[0x3040, 0x30ff], [0x4e00, 0x9fff], [0xff01, 0xff60]];
     const pattern = new RegExp('[' + ranges.map(([a, b]) => String.fromCodePoint(a) + '-' + String.fromCodePoint(b)).join('') + ']');
-    for (const file of ['cipher', 'exercises', 'ui', 'theme', 'help', 'theme-init']) {
+    for (const file of ['cipher', 'exercises', 'ui', 'theme', 'help', 'theme-init', 'progress', 'guide']) {
         assert.equal(pattern.test(withoutComments(read(`js/${file}.js`))), false, file);
     }
 });
@@ -67,4 +67,20 @@ test('K-4 help describes variants as nonstandard', () => {
         assert.match(dictionaries[lang]['help.body'], /THE QUICK BROWN FOX/);
         assert.match(dictionaries[lang]['help.body'], /HELXLO/);
     }
+});
+
+test('E-1 initial language priority never writes storage', () => {
+    for (const [query, saved, browser, expected] of [
+        ['?lang=en', 'ja', 'ja-JP', 'en'], ['?lang=ja', 'en', 'en-US', 'ja'],
+        ['', 'en', 'ja-JP', 'en'], ['', 'ja', 'en-US', 'ja'],
+        ['', null, 'ja-JP', 'ja'], ['', null, 'en-US', 'en'],
+        ['?lang=xx', 'en', 'ja-JP', 'en'], ['?lang=xx', 'bad', 'fr-FR', 'en']
+    ]) {
+        const context = { URLSearchParams, location: { search: query }, navigator: { language: browser },
+            localStorage: { getItem: () => saved, setItem: () => assert.fail('must not save on load') } };
+        assert.equal(vm.runInNewContext(read('js/i18n.js') + '; i18n.currentLang;', context), expected);
+    }
+    const context = { URLSearchParams, location: { search: '' }, navigator: { language: 'ja-JP' },
+        localStorage: { getItem: () => { throw Error('blocked'); } } };
+    assert.equal(vm.runInNewContext(read('js/i18n.js') + '; i18n.currentLang;', context), 'ja');
 });

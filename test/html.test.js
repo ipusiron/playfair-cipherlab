@@ -40,3 +40,27 @@ test('K-5 tabs, dialog, labels, button types, and external links', () => {
         if (label.includes('same-pair-rule')) assert.doesNotMatch(label, /（標準）|・標準/);
     }
 });
+
+test('H-2 roadmap and matrix controls exist; answers are outside the result', () => {
+    for (const id of ['reset-matrix-btn', 'matrix-status-encryption', 'matrix-status-decryption', 'progress-next-guide']) {
+        assert.ok(html.includes(`id="${id}"`), id);
+    }
+    assert.doesNotMatch(html, /id="(?:unlocked-levels|total-points|completed-challenges)"/);
+    assert.ok(html.indexOf('id="answer-check"') > html.indexOf('id="challenge-info"'));
+    assert.ok(html.indexOf('id="answer-check"') < html.indexOf('id="plaintext-section"'));
+    assert.ok(html.indexOf('src="js/progress.js"') > html.indexOf('src="js/exercises.js"'));
+    assert.doesNotMatch(html.match(/id="progress-toggle"[\s\S]*?<\/button>/)[0], /id="progress-next-guide"/);
+    assert.doesNotMatch(html, /id="mission-M\d"/);
+});
+
+test('H-2 guide markup and script order', () => {
+    assert.match(html, /<section id="guide"[^>]*hidden[^>]*aria-labelledby="guide-title"/);
+    assert.match(html, /id="guide-status"[^>]*aria-live="polite"/);
+    for (const id of ['guide-title', 'guide-steps', 'guide-go', 'guide-close', 'guide-next']) {
+        assert.ok(html.includes(`id="${id}"`), id);
+    }
+    const scripts = [...html.matchAll(/<script src="([^"]+)"/g)].map(match => match[1]);
+    assert.ok(scripts.indexOf('js/exercises.js') < scripts.indexOf('js/progress.js'));
+    assert.ok(scripts.indexOf('js/progress.js') < scripts.indexOf('js/guide.js'));
+    assert.ok(scripts.indexOf('js/guide.js') < scripts.indexOf('js/ui.js'));
+});

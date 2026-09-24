@@ -42,24 +42,15 @@
       <div class="progress-accordion">
         <button type="button" id="progress-toggle" aria-expanded="false" aria-controls="progress-content" class="progress-toggle">
           <span class="progress-title">📊 学習進捗</span>
-          <span class="progress-summary" id="progress-summary">総ポイント: 0 | クリア課題: 0 | レベル: 1/3</span>
+          <span class="progress-summary" id="progress-summary"></span>
           <span class="progress-arrow">▼</span>
         </button>
+        <div class="progress-next"><span id="progress-next-title"></span>
+          <button type="button" id="progress-next-guide" class="btn btn-primary" data-i18n="guide.start"></button>
+        </div>
         <div id="progress-content" class="progress-content hidden">
-          <div class="progress-stats">
-            <div class="progress-stat" title="復号タブの解読チャレンジをクリアするとポイントが獲得できます">
-              <div class="progress-stat-value" id="total-points">0</div>
-              <div class="progress-stat-label">総ポイント</div>
-            </div>
-            <div class="progress-stat" title="復号タブの解読チャレンジを正解するとカウントされます">
-              <div class="progress-stat-value" id="completed-challenges">0</div>
-              <div class="progress-stat-label">クリア課題数</div>
-            </div>
-            <div class="progress-stat" title="レベル内の全チャレンジをクリアすると次レベルが解放されます">
-              <div class="progress-stat-value" id="unlocked-levels">1/3</div>
-              <div class="progress-stat-label">解放レベル</div>
-            </div>
-          </div>
+          <p id="progress-complete" hidden></p>
+          <div id="mission-list"></div>
           <div class="progress-actions">
             <button type="button" id="reset-progress" class="btn btn-secondary btn-small">
               🔄 進捗をリセット
@@ -86,6 +77,7 @@
           <div class="key-matrix-container">
             <div id="key-matrix" class="matrix-grid"></div>
             <button type="button" id="edit-matrix-btn" class="btn btn-primary">編集</button>
+            <button type="button" id="reset-matrix-btn" class="btn btn-secondary" data-i18n="matrix.reset"></button>
           </div>
           <div id="matrix-editor" class="matrix-editor hidden">
             <div class="edit-mode-selector">
@@ -150,6 +142,7 @@
             </div>
           </div>
           
+          <p id="matrix-status-encryption" class="matrix-status"></p>
           <div class="input-section">
             <label for="plaintext">平文入力:</label>
             <textarea
@@ -311,14 +304,36 @@
             </div>
             <div id="challenge-info" class="challenge-info hidden">
               <div class="challenge-details">
-                <div class="challenge-title"></div>
+                <h4 id="challenge-heading" class="challenge-title" tabindex="-1"></h4>
                 <div class="challenge-description"></div>
-                <div class="challenge-hint"></div>
+                <p id="challenge-required"></p>
+                <p id="challenge-matrix"></p>
+                <p id="challenge-match" aria-live="polite"></p>
+                <button type="button" id="challenge-guide" class="btn btn-secondary" data-i18n="guide.short"></button>
                 <div class="challenge-points"></div>
               </div>
             </div>
+            <div id="answer-check" class="answer-check hidden">
+              <h4>解読チャレンジ解答</h4>
+              <div class="answer-input-section">
+                <label for="challenge-answer">復号した平文を入力してください:</label>
+                <input
+                  type="text"
+                  id="challenge-answer"
+                  class="challenge-answer-input"
+                  placeholder="例: HELLO, ATTACK AT DAWN"
+                />
+              </div>
+              <div class="answer-actions">
+                <button type="button" id="check-answer" class="btn btn-success">解答をチェック</button>
+                <button type="button" id="hint-button" class="btn btn-secondary">ヒントを見る <span id="hint-counter" class="hint-counter hidden">(1/4)</span></button>
+              </div>
+              <div id="answer-result" aria-live="polite" class="answer-result"></div>
+              <div id="hint-display" class="hint-display hidden"></div>
+            </div>
           </div>
-          
+
+          <p id="matrix-status-decryption" class="matrix-status"></p>
           <div class="input-section">
             <label for="ciphertext-input">暗号文入力:</label>
             <textarea
@@ -424,24 +439,7 @@
             <div id="decryption-notes" class="info-message"></div>
             <p><span id="candidate-label">候補を除いた文</span></p>
             <div id="candidate-plain" class="output-text"></div>
-            <div id="answer-check" class="answer-check hidden">
-              <h4>解読チャレンジ解答</h4>
-              <div class="answer-input-section">
-                <label for="challenge-answer">復号した平文を入力してください:</label>
-                <input 
-                  type="text" 
-                  id="challenge-answer" 
-                  class="challenge-answer-input"
-                  placeholder="例: HELLO, ATTACK AT DAWN"
-                />
-              </div>
-              <div class="answer-actions">
-                <button type="button" id="check-answer" class="btn btn-success">解答をチェック</button>
-                <button type="button" id="hint-button" class="btn btn-secondary">ヒントを見る <span id="hint-counter" class="hint-counter hidden">(1/4)</span></button>
-              </div>
-              <div id="answer-result" aria-live="polite" class="answer-result"></div>
-              <div id="hint-display" class="hint-display hidden"></div>
-            </div>
+
           </div>
         </div>
       </div>
@@ -475,10 +473,22 @@
 
     <script src="js/cipher.js"></script>
     <script src="js/exercises.js"></script>
+    <script src="js/progress.js"></script>
+    <script src="js/guide.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/theme.js"></script>
     <script src="js/help.js"></script>
     <script src="js/i18n.js"></script>
     <script src="js/main.js"></script>
+    <section id="guide" class="guide" hidden aria-labelledby="guide-title">
+      <h2 id="guide-title" tabindex="-1"></h2>
+      <ol id="guide-steps"></ol>
+      <p id="guide-status" aria-live="polite"></p>
+      <div class="guide-actions">
+        <button type="button" id="guide-go" class="btn btn-primary" data-i18n="guide.go"></button>
+        <button type="button" id="guide-next" class="btn btn-success" data-i18n="guide.next" hidden></button>
+        <button type="button" id="guide-close" class="btn btn-secondary" data-i18n="guide.close" data-i18n-aria="guide.close" aria-label="閉じる"></button>
+      </div>
+    </section>
   </body>
 </html>
