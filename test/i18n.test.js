@@ -7,6 +7,55 @@ const root = path.join(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const dictionaries = vm.runInNewContext(read('js/i18n.js') + '; i18n.translations;', {});
 
+test('C-1 footer construction does not use innerHTML', () => {
+    const method = vm.runInNewContext(read('js/i18n.js') + '; I18nManager.prototype.updateFooter.toString();', {});
+    assert.doesNotMatch(method, /innerHTML/);
+    assert.match(method, /document\.createElement\('a'\)/);
+    assert.match(method, /textContent/);
+});
+
+test('C-1 restart guidance includes the displayed button name in both languages', () => {
+    for (const dictionary of Object.values(dictionaries)) {
+        const label = dictionary['encrypt.restart'].replace(/^\p{Extended_Pictographic}\s*/u, '');
+        assert.ok(dictionary['guide.restart'].includes(label));
+    }
+});
+
+test('B-1 help playback names match the displayed controls', () => {
+    for (const dictionary of Object.values(dictionaries)) {
+        for (const key of ['anim.prev', 'anim.next', 'playback.play', 'playback.pause', 'encrypt.restart', 'playback.finish']) {
+            const label = dictionary[key].replace(/[\p{Extended_Pictographic}\uFE0F]/gu, '').trim();
+            assert.ok(dictionary['help.body'].includes(label), key);
+        }
+    }
+});
+
+test('B-2 footer keeps its exact text and safe link through language changes', () => {
+    const footer = {
+        nodes: [],
+        set textContent(value) { this.nodes = [value]; },
+        append(...nodes) { this.nodes.push(...nodes); }
+    };
+    const document = {
+        querySelector: selector => selector === 'footer .footer' ? footer : null,
+        createElement: tag => { assert.equal(tag, 'a'); return {}; }
+    };
+    const manager = vm.runInNewContext(read('js/i18n.js') + '; i18n;', { document });
+    for (const lang of ['ja', 'en', 'ja']) {
+        manager.currentLang = lang;
+        manager.updateFooter();
+        const [prefix, link, suffix] = footer.nodes;
+        assert.equal(footer.nodes.length, 3);
+        assert.equal(link.href, 'https://github.com/ipusiron/playfair-cipherlab');
+        assert.equal(link.target, '_blank');
+        assert.equal(link.rel, 'noopener noreferrer');
+        assert.equal(link.textContent, 'ipusiron/playfair-cipherlab');
+        assert.equal(prefix + link.textContent + suffix, lang === 'ja'
+            ? '🔗 GitHubリポジトリー（ipusiron/playfair-cipherlab）'
+            : '🔗 GitHub repository (ipusiron/playfair-cipherlab)');
+    }
+});
+
 test('K-4 dictionary keys match and no value is empty', () => {
     assert.deepEqual(Object.keys(dictionaries.ja).sort(), Object.keys(dictionaries.en).sort());
     for (const dictionary of Object.values(dictionaries)) {

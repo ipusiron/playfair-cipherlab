@@ -5,6 +5,15 @@ const path = require('node:path');
 const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
 const attribute = (tag, name) => tag.match(new RegExp(`\\b${name}="([^"]*)"`))?.[1];
 
+test('C-1 desktop header uses a symmetric grid from 769px', () => {
+    const css = fs.readFileSync(path.join(__dirname, '../css/styles.css'), 'utf8');
+    const desktopHeader = css.match(/@media\s*\(min-width:\s*769px\)\s*\{\s*\.header-content\s*\{([^}]+)\}/);
+    assert.ok(desktopHeader);
+    assert.match(desktopHeader[1], /display:\s*grid\s*;/);
+    assert.match(desktopHeader[1], /grid-template-columns:\s*minmax\(0,\s*1fr\) auto minmax\(0,\s*1fr\)\s*;/);
+    assert.match(desktopHeader[1], /align-items:\s*center\s*;/);
+});
+
 test('K-5 CSP, referrer, noscript, and safe markup', () => {
     const csp = html.match(/<meta\b[^>]*http-equiv="Content-Security-Policy"[^>]*>/)?.[0];
     assert.ok(csp);
