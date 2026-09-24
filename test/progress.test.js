@@ -118,11 +118,13 @@ test('H-1 mission order, groups, points, statuses and summaries', () => {
     assert.deepEqual(core.MISSIONS.map(m => [m.id, m.group, m.points]), [
         ['M1', 'key', 0], ['M2', 'encryption', 0], ['M3', 'encryption', 0], ['M4', 'encryption', 0],
         ['M5', 'decryption', 0], ['M6', 'decryption', 0], ['M7', 'analysis', 0], ['M8', 'analysis', 0],
-        ['C1', 'challenge', 10], ['C2', 'challenge', 20], ['C3', 'challenge', 30]
+        ['C1', 'challenge', 10], ['C2', 'challenge', 20], ['C3', 'challenge', 30],
+        ['R1', 'recovery', 10], ['R2', 'recovery', 20], ['R3', 'recovery', 30]
     ]);
     let p = core.initial();
-    assert.deepEqual(core.summary(p), { done: 0, total: 11, points: 0, maxPoints: 60, next: 'M1' });
-    assert.deepEqual(core.statuses(p).map(m => m.state), ['next', 'open', 'open', 'open', 'open', 'open', 'open', 'open', 'open', 'locked', 'locked']);
+    assert.deepEqual(core.summary(p), { done: 0, total: 14, points: 0, maxPoints: 120, next: 'M1' });
+    assert.deepEqual(core.statuses(p).map(m => m.state),
+        ['next', 'open', 'open', 'open', 'open', 'open', 'open', 'open', 'open', 'locked', 'locked', 'open', 'locked', 'locked']);
     assert.equal(core.summary({ ...p, missions: { M1: true } }).next, 'M2');
     assert.equal(core.summary({ ...p, missions: { M2: true } }).next, 'M1');
     p.missions = Object.fromEntries(core.MISSIONS.slice(0, 8).map(m => [m.id, true]));
@@ -130,7 +132,9 @@ test('H-1 mission order, groups, points, statuses and summaries', () => {
     for (const id of ['mystery-01', 'mystery-02', 'mystery-03']) {
         p = core.reduce(p, { type: 'challenge-correct', id, hintsUsed: 0 });
     }
-    assert.deepEqual(core.summary(p), { done: 11, total: 11, points: 60, maxPoints: 60, next: null });
+    assert.deepEqual(core.summary(p), { done: 11, total: 14, points: 60, maxPoints: 120, next: 'R1' });
+    for (const id of ['recover-01', 'recover-02', 'recover-03']) p = core.reduce(p, { type: 'recovery-solved', id, hintsUsed: 0 });
+    assert.deepEqual(core.summary(p), { done: 14, total: 14, points: 120, maxPoints: 120, next: null });
     assert.deepEqual(core.reduce(p, { type: 'unknown' }), p);
     assert.deepEqual(core.reduce(p, { type: 'matrix-saved', matrix: defaultMatrix }), p);
 });
@@ -242,6 +246,47 @@ test('E-1 only M3 step three has a disabled alternative, with matching dictionar
             'rule.name.row', 'rule.name.column', 'rule.name.rectangle', 'matrix.status', 'matrix.current-line']) {
             assert.ok(dictionary[key], key);
         }
+    }
+});
+
+test('Recovery G-3 locks, event separation, first result, hints and old saves', () => {
+    const old = { version: 2, missions: { M1: true, M7: true, M8: true },
+        challenges: { 'mystery-01': { points: 10, hintsUsed: 0 } }, rulesSeen: ['row'] };
+    assert.deepEqual(core.migrate(JSON.stringify(old)), old);
+    let p = core.initial();
+    assert.deepEqual(core.reduce(p, { type: 'recovery-solved', id: 'recover-02', hintsUsed: 0 }), p);
+    assert.deepEqual(core.reduce(p, { type: 'challenge-correct', id: 'recover-01', hintsUsed: 0 }), p);
+    assert.deepEqual(core.reduce(p, { type: 'recovery-solved', id: 'mystery-01', hintsUsed: 0 }), p);
+    p = core.reduce(p, { type: 'recovery-solved', id: 'recover-01', hintsUsed: 0 });
+    assert.equal(core.statuses(p).find(m => m.id === 'R1').star, true);
+    assert.equal(core.isLocked(p, 'R2'), false);
+    assert.equal(core.isLocked(p, 'R3'), true);
+    assert.deepEqual(core.reduce(p, { type: 'recovery-solved', id: 'recover-01', hintsUsed: 24 }), p);
+    p = core.reduce(p, { type: 'recovery-solved', id: 'recover-02', hintsUsed: 19 });
+    assert.equal(core.statuses(p).find(m => m.id === 'R2').star, false);
+    assert.equal(core.isLocked(p, 'R3'), false);
+    p = core.reduce(p, { type: 'recovery-solved', id: 'recover-03', hintsUsed: 24 });
+    assert.deepEqual(p.challenges, { 'recover-01': { points: 10, hintsUsed: 0 },
+        'recover-02': { points: 20, hintsUsed: 19 }, 'recover-03': { points: 30, hintsUsed: 24 } });
+    assert.deepEqual(core.migrate(core.serialize(p)), p);
+    assert.deepEqual(Object.keys(p).sort(), ['challenges', 'missions', 'rulesSeen', 'version']);
+    assert.deepEqual(core.migrate(JSON.stringify({ ...p, missions: { R1: true } })), core.initial());
+    for (const hintsUsed of [-1, null, 1.5, Infinity, Number.MAX_SAFE_INTEGER + 1]) {
+        assert.deepEqual(core.reduce(core.initial(), { type: 'recovery-solved', id: 'recover-01', hintsUsed }), core.initial());
+    }
+});
+
+test('Recovery G-3 four guide steps, later-step implication and unrelated puzzle isolation', () => {
+    for (const [index, id] of ['R1', 'R2', 'R3'].entries()) {
+        const puzzle = 'recover-0' + (index + 1);
+        assert.deepEqual(core.STEPS[id], [['tab-analysis', 'analysis'], ['recovery-problem', 'analysis'],
+            ['recovery-grid', 'analysis'], ['recovery-grid', 'analysis']]);
+        assert.deepEqual(core.stepStates(id, {}), ['current', 'todo', 'todo', 'todo']);
+        assert.deepEqual(core.stepStates(id, { activeTab: 'analysis' }), ['done', 'current', 'todo', 'todo']);
+        assert.deepEqual(core.stepStates(id, { recovery: { id: puzzle, placed: 0 } }), ['done', 'done', 'current', 'todo']);
+        assert.deepEqual(core.stepStates(id, { recovery: { id: puzzle, placed: 1 } }), ['done', 'done', 'done', 'current']);
+        assert.deepEqual(core.stepStates(id, { lastRecoverySolved: puzzle }), ['done', 'done', 'done', 'done']);
+        assert.deepEqual(core.stepStates(id, { recovery: { id: 'missing', placed: 25 } }), ['current', 'todo', 'todo', 'todo']);
     }
 });
 

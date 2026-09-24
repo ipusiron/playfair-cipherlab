@@ -3,6 +3,25 @@ class I18nManager {
         this.currentLang = this.loadLanguage();
         this.translations = {
             ja: {
+                'mission.group.recovery': '復元',
+                'mission.R1.title': '鍵表の復元（入門）',
+                'mission.R1.learn': '16文字が置かれた表に、既知の組11個から残り9文字を推理して置く',
+                'mission.R1.step.1': '『🔍 解析』タブを開く',
+                'mission.R1.step.2': '『既知平文から鍵表を復元』でR1入門を選ぶ',
+                'mission.R1.step.3': '空いたマスに文字を置く（組ごとの✓と✗で確かめながら）',
+                'mission.R1.step.4': 'すべての組が成り立つように25マスを埋める',
+                'mission.R2.title': '鍵表の復元（中級）',
+                'mission.R2.learn': '8文字だけの表に、既知の組14個から残り17文字を推理して置く',
+                'mission.R2.step.1': '『🔍 解析』タブを開く',
+                'mission.R2.step.2': '『既知平文から鍵表を復元』でR2中級を選ぶ',
+                'mission.R2.step.3': '空いたマスに文字を置く（組ごとの✓と✗で確かめながら）',
+                'mission.R2.step.4': 'すべての組が成り立つように25マスを埋める',
+                'mission.R3.title': '鍵表の復元（上級）',
+                'mission.R3.learn': '3文字だけの表から、既知の組27個で鍵表全体を復元する',
+                'mission.R3.step.1': '『🔍 解析』タブを開く',
+                'mission.R3.step.2': '『既知平文から鍵表を復元』でR3上級を選ぶ',
+                'mission.R3.step.3': '空いたマスに文字を置く（組ごとの✓と✗で確かめながら）',
+                'mission.R3.step.4': 'すべての組が成り立つように25マスを埋める',
                 'recovery.heading': '🧩 既知平文から鍵表を復元',
                 'recovery.intro': '平文と暗号文の組が分かれば、鍵表を推理できます。空いたマスに文字を置き、'
                     + 'すべての組が成り立つように埋めてください。最初に置かれた文字（置き字）は動かせません。',
@@ -266,6 +285,9 @@ class I18nManager {
 <li>C1：謎の単語。鍵語なしで解読する</li>
 <li>C2：秘密のメッセージ。鍵語をヒントから推理して解読する</li>
 <li>C3：軍事作戦。鍵語をヒントから推理して解読する</li>
+<li>R1：鍵表の復元（入門）。置き字16文字と既知の組11個から推理する</li>
+<li>R2：鍵表の復元（中級）。置き字8文字と既知の組14個から推理する</li>
+<li>R3：鍵表の復元（上級）。置き字3文字と既知の組27個から推理する</li>
 </ul>
 <p>C1、C2、C3は順に10、20、30点で計60点です。C1を達成するとC2、C2を達成するとC3が開きます。得点は各課題の初回正解だけです。</p>
 <p>帯や各行の「ナビ開始」で下のカードを開きます。手順は操作に合わせて自動で済みになります。あとの手順を済ませた場合、前の手順も済みになります。</p>
@@ -548,6 +570,25 @@ class I18nManager {
                 'help.warning.desc': '<strong>このツールは教育目的です。</strong>プレイフェア暗号は古典暗号であり、現代の暗号学的用途には適していません。'
             },
             en: {
+                'mission.group.recovery': 'Recovery',
+                'mission.R1.title': 'Recover a key square (Beginner)',
+                'mission.R1.learn': 'Deduce the remaining 9 letters from 16 givens and 11 known pairs',
+                'mission.R1.step.1': 'Open the 🔍 Analysis tab',
+                'mission.R1.step.2': 'Select R1 Beginner in Recover a key square from known plaintext',
+                'mission.R1.step.3': 'Place letters in empty cells, checking ✓ and ✗ for each pair',
+                'mission.R1.step.4': 'Fill all 25 cells so that every pair is consistent',
+                'mission.R2.title': 'Recover a key square (Intermediate)',
+                'mission.R2.learn': 'Deduce the remaining 17 letters from 8 givens and 14 known pairs',
+                'mission.R2.step.1': 'Open the 🔍 Analysis tab',
+                'mission.R2.step.2': 'Select R2 Intermediate in Recover a key square from known plaintext',
+                'mission.R2.step.3': 'Place letters in empty cells, checking ✓ and ✗ for each pair',
+                'mission.R2.step.4': 'Fill all 25 cells so that every pair is consistent',
+                'mission.R3.title': 'Recover a key square (Advanced)',
+                'mission.R3.learn': 'Recover the full key square from only 3 givens and 27 known pairs',
+                'mission.R3.step.1': 'Open the 🔍 Analysis tab',
+                'mission.R3.step.2': 'Select R3 Advanced in Recover a key square from known plaintext',
+                'mission.R3.step.3': 'Place letters in empty cells, checking ✓ and ✗ for each pair',
+                'mission.R3.step.4': 'Fill all 25 cells so that every pair is consistent',
                 'recovery.heading': '🧩 Recover a key square from known plaintext',
                 'recovery.intro': 'Use known plaintext and ciphertext pairs to deduce the key square. Fill the empty cells '
                     + 'so that every pair is consistent. The letters provided at the start (givens) cannot be moved.',
@@ -819,6 +860,9 @@ unlike the fixed two-letter pairs here.</p>
 <li>C1: Mystery word. Decode without a keyword.</li>
 <li>C2: Secret message. Infer the keyword from hints and decode.</li>
 <li>C3: Military operation. Infer the keyword from hints and decode.</li>
+<li>R1: Recover a key square (Beginner). Deduce positions from 16 givens and 11 known pairs.</li>
+<li>R2: Recover a key square (Intermediate). Deduce positions from 8 givens and 14 known pairs.</li>
+<li>R3: Recover a key square (Advanced). Deduce positions from 3 givens and 27 known pairs.</li>
 </ul>
 <p>C1, C2 and C3 award 10, 20 and 30 points, for 60 total. C1 unlocks C2; C2 unlocks C3. Only the first correct answer earns points.</p>
 <p>Open the bottom card with “Start guide” in the summary or a mission row. Steps are checked automatically from screen state.</p>

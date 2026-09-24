@@ -107,9 +107,12 @@ Use it directly in your browser. You can also download the files and open index.
 | C1 | Decryption challenges | Mystery word | Decode without a keyword. | Solve mystery-01 with the default matrix | 10 |
 | C2 | Decryption challenges | Secret message | Infer the keyword from hints and decode. | After C1, solve mystery-02 with the SECRET matrix | 20 |
 | C3 | Decryption challenges | Military operation | Infer the keyword from hints and decode. | After C2, solve mystery-03 with the MILITARY matrix | 30 |
+| R1 | Recovery | Recover a key square (Beginner) | Deduce 9 letters from 16 givens and 11 known pairs | Fill all 25 cells of recover-01 | 10 |
+| R2 | Recovery | Recover a key square (Intermediate) | Deduce 17 letters from 8 givens and 14 known pairs | After R1, fill all 25 cells of recover-02 | 20 |
+| R3 | Recovery | Recover a key square (Advanced) | Deduce 22 letters from 3 givens and 27 known pairs | After R2, fill all 25 cells of recover-03 | 30 |
 
 M1–M8 can be completed in any order. “Next” recommends the first incomplete unlocked mission.
-Completing everything shows 11/11 and 60/60pt, followed by a suggestion to compare the same text under variant rules.
+Completing everything shows 14/14 and 120/120pt, followed by a suggestion to compare the same text under variant rules.
 
 “Start guide” in the recommendation banner or a mission opens the steps in the card below.
 “Go to this step” opens the appropriate tab, outlines the control and moves focus.

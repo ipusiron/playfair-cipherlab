@@ -12,10 +12,13 @@ const ProgressCore = (() => {
         { id: 'M8', group: 'analysis', points: 0 },
         { id: 'C1', group: 'challenge', challengeId: 'mystery-01', points: 10 },
         { id: 'C2', group: 'challenge', challengeId: 'mystery-02', points: 20, requires: 'C1' },
-        { id: 'C3', group: 'challenge', challengeId: 'mystery-03', points: 30, requires: 'C2' }
+        { id: 'C3', group: 'challenge', challengeId: 'mystery-03', points: 30, requires: 'C2' },
+        { id: 'R1', group: 'recovery', challengeId: 'recover-01', points: 10 },
+        { id: 'R2', group: 'recovery', challengeId: 'recover-02', points: 20, requires: 'R1' },
+        { id: 'R3', group: 'recovery', challengeId: 'recover-03', points: 30, requires: 'R2' }
     ].map(Object.freeze));
     const rules = ['row', 'column', 'rectangle'];
-    const challenges = MISSIONS.filter(item => item.group === 'challenge');
+    const challenges = MISSIONS.filter(item => item.group === 'challenge' || item.group === 'recovery');
     const matrices = {
         default: core.ALPHABET,
         example: core.matrixFromKeyword('PLAYFAIR EXAMPLE'),
@@ -43,7 +46,9 @@ const ProgressCore = (() => {
             ['analysis-reversed-list', 'analysis']]
     };
     for (const mission of challenges) {
-        STEPS[mission.id] = [['tab-key-generation', 'key-generation'], ['challenge-start-' + mission.challengeId, null],
+        STEPS[mission.id] = mission.group === 'recovery'
+            ? [['tab-analysis', 'analysis'], ['recovery-problem', 'analysis'], ['recovery-grid', 'analysis'], ['recovery-grid', 'analysis']]
+            : [['tab-key-generation', 'key-generation'], ['challenge-start-' + mission.challengeId, null],
             ['decrypt-btn', 'decryption'], ['challenge-answer', 'decryption']];
     }
     Object.values(STEPS).forEach(steps => {
@@ -65,19 +70,19 @@ const ProgressCore = (() => {
             && (!exact || Object.keys(value).length === allowed.length);
     }
 
-    function validHints(value) {
-        return value === null || Number.isInteger(value) && value >= 0 && value <= 4;
+    function validHints(value, mission) {
+        return value === null || Number.isSafeInteger(value) && value >= 0 && (mission?.group === 'recovery' || value <= 4);
     }
 
     function valid(value) {
         if (!keys(value, ['version', 'missions', 'challenges', 'rulesSeen'], true) || value.version !== 2) return false;
-        if (!keys(value.missions, MISSIONS.filter(item => item.group !== 'challenge').map(item => item.id))
+        if (!keys(value.missions, MISSIONS.filter(item => item.points === 0).map(item => item.id))
             || !Object.values(value.missions).every(flag => flag === true)) return false;
         if (!keys(value.challenges, challenges.map(item => item.challengeId))) return false;
         for (const mission of challenges) {
             const completed = value.challenges[mission.challengeId];
             if (completed !== undefined && (!keys(completed, ['points', 'hintsUsed'], true)
-                || completed.points !== mission.points || !validHints(completed.hintsUsed))) return false;
+                || completed.points !== mission.points || !validHints(completed.hintsUsed, mission))) return false;
         }
         return Array.isArray(value.rulesSeen) && value.rulesSeen.every(rule => rules.includes(rule))
             && new Set(value.rulesSeen).size === value.rulesSeen.length;
@@ -141,10 +146,11 @@ const ProgressCore = (() => {
         }
         if (event.type === 'analyzed' && event.verdict === 'impossible') next.missions.M7 = true;
         if (event.type === 'reversed-selected') next.missions.M8 = true;
-        if (event.type === 'challenge-correct') {
-            const mission = challenges.find(item => item.challengeId === event.id);
+        if (event.type === 'challenge-correct' || event.type === 'recovery-solved') {
+            const group = event.type === 'recovery-solved' ? 'recovery' : 'challenge';
+            const mission = challenges.find(item => item.challengeId === event.id && item.group === group);
             if (mission && !isLocked(progress, event.id) && !Object.hasOwn(next.challenges, event.id)
-                && event.hintsUsed !== null && validHints(event.hintsUsed)) {
+                && event.hintsUsed !== null && validHints(event.hintsUsed, mission)) {
                 next.challenges[event.id] = { points: mission.points, hintsUsed: event.hintsUsed };
             }
         }
@@ -155,7 +161,7 @@ const ProgressCore = (() => {
         let foundNext = false;
         return MISSIONS.map(mission => {
             const challenge = progress.challenges[mission.challengeId];
-            const done = mission.group === 'challenge' ? !!challenge : !!progress.missions[mission.id];
+            const done = mission.points > 0 ? !!challenge : !!progress.missions[mission.id];
             let state = done ? 'done' : isLocked(progress, mission.id) ? 'locked' : 'open';
             if (state === 'open' && !foundNext) {
                 foundNext = true;
@@ -169,7 +175,8 @@ const ProgressCore = (() => {
         const items = statuses(progress);
         return {
             done: items.filter(item => item.state === 'done').length, total: MISSIONS.length,
-            points: Object.values(progress.challenges).reduce((sum, item) => sum + item.points, 0), maxPoints: 60,
+            points: Object.values(progress.challenges).reduce((sum, item) => sum + item.points, 0),
+            maxPoints: MISSIONS.reduce((sum, mission) => sum + mission.points, 0),
             next: items.find(item => item.state === 'next')?.id || null
         };
     }
@@ -197,7 +204,11 @@ const ProgressCore = (() => {
                 s.selectedReversed != null]
         };
         const mission = challenges.find(item => item.id === id);
-        const predicates = mission ? [
+        const predicates = mission?.group === 'recovery' ? [
+            s.activeTab === 'analysis', s.recovery?.id === mission.challengeId,
+            s.recovery?.id === mission.challengeId && s.recovery.placed >= 1,
+            s.lastRecoverySolved === mission.challengeId
+        ] : mission ? [
             s.matrix === requiredMatrix(mission.challengeId),
             s.loaded?.kind === 'challenge' && s.loaded.id === mission.challengeId,
             s.decryption?.ciphertext === challengeTexts[mission.challengeId]

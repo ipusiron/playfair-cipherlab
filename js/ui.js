@@ -23,7 +23,7 @@ class UI {
         this.notices = {};
         this.recoveryState = null;
         this.recoveryHints = {};
-        this.recoverySolved = new Set();
+        this.lastRecoverySolved = null;
     }
 
     init() {
@@ -110,8 +110,7 @@ class UI {
     }
 
     isRecoveryLocked(id) {
-        const index = PlayfairRecovery.PROBLEMS.findIndex(p => p.id === id);
-        return index > 0 && !this.recoverySolved.has(PlayfairRecovery.PROBLEMS[index - 1].id);
+        return ProgressCore.isLocked(this.progress, id);
     }
 
     startRecovery(id) {
@@ -148,7 +147,10 @@ class UI {
 
     completeRecovery() {
         const s = this.recoveryState;
-        if (PlayfairRecovery.isSolved(s.p, s.grid)) this.recoverySolved.add(s.p.id);
+        if (PlayfairRecovery.isSolved(s.p, s.grid)) {
+            this.lastRecoverySolved = s.p.id;
+            this.recordProgress({ type: 'recovery-solved', id: s.p.id, hintsUsed: this.recoveryHints[s.p.id] || 0 });
+        }
     }
 
     showRecoveryHint() {
@@ -235,10 +237,11 @@ class UI {
         document.getElementById('recovery-hint').disabled = solved;
         const status = i18n.t('recovery.status', { n: s.grid.filter(Boolean).length,
             k: statuses.filter(x => x === 'ok').length, N: statuses.length, m: statuses.filter(x => x === 'ng').length });
-        const notice = s.notice ? ' ' + i18n.t(s.notice.key, s.notice.params) : '';
-        const full = !solved && s.grid.every(Boolean) ? ' ' + i18n.t('recovery.full-wrong') : '';
+        const separator = i18n.currentLang === 'ja' ? String.fromCodePoint(0x3002) : ' ';
+        const notice = s.notice ? separator + i18n.t(s.notice.key, s.notice.params) : '';
+        const full = !solved && s.grid.every(Boolean) ? separator + i18n.t('recovery.full-wrong') : '';
         const statusNode = document.getElementById('recovery-status');
-        const message = status + notice + full + (solved ? ' ' + i18n.t('recovery.solved') : '');
+        const message = status + notice + full + (solved ? separator + i18n.t('recovery.solved') : '');
         if (statusNode.textContent !== message) statusNode.textContent = message;
         document.getElementById('recovery-result').hidden = !solved;
         const plain = solved ? PlayfairCore.decrypt(s.grid.join(''), s.p.secretCipher).plaintext : '';
@@ -1559,6 +1562,9 @@ class UI {
             ciphertextDraft: PlayfairCore.normalize(document.getElementById('ciphertext-input').value),
             analysisDraft: document.getElementById('analysis-input').value.trim(),
             analysis: this.analysisResult, selectedReversed: this.selectedReversed,
+            recovery: this.recoveryState ? { id: this.recoveryState.p.id,
+                placed: this.recoveryState.grid.filter((letter, cell) => letter && !this.recoveryState.p.givens[cell]).length } : null,
+            lastRecoverySolved: this.lastRecoverySolved,
             matrix: this.getCurrentMatrixString(), loaded: this.loaded,
             encryption: this.results.encryption, decryption: this.results.decryption,
             rulesSeenNow: [...this.rulesSeenNow], lastCorrect: this.lastCorrect
@@ -1604,6 +1610,9 @@ class UI {
             this.rulesSeenNow = [];
             this.lastCorrect = null;
             this.hintsUsed = {};
+            this.recoveryHints = {};
+            this.lastRecoverySolved = null;
+            this.startRecovery('recover-01');
             this.invalidateAll();
             this.resetExerciseUI();
             this.updateProgressDisplay();
@@ -1636,7 +1645,7 @@ class UI {
     updateProgressDisplay() {
         const list = document.getElementById('mission-list');
         const statuses = ProgressCore.statuses(this.progress);
-        for (const group of ['key', 'encryption', 'decryption', 'analysis', 'challenge']) {
+        for (const group of ['key', 'encryption', 'decryption', 'analysis', 'challenge', 'recovery']) {
             let section = document.getElementById('mission-group-' + group);
             if (!section) {
                 section = document.createElement('section');

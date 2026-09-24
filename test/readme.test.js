@@ -214,9 +214,9 @@ const en = vm.runInNewContext(read('js/i18n.js') + '; i18n.translations.en;', {}
 for (const [lang, source, dictionary, heading] of [
     ['ja', readme, ja, '🗺️ 学習ロードマップ'], ['en', english, en, '🗺️ Learning roadmap']
 ]) {
-    test(`H-5 ${lang} roadmap matches all eleven missions, titles and points`, () => {
+    test(`H-5 ${lang} roadmap matches all fourteen missions, titles and points`, () => {
         const rows = table(heading, source);
-        assert.equal(rows.length, 11);
+        assert.equal(rows.length, 14);
         ProgressCore.MISSIONS.forEach((mission, index) => {
             assert.equal(rows[index].length, 6);
             assert.equal(rows[index][0], mission.id);
