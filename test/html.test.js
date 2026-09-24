@@ -5,6 +5,17 @@ const path = require('node:path');
 const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
 const attribute = (tag, name) => tag.match(new RegExp(`\\b${name}="([^"]*)"`))?.[1];
 
+test('Recovery G-2 labelled section, controls and live status exist once', () => {
+    for (const id of ['recovery', 'recovery-problem', 'recovery-pairs', 'recovery-grid',
+        'recovery-palette', 'recovery-hint', 'recovery-reset', 'recovery-status']) {
+        assert.equal([...html.matchAll(new RegExp(`\\bid="${id}"`, 'g'))].length, 1, id);
+    }
+    assert.match(html, /<section[^>]*id="recovery"[^>]*aria-labelledby="recovery-heading"/);
+    assert.match(html, /id="recovery-status"[^>]*aria-live="polite"/);
+    assert.match(html, /<label for="recovery-problem"/);
+    assert.ok(html.indexOf('id="recovery"') > html.indexOf('id="analysis-result"'));
+});
+
 test('Polish C-2 Day009 link is safe, initially hidden and follows the existing analysis output', () => {
     const tag = html.match(/<a\b[^>]*id="analysis-open-frequency"[^>]*>/)[0];
     assert.equal(attribute(tag, 'target'), '_blank');

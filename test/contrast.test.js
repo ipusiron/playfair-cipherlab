@@ -30,6 +30,17 @@ function luminance(hex) {
     return values[0] * 0.2126 + values[1] * 0.7152 + values[2] * 0.0722;
 }
 
+test('Recovery B-9 all recovery text states meet 4.5:1 in both themes', () => {
+    for (const mode of [':root', 'body.dark-mode']) {
+        const block = css.slice(css.indexOf(mode + ' {')).split('}')[0];
+        const colors = Object.fromEntries([...block.matchAll(/(--[\w-]+):\s*(#[a-f0-9]{6});/gi)].map(m => [m[1], m[2]]));
+        for (const name of ['text', 'keyword', 'analysis-selected', 'error', 'success', 'warning']) {
+            const a = luminance(colors[`--${name}-fg`]), b = luminance(colors[`--${name}-bg`]);
+            assert.ok((Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05) >= 4.5, `${mode}: ${name}`);
+        }
+    }
+});
+
 test('C-5 selected analysis pairs meet 4.5:1 in both themes', () => {
     for (const mode of [':root', 'body.dark-mode']) {
         const block = css.slice(css.indexOf(mode + ' {')).split('}')[0];
