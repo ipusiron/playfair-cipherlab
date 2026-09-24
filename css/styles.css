@@ -536,6 +536,8 @@ main {
 
 .process-header {
     display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1rem;
@@ -543,6 +545,7 @@ main {
 
 .animation-controls {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 0.5rem;
 }
@@ -583,6 +586,9 @@ main {
 }
 
 .pair-display {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
     font-family: monospace;
     font-size: 1.2rem;
     margin: 1rem 0;
@@ -612,9 +618,33 @@ main {
     font-size: 0.9rem;
 }
 
-.pair-display .same-pair {
-    color: #e74c3c;
+.pad-inserted,
+.pad-candidate {
     font-weight: bold;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+}
+
+.pad-candidate {
+    text-decoration-style: dotted;
+}
+
+.animation-controls button,
+.restart-section button {
+    min-height: 44px;
+}
+
+.step-description {
+    margin: 1rem 0;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 768px) {
+    .process-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
 }
 
 .encrypted-pairs .encrypted-pair {

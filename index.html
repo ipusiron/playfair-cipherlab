@@ -244,6 +244,7 @@
                 >
                   次 ▶
                 </button>
+                <button type="button" id="finish-encryption" class="btn btn-secondary btn-small">最後まで</button>
                 <span id="step-info-encryption" class="step-info">0 / 0</span>
               </div>
             </div>
@@ -261,6 +262,7 @@
               </div>
             </div>
             <div id="encryption-matrix" class="matrix-grid"></div>
+            <p id="step-description-encryption" class="step-description" aria-live="polite"></p>
             <div id="encryption-message" class="info-message"></div>
             <div class="restart-section">
               <button id="restart-encryption" class="btn btn-outline btn-small">
@@ -375,6 +377,7 @@
                 >
                   次 ▶
                 </button>
+                <button type="button" id="finish-decryption" class="btn btn-secondary btn-small">最後まで</button>
                 <span id="step-info-decryption" class="step-info">0 / 0</span>
               </div>
             </div>
@@ -392,6 +395,7 @@
               </div>
             </div>
             <div id="decryption-matrix" class="matrix-grid"></div>
+            <p id="step-description-decryption" class="step-description" aria-live="polite"></p>
             <div class="restart-section">
               <button id="restart-decryption" class="btn btn-outline btn-small">
                 🔄 最初から再生
@@ -408,6 +412,8 @@
               </button>
             </div>
             <div id="decryption-notes" class="info-message"></div>
+            <p><span id="candidate-label">候補を除いた文</span></p>
+            <div id="candidate-plain" class="output-text"></div>
             <div id="answer-check" class="answer-check hidden">
               <h4>解読チャレンジ解答</h4>
               <div class="answer-input-section">
@@ -679,7 +685,6 @@
     <script src="js/cipher.js"></script>
     <script src="js/exercises.js"></script>
     <script src="js/ui.js"></script>
-    <script src="js/animations.js"></script>
     <script src="js/theme.js"></script>
     <script src="js/help.js"></script>
     <script src="js/i18n.js"></script>

@@ -10,15 +10,11 @@ class UI {
             }
         });
         this.currentTab = 'key-generation';
-        this.animationQueue = [];
-        this.isAnimating = false;
-        this.lastEncryptionData = null;
-        this.lastDecryptionData = null;
-        this.encryptionSteps = [];
-        this.decryptionSteps = [];
-        this.currentEncryptionStep = 0;
-        this.currentDecryptionStep = 0;
-        this.autoPlayTimer = null;
+        this.playback = {
+            encryption: { steps: [], done: 0, playing: false, timerId: null },
+            decryption: { steps: [], done: 0, playing: false, timerId: null }
+        };
+        this.results = { encryption: null, decryption: null };
         this.currentChallenge = null;
         this.selectedChallenge = null;
     }
@@ -29,6 +25,7 @@ class UI {
         this.setupEncryption();
         this.setupDecryption();
         this.setupExercises();
+        this.setupPlaybackControls();
         this.displayMatrix('key-matrix');
         this.setupI18n();
     }
@@ -51,6 +48,8 @@ class UI {
         this.updateAllDropdownContents();
         // Update challenge info if displayed
         this.updateChallengeInfoDisplay();
+        this.render('encryption');
+        this.render('decryption');
     }
 
     updateExampleCategories() {
@@ -217,12 +216,13 @@ class UI {
                 button.classList.add('active');
                 document.getElementById(targetTab).classList.add('active');
                 
+                if (this.playback[this.currentTab]) this.stopPlayback(this.currentTab);
                 this.currentTab = targetTab;
                 
                 if (targetTab === 'encryption') {
-                    this.displayMatrix('encryption-matrix');
+                    this.render('encryption');
                 } else if (targetTab === 'decryption') {
-                    this.displayMatrix('decryption-matrix');
+                    this.render('decryption');
                 }
             });
         });
@@ -337,6 +337,7 @@ class UI {
                 this.cipher.setMatrix(newMatrix);
             }
             
+            this.invalidateAll();
             this.displayMatrix('key-matrix');
             this.displayMatrix('encryption-matrix');
             this.displayMatrix('decryption-matrix');
@@ -405,39 +406,8 @@ class UI {
             
             const result = this.cipher.encrypt(plaintext, paddingChar, samePairMode, samePairRule);
             
-            this.displayPairs('pair-display', result.pairs, result.processed);
-            this.displayEncryptionMessage(result.processed, paddingChar, samePairMode, samePairRule);
-            
-            // 変換後の表示エリアを初期化
-            this.initializeEncryptedPairsDisplay(result.encryptedPairs.length);
-            
-            processSection.classList.remove('hidden');
-            ciphertextSection.classList.remove('hidden');
-            
-            document.getElementById('ciphertext').textContent = result.ciphertext;
-            
-            // アニメーションデータを保存
-            this.lastEncryptionData = { pairs: result.pairs, encryptedPairs: result.encryptedPairs };
-            this.setupEncryptionSteps(result.pairs, result.encryptedPairs);
-            
-            this.startEncryptionAnimation();
-        });
-        
-        // アニメーション制御ボタンのイベント
-        document.getElementById('play-pause-encryption').addEventListener('click', () => {
-            this.toggleEncryptionAnimation();
-        });
-        
-        document.getElementById('prev-step-encryption').addEventListener('click', () => {
-            this.prevEncryptionStep();
-        });
-        
-        document.getElementById('next-step-encryption').addEventListener('click', () => {
-            this.nextEncryptionStep();
-        });
-        
-        document.getElementById('restart-encryption').addEventListener('click', () => {
-            this.restartEncryptionAnimation();
+            this.startPlayback('encryption', result, samePairMode ? null : samePairRule);
+
         });
         
         copyBtn.addEventListener('click', () => {
@@ -489,122 +459,14 @@ class UI {
                 return;
             }
             
-            this.displayPairs('decrypt-pair-display', result.pairs);
-            
-            // 変換後の表示エリアを初期化
-            this.initializeDecryptedPairsDisplay(result.decryptedPairs.length);
-            
-            processSection.classList.remove('hidden');
-            plaintextSection.classList.remove('hidden');
-            
-            document.getElementById('decrypted-text').textContent = result.plaintext;
-            
-            this.displayDecryptionNotes(result.plaintext);
-            
-            // アニメーションデータを保存
-            this.lastDecryptionData = { pairs: result.pairs, decryptedPairs: result.decryptedPairs };
-            this.setupDecryptionSteps(result.pairs, result.decryptedPairs);
-            
-            this.startDecryptionAnimation();
-        });
-        
-        // アニメーション制御ボタンのイベント
-        document.getElementById('play-pause-decryption').addEventListener('click', () => {
-            this.toggleDecryptionAnimation();
-        });
-        
-        document.getElementById('prev-step-decryption').addEventListener('click', () => {
-            this.prevDecryptionStep();
-        });
-        
-        document.getElementById('next-step-decryption').addEventListener('click', () => {
-            this.nextDecryptionStep();
-        });
-        
-        document.getElementById('restart-decryption').addEventListener('click', () => {
-            this.restartDecryptionAnimation();
+            this.startPlayback('decryption', result, samePairRule);
+
         });
         
         copyBtn.addEventListener('click', () => {
             const plaintext = document.getElementById('decrypted-text').textContent;
             this.copyToClipboard(plaintext);
         });
-    }
-
-    displayPairs(containerId, pairs, processedText = null) {
-        const container = document.getElementById(containerId);
-        container.innerHTML = '';
-        
-        pairs.forEach((pair, index) => {
-            const span = document.createElement('span');
-            span.textContent = pair;
-            
-            if (processedText && pair[0] === pair[1]) {
-                span.classList.add('same-pair');
-            }
-            
-            container.appendChild(span);
-            
-            if (index < pairs.length - 1) {
-                container.appendChild(document.createTextNode(' '));
-            }
-        });
-    }
-
-    displayEncryptionMessage(processed, paddingChar, samePairMode, samePairRule) {
-        const messageDiv = document.getElementById('encryption-message');
-        const messages = [];
-        
-        if (samePairMode) {
-            // 補完モードONの場合
-            for (let i = 0; i < processed.length - 1; i++) {
-                if (processed[i] === processed[i + 1]) {
-                    messages.push(`同一文字ペア "${processed[i]}${processed[i]}" を検出しました。間に補完文字 "${paddingChar}" を挿入しました。`);
-                }
-            }
-        } else {
-            // 補完モードOFFの場合
-            const pairs = this.cipher.createPairs(processed);
-            const samePairs = pairs.filter(pair => pair[0] === pair[1]);
-            
-            if (samePairs.length > 0) {
-                if (samePairRule === 'right-shift') {
-                    messages.push(`同一文字ペア ${samePairs.map(p => `"${p}"`).join(', ')} を検出しました。右隣の文字に置換して処理しました。`);
-                } else if (samePairRule === 'bottom-right') {
-                    messages.push(`同一文字ペア ${samePairs.map(p => `"${p}"`).join(', ')} を検出しました。各文字を1つ右、1つ下の位置に移動して処理しました。`);
-                } else {
-                    messages.push(`同一文字ペア ${samePairs.map(p => `"${p}"`).join(', ')} を検出しました。変化なしで処理しました。`);
-                }
-            }
-        }
-        
-        if (messages.length > 0) {
-            messageDiv.textContent = messages.join(' ');
-            messageDiv.classList.remove('hidden');
-        } else {
-            messageDiv.classList.add('hidden');
-        }
-    }
-
-    displayDecryptionNotes(plaintext) {
-        plaintext = plaintext.toLowerCase();
-        const notesDiv = document.getElementById('decryption-notes');
-        const notes = [];
-        
-        if (plaintext.includes('x') || plaintext.includes('q') || plaintext.includes('z')) {
-            notes.push(i18n.t('message.padding-chars'));
-        }
-        
-        if (plaintext.includes('i')) {
-            notes.push(i18n.t('message.i-or-j'));
-        }
-        
-        if (notes.length > 0) {
-            notesDiv.innerHTML = notes.join('<br>');
-            notesDiv.classList.remove('hidden');
-        } else {
-            notesDiv.classList.add('hidden');
-        }
     }
 
     copyToClipboard(text) {
@@ -623,52 +485,6 @@ class UI {
         }, 3000);
     }
 
-
-    async animatePair(originalPair, transformedPair, matrixId, index) {
-        const matrix = document.getElementById(matrixId);
-        const cells = matrix.querySelectorAll('.matrix-cell');
-        
-        cells.forEach(cell => {
-            cell.classList.remove('highlight-source', 'highlight-target');
-        });
-        
-        const pos1 = this.cipher.findPosition(originalPair[0]);
-        const pos2 = this.cipher.findPosition(originalPair[1]);
-        const newPos1 = this.cipher.findPosition(transformedPair[0]);
-        const newPos2 = this.cipher.findPosition(transformedPair[1]);
-        
-        if (pos1 && pos2) {
-            const cell1 = matrix.querySelector(`[data-row="${pos1.row}"][data-col="${pos1.col}"]`);
-            const cell2 = matrix.querySelector(`[data-row="${pos2.row}"][data-col="${pos2.col}"]`);
-            
-            if (cell1) cell1.classList.add('highlight-source');
-            if (cell2) cell2.classList.add('highlight-source');
-        }
-        
-        await this.delay(800);
-        
-        if (newPos1 && newPos2) {
-            const newCell1 = matrix.querySelector(`[data-row="${newPos1.row}"][data-col="${newPos1.col}"]`);
-            const newCell2 = matrix.querySelector(`[data-row="${newPos2.row}"][data-col="${newPos2.col}"]`);
-            
-            if (newCell1) newCell1.classList.add('highlight-target');
-            if (newCell2) newCell2.classList.add('highlight-target');
-            
-            // 変換後の表示を更新
-            if (matrixId === 'encryption-matrix') {
-                this.updateEncryptedPairDisplay(index, transformedPair);
-            } else if (matrixId === 'decryption-matrix') {
-                this.updateDecryptedPairDisplay(index, transformedPair);
-            }
-        }
-        
-        await this.delay(800);
-    }
-
-
-    delay(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
 
     validateInput(text) {
         // 空文字チェック
@@ -721,210 +537,6 @@ class UI {
         return { valid: true };
     }
 
-    setupEncryptionSteps(pairs, encryptedPairs) {
-        this.encryptionSteps = pairs.map((pair, index) => ({
-            originalPair: pair,
-            encryptedPair: encryptedPairs[index],
-            index: index
-        }));
-        this.currentEncryptionStep = 0;
-        this.updateEncryptionStepInfo();
-        this.updateEncryptionControls();
-    }
-
-    setupDecryptionSteps(pairs, decryptedPairs) {
-        this.decryptionSteps = pairs.map((pair, index) => ({
-            originalPair: pair,
-            decryptedPair: decryptedPairs[index],
-            index: index
-        }));
-        this.currentDecryptionStep = 0;
-        this.updateDecryptionStepInfo();
-        this.updateDecryptionControls();
-    }
-
-    updateEncryptionStepInfo() {
-        const stepInfo = document.getElementById('step-info-encryption');
-        stepInfo.textContent = `${this.currentEncryptionStep} / ${this.encryptionSteps.length}`;
-    }
-
-    updateDecryptionStepInfo() {
-        const stepInfo = document.getElementById('step-info-decryption');
-        stepInfo.textContent = `${this.currentDecryptionStep} / ${this.decryptionSteps.length}`;
-    }
-
-    updateEncryptionControls() {
-        const prevBtn = document.getElementById('prev-step-encryption');
-        const nextBtn = document.getElementById('next-step-encryption');
-        const playPauseBtn = document.getElementById('play-pause-encryption');
-        
-        prevBtn.disabled = this.currentEncryptionStep === 0;
-        nextBtn.disabled = this.currentEncryptionStep === this.encryptionSteps.length;
-        
-        // アニメーション完了時は再生ボタンを無効化
-        if (this.currentEncryptionStep === this.encryptionSteps.length) {
-            playPauseBtn.disabled = true;
-            playPauseBtn.textContent = i18n.t('anim.play');
-        } else {
-            playPauseBtn.disabled = false;
-        }
-    }
-
-    updateDecryptionControls() {
-        const prevBtn = document.getElementById('prev-step-decryption');
-        const nextBtn = document.getElementById('next-step-decryption');
-        const playPauseBtn = document.getElementById('play-pause-decryption');
-        
-        prevBtn.disabled = this.currentDecryptionStep === 0;
-        nextBtn.disabled = this.currentDecryptionStep === this.decryptionSteps.length;
-        
-        // アニメーション完了時は再生ボタンを無効化
-        if (this.currentDecryptionStep === this.decryptionSteps.length) {
-            playPauseBtn.disabled = true;
-            playPauseBtn.textContent = i18n.t('anim.play');
-        } else {
-            playPauseBtn.disabled = false;
-        }
-    }
-
-    startEncryptionAnimation() {
-        this.initializeEncryptedPairsDisplay(this.encryptionSteps.length);
-        this.currentEncryptionStep = 0;
-        this.updateEncryptionStepInfo();
-        this.updateEncryptionControls();
-        this.clearMatrix('encryption-matrix');
-        this.toggleEncryptionAnimation();
-    }
-
-    startDecryptionAnimation() {
-        this.initializeDecryptedPairsDisplay(this.decryptionSteps.length);
-        this.currentDecryptionStep = 0;
-        this.updateDecryptionStepInfo();
-        this.updateDecryptionControls();
-        this.clearMatrix('decryption-matrix');
-        this.toggleDecryptionAnimation();
-    }
-
-    toggleEncryptionAnimation() {
-        const playPauseBtn = document.getElementById('play-pause-encryption');
-        
-        if (this.autoPlayTimer) {
-            clearTimeout(this.autoPlayTimer);
-            this.autoPlayTimer = null;
-            playPauseBtn.textContent = i18n.t('anim.play');
-        } else {
-            playPauseBtn.textContent = i18n.t('anim.pause');
-            this.autoPlayEncryption();
-        }
-    }
-
-    toggleDecryptionAnimation() {
-        const playPauseBtn = document.getElementById('play-pause-decryption');
-        
-        if (this.autoPlayTimer) {
-            clearTimeout(this.autoPlayTimer);
-            this.autoPlayTimer = null;
-            playPauseBtn.textContent = i18n.t('anim.play');
-        } else {
-            playPauseBtn.textContent = i18n.t('anim.pause');
-            this.autoPlayDecryption();
-        }
-    }
-
-    autoPlayEncryption() {
-        if (this.currentEncryptionStep < this.encryptionSteps.length) {
-            this.nextEncryptionStep();
-            this.autoPlayTimer = setTimeout(() => {
-                this.autoPlayEncryption();
-            }, 1600); // 800ms * 2 for each step
-        } else {
-            const playPauseBtn = document.getElementById('play-pause-encryption');
-            playPauseBtn.textContent = i18n.t('anim.play');
-            playPauseBtn.disabled = true;
-            this.autoPlayTimer = null;
-        }
-    }
-
-    autoPlayDecryption() {
-        if (this.currentDecryptionStep < this.decryptionSteps.length) {
-            this.nextDecryptionStep();
-            this.autoPlayTimer = setTimeout(() => {
-                this.autoPlayDecryption();
-            }, 1600);
-        } else {
-            const playPauseBtn = document.getElementById('play-pause-decryption');
-            playPauseBtn.textContent = i18n.t('anim.play');
-            playPauseBtn.disabled = true;
-            this.autoPlayTimer = null;
-        }
-    }
-
-    prevEncryptionStep() {
-        if (this.currentEncryptionStep > 0) {
-            this.currentEncryptionStep--;
-            this.updateEncryptionStepInfo();
-            this.updateEncryptionControls();
-            
-            // 前のステップまでの結果を表示してから、現在のステップをハイライト
-            this.refreshEncryptionDisplay();
-            if (this.currentEncryptionStep > 0) {
-                const step = this.encryptionSteps[this.currentEncryptionStep - 1];
-                if (step) {
-                    this.showMatrixHighlight(step.originalPair, step.encryptedPair, 'encryption-matrix');
-                }
-            }
-        }
-    }
-
-    nextEncryptionStep() {
-        if (this.currentEncryptionStep < this.encryptionSteps.length) {
-            this.showEncryptionStep(this.currentEncryptionStep);
-            this.currentEncryptionStep++;
-            this.updateEncryptionStepInfo();
-            this.updateEncryptionControls();
-        }
-    }
-
-    prevDecryptionStep() {
-        if (this.currentDecryptionStep > 0) {
-            this.currentDecryptionStep--;
-            this.updateDecryptionStepInfo();
-            this.updateDecryptionControls();
-            
-            // 前のステップまでの結果を表示してから、現在のステップをハイライト
-            this.refreshDecryptionDisplay();
-            if (this.currentDecryptionStep > 0) {
-                const step = this.decryptionSteps[this.currentDecryptionStep - 1];
-                if (step) {
-                    this.showMatrixHighlight(step.originalPair, step.decryptedPair, 'decryption-matrix');
-                }
-            }
-        }
-    }
-
-    nextDecryptionStep() {
-        if (this.currentDecryptionStep < this.decryptionSteps.length) {
-            this.showDecryptionStep(this.currentDecryptionStep);
-            this.currentDecryptionStep++;
-            this.updateDecryptionStepInfo();
-            this.updateDecryptionControls();
-        }
-    }
-
-    async showEncryptionStep(stepIndex) {
-        const step = this.encryptionSteps[stepIndex];
-        if (step) {
-            await this.animatePair(step.originalPair, step.encryptedPair, 'encryption-matrix', step.index);
-        }
-    }
-
-    async showDecryptionStep(stepIndex) {
-        const step = this.decryptionSteps[stepIndex];
-        if (step) {
-            await this.animatePair(step.originalPair, step.decryptedPair, 'decryption-matrix', step.index);
-        }
-    }
-
     clearMatrix(matrixId) {
         const matrix = document.getElementById(matrixId);
         const cells = matrix.querySelectorAll('.matrix-cell');
@@ -970,122 +582,149 @@ class UI {
         }
     }
 
-    refreshEncryptionDisplay() {
-        this.initializeEncryptedPairsDisplay(this.encryptionSteps.length);
-        this.clearMatrix('encryption-matrix');
-        
-        // Show all steps up to current step
-        for (let i = 0; i < this.currentEncryptionStep; i++) {
-            const step = this.encryptionSteps[i];
-            this.updateEncryptedPairDisplay(i, step.encryptedPair);
+    setupPlaybackControls() {
+        for (const tab of ['encryption', 'decryption']) {
+            document.getElementById(`prev-step-${tab}`).addEventListener('click', () => this.movePlayback(tab, -1));
+            document.getElementById(`next-step-${tab}`).addEventListener('click', () => this.movePlayback(tab, 1));
+            document.getElementById(`restart-${tab}`).addEventListener('click', () => this.seekPlayback(tab, 0));
+            document.getElementById(`finish-${tab}`).addEventListener('click', () => {
+                this.seekPlayback(tab, this.playback[tab].steps.length);
+            });
+            document.getElementById(`play-pause-${tab}`).addEventListener('click', () => {
+                if (this.playback[tab].playing) this.stopPlayback(tab);
+                else this.play(tab);
+            });
+            const panel = document.getElementById(tab);
+            panel.querySelectorAll('textarea, input[name], select').forEach(input => {
+                input.addEventListener(input.tagName === 'TEXTAREA' ? 'input' : 'change', () => this.invalidate(tab));
+            });
         }
     }
 
-    refreshDecryptionDisplay() {
-        this.initializeDecryptedPairsDisplay(this.decryptionSteps.length);
-        this.clearMatrix('decryption-matrix');
-        
-        // Show all steps up to current step
-        for (let i = 0; i < this.currentDecryptionStep; i++) {
-            const step = this.decryptionSteps[i];
-            this.updateDecryptedPairDisplay(i, step.decryptedPair);
-        }
+    stopPlayback(tab) {
+        const state = this.playback[tab];
+        clearInterval(state.timerId);
+        state.timerId = null;
+        state.playing = false;
+        this.render(tab);
     }
 
-    initializeEncryptedPairsDisplay(pairCount) {
-        const container = document.getElementById('encrypted-pair-display');
-        container.innerHTML = '';
-        
-        for (let i = 0; i < pairCount; i++) {
+    invalidate(tab) {
+        this.stopPlayback(tab);
+        this.playback[tab].steps = [];
+        this.playback[tab].done = 0;
+        this.results[tab] = null;
+        this.render(tab);
+    }
+
+    invalidateAll() {
+        this.invalidate('encryption');
+        this.invalidate('decryption');
+    }
+
+    startPlayback(tab, result, variant) {
+        this.stopPlayback(tab);
+        this.results[tab] = { ...result, variant };
+        const state = this.playback[tab];
+        state.steps = result.pairs.map((pair, index) => ({
+            pair, output: result.outPairs[index], rule: result.rules[index]
+        }));
+        state.done = matchMedia('(prefers-reduced-motion: reduce)').matches ? state.steps.length : 0;
+        this.render(tab);
+        if (state.done < state.steps.length) this.play(tab);
+    }
+
+    play(tab) {
+        const state = this.playback[tab];
+        if (state.playing || state.done >= state.steps.length) return;
+        state.playing = true;
+        state.timerId = setInterval(() => {
+            state.done = Math.min(state.done + 1, state.steps.length);
+            if (state.done === state.steps.length) this.stopPlayback(tab);
+            else this.render(tab);
+        }, 1200);
+        this.render(tab);
+    }
+
+    movePlayback(tab, delta) {
+        this.seekPlayback(tab, this.playback[tab].done + delta);
+    }
+
+    seekPlayback(tab, done) {
+        this.stopPlayback(tab);
+        const state = this.playback[tab];
+        state.done = Math.max(0, Math.min(done, state.steps.length));
+        this.render(tab);
+    }
+
+    markedText(container, text, positions, className) {
+        container.replaceChildren();
+        const marks = new Set(positions);
+        [...text].forEach((letter, index) => {
             const span = document.createElement('span');
-            span.className = 'pair-slot';
-            span.dataset.index = i;
-            span.textContent = '--';
-            span.style.opacity = '0.3';
+            span.textContent = letter;
+            if (marks.has(index)) span.className = className;
             container.appendChild(span);
-            
-            if (i < pairCount - 1) {
-                container.appendChild(document.createTextNode(' '));
-            }
-        }
+        });
     }
 
-    initializeDecryptedPairsDisplay(pairCount) {
-        const container = document.getElementById('decrypted-pair-display');
-        container.innerHTML = '';
-        
-        for (let i = 0; i < pairCount; i++) {
+    render(tab) {
+        const state = this.playback[tab];
+        const result = this.results[tab];
+        const encryption = tab === 'encryption';
+        const process = document.getElementById(`${tab}-process`);
+        const section = document.getElementById(encryption ? 'ciphertext-section' : 'plaintext-section');
+        process.classList.toggle('hidden', !result);
+        section.classList.toggle('hidden', !result);
+        process.dataset.done = state.done;
+        process.dataset.playing = state.playing;
+        document.getElementById(`step-info-${tab}`).textContent = `${state.done} / ${state.steps.length}`;
+        const converted = document.getElementById(encryption ? 'encrypted-pair-display' : 'decrypted-pair-display');
+        converted.replaceChildren();
+        for (const step of state.steps.slice(0, state.done)) {
             const span = document.createElement('span');
-            span.className = 'pair-slot';
-            span.dataset.index = i;
-            span.textContent = '--';
-            span.style.opacity = '0.3';
-            container.appendChild(span);
-            
-            if (i < pairCount - 1) {
-                container.appendChild(document.createTextNode(' '));
-            }
+            span.textContent = step.output;
+            converted.appendChild(span);
         }
-    }
-
-    updateEncryptedPairDisplay(index, encryptedPair) {
-        const container = document.getElementById('encrypted-pair-display');
-        const slot = container.querySelector(`span[data-index="${index}"]`);
-        
-        if (slot) {
-            slot.textContent = encryptedPair;
-            slot.className = 'encrypted-pair';
-            slot.style.opacity = '1';
+        this.displayMatrix(`${tab}-matrix`);
+        const explanation = document.getElementById(`step-description-${tab}`);
+        explanation.textContent = '';
+        if (state.done > 0) {
+            const step = state.steps[state.done - 1];
+            this.showMatrixHighlight(step.pair, step.output, `${tab}-matrix`);
+            const key = step.rule === 'same' ? `rule.variant.${result.variant}` : `rule.${tab}.${step.rule}`;
+            explanation.textContent = i18n.t('step.explanation', {
+                before: step.pair, after: step.output, rule: i18n.t(key)
+            });
         }
-    }
-
-    updateDecryptedPairDisplay(index, decryptedPair) {
-        const container = document.getElementById('decrypted-pair-display');
-        const slot = container.querySelector(`span[data-index="${index}"]`);
-        
-        if (slot) {
-            slot.textContent = decryptedPair;
-            slot.className = 'decrypted-pair';
-            slot.style.opacity = '1';
+        document.getElementById(`prev-step-${tab}`).disabled = !result || state.done === 0;
+        document.getElementById(`next-step-${tab}`).disabled = !result || state.done === state.steps.length;
+        document.getElementById(`finish-${tab}`).disabled = !result || state.done === state.steps.length;
+        const playButton = document.getElementById(`play-pause-${tab}`);
+        playButton.disabled = !result || state.done === state.steps.length;
+        playButton.textContent = i18n.t(state.playing ? 'playback.pause' : 'playback.play');
+        document.getElementById(`finish-${tab}`).textContent = i18n.t('playback.finish');
+        if (!result) return;
+        const source = document.getElementById(encryption ? 'pair-display' : 'decrypt-pair-display');
+        source.replaceChildren();
+        let position = 0;
+        for (const pair of result.pairs) {
+            const span = document.createElement('span');
+            const marks = encryption ? result.inserted.filter(index => index >= position && index < position + 2) : [];
+            this.markedText(span, pair, marks.map(index => index - position), 'pad-inserted');
+            source.appendChild(span);
+            position += 2;
         }
-    }
-
-    restartEncryptionAnimation() {
-        // 自動再生を停止
-        if (this.autoPlayTimer) {
-            clearTimeout(this.autoPlayTimer);
-            this.autoPlayTimer = null;
+        if (encryption) {
+            document.getElementById('ciphertext').textContent = result.ciphertext;
+            document.getElementById('encryption-message').textContent = i18n.t('padding.inserted-legend');
+        } else {
+            this.markedText(document.getElementById('decrypted-text'), result.plaintext, result.candidates, 'pad-candidate');
+            document.getElementById('decryption-notes').textContent = i18n.t('padding.candidate-legend');
+            document.getElementById('candidate-plain').textContent =
+                PlayfairCore.stripCandidates(result.plaintext, result.candidates);
+            document.getElementById('candidate-label').textContent = i18n.t('padding.stripped');
         }
-        
-        // 初期状態にリセット
-        this.currentEncryptionStep = 0;
-        this.updateEncryptionStepInfo();
-        this.updateEncryptionControls();
-        this.refreshEncryptionDisplay();
-        
-        // 再生ボタンを有効化
-        const playPauseBtn = document.getElementById('play-pause-encryption');
-        playPauseBtn.textContent = i18n.t('anim.play');
-        playPauseBtn.disabled = false;
-    }
-
-    restartDecryptionAnimation() {
-        // 自動再生を停止
-        if (this.autoPlayTimer) {
-            clearTimeout(this.autoPlayTimer);
-            this.autoPlayTimer = null;
-        }
-        
-        // 初期状態にリセット
-        this.currentDecryptionStep = 0;
-        this.updateDecryptionStepInfo();
-        this.updateDecryptionControls();
-        this.refreshDecryptionDisplay();
-        
-        // 再生ボタンを有効化
-        const playPauseBtn = document.getElementById('play-pause-decryption');
-        playPauseBtn.textContent = i18n.t('anim.play');
-        playPauseBtn.disabled = false;
     }
 
     updateKeywordPreview(keyword) {
@@ -1186,10 +825,12 @@ class UI {
                 .find(ex => ex.id === exampleSelect.value);
             
             if (selectedExample) {
+                this.invalidate('encryption');
                 document.getElementById('plaintext').value = selectedExample.plaintext;
                 
                 // キーワードがある場合は設定
                 if (selectedExample.keyword) {
+                    this.invalidateAll();
                     const result = this.cipher.generateMatrixFromKeyword(selectedExample.keyword);
                     this.cipher.setMatrix(result.matrix);
                     this.displayMatrix('key-matrix');
@@ -1343,6 +984,7 @@ class UI {
     }
 
     loadPractice(practice) {
+        this.invalidateAll();
         document.getElementById('ciphertext-input').value = practice.ciphertext;
         
         // キーワードがある場合は設定
@@ -1364,6 +1006,7 @@ class UI {
     }
 
     loadChallenge(challenge) {
+        this.invalidate('decryption');
         document.getElementById('ciphertext-input').value = challenge.ciphertext;
         
         const translatedTitle = i18n.t(`example.${challenge.title}`) !== `example.${challenge.title}` 
