@@ -6,7 +6,7 @@ const root = path.join(__dirname, '..');
 
 for (const [file, minimum] of [
     ['css/styles.css', 1000], ['index.html', 250], ['js/ui.js', 800], ['js/cipher.js', 120], ['js/i18n.js', 500],
-    ['js/progress.js', 120]
+    ['js/progress.js', 120], ['js/guide.js', 80]
 ]) {
     test(`K-8 source line count: ${file}`, () => {
         const lines = fs.readFileSync(path.join(root, file), 'utf8').split(/\r?\n/);

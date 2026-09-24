@@ -53,7 +53,7 @@ function withoutComments(source) {
 test('K-4 no Japanese literals outside the dictionary', () => {
     const ranges = [[0x3040, 0x30ff], [0x4e00, 0x9fff], [0xff01, 0xff60]];
     const pattern = new RegExp('[' + ranges.map(([a, b]) => String.fromCodePoint(a) + '-' + String.fromCodePoint(b)).join('') + ']');
-    for (const file of ['cipher', 'exercises', 'ui', 'theme', 'help', 'theme-init']) {
+    for (const file of ['cipher', 'exercises', 'ui', 'theme', 'help', 'theme-init', 'progress', 'guide']) {
         assert.equal(pattern.test(withoutComments(read(`js/${file}.js`))), false, file);
     }
 });

@@ -30,6 +30,7 @@ class UI {
         this.displayMatrix('key-matrix');
         this.setupI18n();
         this.updateMatrixStatus();
+        this.guide = new Guide(this);
     }
 
     setupI18n() {
@@ -800,6 +801,7 @@ class UI {
                 this.recordProgress({ type: 'step-rendered', tab, rule });
             }
         }
+        this.guide?.render();
         if (!result) return;
         const source = document.getElementById(encryption ? 'pair-display' : 'decrypt-pair-display');
         source.replaceChildren();
@@ -1183,6 +1185,19 @@ class UI {
         return this.cipher.getMatrix().flat().join('');
     }
 
+
+    getSnapshot() {
+        return {
+            activeTab: this.currentTab,
+            editorOpen: !document.getElementById('matrix-editor').classList.contains('hidden'),
+            keywordDraft: PlayfairCore.normalize(document.getElementById('keyword-text').value),
+            plaintextDraft: PlayfairCore.normalize(document.getElementById('plaintext').value),
+            ciphertextDraft: PlayfairCore.normalize(document.getElementById('ciphertext-input').value),
+            matrix: this.getCurrentMatrixString(), loaded: this.loaded,
+            encryption: this.results.encryption, decryption: this.results.decryption,
+            rulesSeenNow: [...this.rulesSeenNow], lastCorrect: this.lastCorrect
+        };
+    }
 
     loadProgress() {
         try { return ProgressCore.migrate(localStorage.getItem('playfair-progress')); }

@@ -1909,3 +1909,80 @@ body.dark-mode .challenge-info {
 [hidden] {
     display: none !important;
 }
+
+/* Guide: a scrollable bottom card, without inline sizing or positioning. */
+.guide {
+    position: fixed;
+    z-index: 900;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-height: 45vh;
+    max-height: 45dvh;
+    padding: 1rem;
+    overflow: auto;
+    overflow-wrap: anywhere;
+    border: 2px solid var(--focus);
+    color: var(--text-fg);
+    background-color: var(--text-bg);
+    box-shadow: 0 -3px 12px rgb(0 0 0 / 20%);
+}
+
+.guide h2 {
+    font-size: 1.1rem;
+}
+
+.guide ol {
+    padding-left: 1.5rem;
+}
+
+.guide li {
+    margin: 0.5rem 0;
+}
+
+.guide [aria-current="step"] {
+    font-weight: bold;
+}
+
+.guide-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.guide-actions button {
+    max-width: 100%;
+    white-space: normal;
+}
+
+.guide-open {
+    padding-bottom: 45vh;
+    padding-bottom: 45dvh;
+}
+
+.guide-target {
+    outline: 3px dotted var(--focus);
+    outline-offset: 4px;
+    animation: guide-emphasis 1.2s ease-in-out infinite;
+}
+
+@keyframes guide-emphasis {
+    50% { outline-offset: 7px; }
+}
+
+@media (min-width: 769px) {
+    .guide {
+        left: auto;
+        right: 1rem;
+        bottom: 1rem;
+        width: min(420px, calc(100vw - 32px));
+        border-radius: 8px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .guide-target {
+        animation: none;
+    }
+}
