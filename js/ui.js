@@ -1077,7 +1077,7 @@ class UI {
             ? i18n.t('matrix.practice', { keyword: challenge.keyword })
             : i18n.t(challenge.keyword ? 'matrix.required-hint' : 'matrix.required-default');
         document.getElementById('challenge-required').textContent = required;
-        document.getElementById('challenge-matrix').textContent = i18n.t('matrix.current') + ': ' + this.matrixDescription();
+        document.getElementById('challenge-matrix').textContent = i18n.t('matrix.current-line', { description: this.matrixDescription() });
         const matches = this.getCurrentMatrixString() === PlayfairCore.matrixFromKeyword(challenge.keyword || '');
         document.getElementById('challenge-match').textContent = (matches ? '✅ ' : '✗ ') + i18n.t(matches ? 'matrix.match' : 'matrix.mismatch');
         document.querySelector('.challenge-points').textContent = practice ? '' : challenge.points + 'pt';
@@ -1302,7 +1302,10 @@ class UI {
                 else row.removeAttribute('aria-current');
                 const symbols = { done: '✅', next: '▶', open: '○', locked: '🔒' };
                 row.querySelector('.mission-state').textContent = symbols[status.state] + ' ' + i18n.t(`mission.state.${status.state}`);
-                row.querySelector('.mission-title').textContent = mission.id + ' ' + i18n.t(`mission.${mission.id}.title`);
+                const title = i18n.t(`mission.${mission.id}.title`);
+                row.querySelector('.mission-title').textContent = i18n.t('mission.label', {
+                    id: mission.id, title, separator: /^[A-Za-z0-9]/.test(title) ? ' ' : ''
+                });
                 row.querySelector('.mission-learn').textContent = i18n.t(`mission.${mission.id}.learn`);
                 row.querySelector('.mission-points').textContent = mission.points
                     ? mission.points + 'pt' + (status.star ? ' ★ ' + i18n.t('mission.star') : '') : '';
@@ -1366,7 +1369,7 @@ class UI {
 
     updateMatrixStatus() {
         for (const tab of ['encryption', 'decryption']) {
-            document.getElementById('matrix-status-' + tab).textContent = this.matrixDescription();
+            document.getElementById('matrix-status-' + tab).textContent = i18n.t('matrix.status', { description: this.matrixDescription() });
         }
         this.updateChallengeInfoDisplay();
     }

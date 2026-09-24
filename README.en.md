@@ -26,7 +26,7 @@ You can also download the files and open index.html directly. No server or build
 
 > *M1 and M2 are complete. The M3 guide highlights the example category selector.*
 
-1280×1200px, 86,184 bytes.
+1280×1200px, 88,454 bytes.
 
 ![Wikipedia example at pair 10 of 13](assets/en/screenshot2.png)
 
@@ -38,7 +38,7 @@ You can also download the files and open index.html directly. No server or build
 
 > *C2 was loaded with “Start challenge” and solved with the SECRET matrix. The required matrix, current matrix, match and answer are visible.*
 
-1280×1000px, 34,057 bytes.
+1280×1000px, 33,762 bytes.
 
 ## ✨ Features
 

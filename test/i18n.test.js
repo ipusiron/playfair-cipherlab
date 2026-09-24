@@ -16,6 +16,18 @@ test('K-4 dictionary keys match and no value is empty', () => {
         }
     }
 });
+test('E-3 Japanese dictionary text has no spaces at Japanese and ASCII boundaries', () => {
+    const ranges = [[0x3000, 0x303f], [0x3040, 0x30ff], [0x4e00, 0x9fff], [0xff01, 0xff60]];
+    const jp = '[' + ranges.map(([a, b]) => String.fromCodePoint(a) + '-' + String.fromCodePoint(b)).join('') + ']';
+    const tick = String.fromCodePoint(0x60);
+    const pattern = new RegExp(jp + ' +[A-Za-z0-9{' + tick + ']|[A-Za-z0-9}' + tick + '] +' + jp, 'g');
+
+    for (const [key, value] of Object.entries(dictionaries.ja)) {
+        const text = value.replace(/<[^>]*>/g, '').replace(/https?:\/\/[^\s<>)]+/g, '');
+        assert.deepEqual([...text.matchAll(pattern)].map(match => match[0]), [], key);
+    }
+});
+
 
 test('K-4 all literal translation calls exist', () => {
     for (const file of fs.readdirSync(path.join(root, 'js')).filter(file => file.endsWith('.js'))) {
@@ -83,4 +95,12 @@ test('E-1 initial language priority never writes storage', () => {
     const context = { URLSearchParams, location: { search: '' }, navigator: { language: 'ja-JP' },
         localStorage: { getItem: () => { throw Error('blocked'); } } };
     assert.equal(vm.runInNewContext(read('js/i18n.js') + '; i18n.currentLang;', context), 'ja');
+});
+
+test('E-2 matrix descriptions have no duplicate label prefix', () => {
+    const jaPrefix = String.fromCodePoint(0x9375, 0x8868);
+    for (const key of ['matrix.default', 'matrix.keyword', 'matrix.matrix']) {
+        assert.equal(dictionaries.ja[key].startsWith(jaPrefix), false, key);
+        assert.equal(dictionaries.en[key].startsWith('Matrix'), false, key);
+    }
 });
