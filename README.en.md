@@ -107,6 +107,9 @@ Use it directly in your browser. You can also download the files and open index.
 | M2 | Encryption | See where padding is inserted | Insert X between identical letters in a pair (HELLO → HE LX LO). | Encrypt HELLO with the default matrix and standard rules | 0 |
 | M3 | Encryption | Play all three rules | Same row: move right. Same column: move down. Rectangle: use the other letter’s column. | Display row, column and rectangle rules during encryption playback | 0 |
 | M4 | Encryption | Identical letters across pair boundaries | Do not insert X between EE across pair boundaries (ME ET ME …). | Encrypt MEET ME TONIGHT with the default matrix and standard rules | 0 |
+| E1 | Encryption challenges | Encryption challenge (beginner) | Insert padding and encrypt by hand | Calculate encipher-01 by hand and answer correctly | 10 |
+| E2 | Encryption challenges | Encryption challenge (intermediate) | Use the same-row, same-column and rectangle rules by hand with a keyword matrix | After E1, solve encipher-02 | 20 |
+| E3 | Encryption challenges | Encryption challenge (advanced) | Encrypt carefully with identical letters across pair boundaries and final padding | After E2, solve encipher-03 | 30 |
 | M5 | Decryption | Identify possible padding | An X in decrypted text is only a candidate. It may be a genuine X. | Decrypt KCNVMP with the default matrix and standard rules | 0 |
 | M6 | Decryption | Set the keyword yourself and decrypt | Decryption needs the same matrix as encryption. | Decrypt BNSY with the ANIMAL matrix and standard rules | 0 |
 | M7 | Analysis | Identify ciphertext impossible in Playfair | Odd length, J and identical-letter pairs are impossible under standard rules. | Analyze text classified as impossible | 0 |
@@ -114,12 +117,13 @@ Use it directly in your browser. You can also download the files and open index.
 | C1 | Decryption challenges | Mystery word | Decode without a keyword. | Solve mystery-01 with the default matrix | 10 |
 | C2 | Decryption challenges | Secret message | Infer the keyword from hints and decode. | After C1, solve mystery-02 with the SECRET matrix | 20 |
 | C3 | Decryption challenges | Military operation | Infer the keyword from hints and decode. | After C2, solve mystery-03 with the MILITARY matrix | 30 |
+| H1 | Historical record | Historical record: the PT-109 message | Decrypt a real message to see how its rules differed from textbook Playfair | After C3, solve history-01 with its required matrix | 30 |
 | R1 | Recovery | Recover a key square (Beginner) | Deduce 9 letters from 16 givens and 11 known pairs | Fill all 25 cells of recover-01 | 10 |
 | R2 | Recovery | Recover a key square (Intermediate) | Deduce 17 letters from 8 givens and 14 known pairs | After R1, fill all 25 cells of recover-02 | 20 |
 | R3 | Recovery | Recover a key square (Advanced) | Deduce 22 letters from 3 givens and 27 known pairs | After R2, fill all 25 cells of recover-03 | 30 |
 
 M1–M8 can be completed in any order. “Next” recommends the first incomplete unlocked mission.
-Completing everything shows 14/14 and 120/120pt, followed by a suggestion to compare the same text under variant rules.
+Completing everything shows 18/18 and 210/210pt, followed by a suggestion to compare the same text under variant rules.
 
 “Start guide” in the recommendation banner or a mission opens the steps in the card below.
 “Go to this step” opens the appropriate tab, outlines the control and moves focus.

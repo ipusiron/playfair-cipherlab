@@ -5,6 +5,17 @@ const path = require('node:path');
 const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
 const attribute = (tag, name) => tag.match(new RegExp(`\\b${name}="([^"]*)"`))?.[1];
 
+test('Challenges G-2 encryption controls have labels and a live answer result', () => {
+    for (const id of ['encipher-select', 'encipher-info', 'encipher-answer', 'encipher-check', 'encipher-hint', 'encipher-result']) {
+        assert.equal([...html.matchAll(new RegExp(`\\bid="${id}"`, 'g'))].length, 1, id);
+    }
+    assert.match(html, /<label for="encipher-select"/);
+    assert.match(html, /<label for="encipher-answer"/);
+    assert.match(html, /id="encipher-result"[^>]*aria-live="polite"/);
+    assert.ok(html.indexOf('id="encipher-select"') > html.indexOf('id="load-example"'));
+    assert.ok(html.indexOf('id="encipher-select"') < html.indexOf('id="plaintext"'));
+});
+
 test('Recovery G-2 labelled section, controls and live status exist once', () => {
     for (const id of ['recovery', 'recovery-problem', 'recovery-pairs', 'recovery-grid',
         'recovery-palette', 'recovery-hint', 'recovery-reset', 'recovery-status']) {

@@ -104,37 +104,43 @@ test('H-1 rendered rules: row, column, ignore same and decryption, then rectangl
 test('H-1 first answer keeps points and hints; challenges unlock in order', () => {
     let p = core.reduce(core.initial(), { type: 'challenge-correct', id: 'mystery-01', hintsUsed: 0 });
     assert.deepEqual(p.challenges, { 'mystery-01': { points: 10, hintsUsed: 0 } });
-    assert.equal(core.statuses(p)[8].star, true);
+    assert.equal(core.statuses(p).find(item => item.id === 'C1').star, true);
     assert.deepEqual(core.reduce(p, { type: 'challenge-correct', id: 'mystery-01', hintsUsed: 3 }), p);
     assert.equal(core.isLocked(p, 'C2'), false);
     assert.equal(core.isLocked(p, 'C3'), true);
     p = core.reduce(p, { type: 'challenge-correct', id: 'mystery-02', hintsUsed: 2 });
     assert.equal(core.summary(p).points, 30);
-    assert.equal(core.statuses(p)[9].star, false);
+    assert.equal(core.statuses(p).find(item => item.id === 'C2').star, false);
     assert.equal(core.isLocked(p, 'mystery-03'), false);
 });
 
 test('H-1 mission order, groups, points, statuses and summaries', () => {
     assert.deepEqual(core.MISSIONS.map(m => [m.id, m.group, m.points]), [
         ['M1', 'key', 0], ['M2', 'encryption', 0], ['M3', 'encryption', 0], ['M4', 'encryption', 0],
+        ['E1', 'encipher', 10], ['E2', 'encipher', 20], ['E3', 'encipher', 30],
         ['M5', 'decryption', 0], ['M6', 'decryption', 0], ['M7', 'analysis', 0], ['M8', 'analysis', 0],
         ['C1', 'challenge', 10], ['C2', 'challenge', 20], ['C3', 'challenge', 30],
+        ['H1', 'history', 30],
         ['R1', 'recovery', 10], ['R2', 'recovery', 20], ['R3', 'recovery', 30]
     ]);
     let p = core.initial();
-    assert.deepEqual(core.summary(p), { done: 0, total: 14, points: 0, maxPoints: 120, next: 'M1' });
+    assert.deepEqual(core.summary(p), { done: 0, total: 18, points: 0, maxPoints: 210, next: 'M1' });
     assert.deepEqual(core.statuses(p).map(m => m.state),
-        ['next', 'open', 'open', 'open', 'open', 'open', 'open', 'open', 'open', 'locked', 'locked', 'open', 'locked', 'locked']);
+        ['next', 'open', 'open', 'open', 'open', 'locked', 'locked', 'open', 'open', 'open', 'open',
+            'open', 'locked', 'locked', 'locked', 'open', 'locked', 'locked']);
     assert.equal(core.summary({ ...p, missions: { M1: true } }).next, 'M2');
     assert.equal(core.summary({ ...p, missions: { M2: true } }).next, 'M1');
-    p.missions = Object.fromEntries(core.MISSIONS.slice(0, 8).map(m => [m.id, true]));
-    assert.equal(core.summary(p).next, 'C1');
+    p.missions = Object.fromEntries(core.MISSIONS.filter(m => m.points === 0).map(m => [m.id, true]));
+    assert.equal(core.summary(p).next, 'E1');
     for (const id of ['mystery-01', 'mystery-02', 'mystery-03']) {
         p = core.reduce(p, { type: 'challenge-correct', id, hintsUsed: 0 });
     }
-    assert.deepEqual(core.summary(p), { done: 11, total: 14, points: 60, maxPoints: 120, next: 'R1' });
+    assert.deepEqual(core.summary(p), { done: 11, total: 18, points: 60, maxPoints: 210, next: 'E1' });
     for (const id of ['recover-01', 'recover-02', 'recover-03']) p = core.reduce(p, { type: 'recovery-solved', id, hintsUsed: 0 });
-    assert.deepEqual(core.summary(p), { done: 14, total: 14, points: 120, maxPoints: 120, next: null });
+    assert.deepEqual(core.summary(p), { done: 14, total: 18, points: 120, maxPoints: 210, next: 'E1' });
+    for (const id of ['encipher-01', 'encipher-02', 'encipher-03']) p = core.reduce(p, { type: 'encipher-correct', id, hintsUsed: 0 });
+    p = core.reduce(p, { type: 'challenge-correct', id: 'history-01', hintsUsed: 0 });
+    assert.deepEqual(core.summary(p), { done: 18, total: 18, points: 210, maxPoints: 210, next: null });
     assert.deepEqual(core.reduce(p, { type: 'unknown' }), p);
     assert.deepEqual(core.reduce(p, { type: 'matrix-saved', matrix: defaultMatrix }), p);
 });
@@ -162,6 +168,66 @@ const invalid = [null, '{', '[]', 'null', '{"version":3}',
 for (const [index, raw] of invalid.entries()) {
     test(`H-1 invalid progress ${index + 1} resets`, () => assert.deepEqual(core.migrate(raw), core.initial()));
 }
+
+test('Challenges G-3 locks, event groups, first result, stars, hint limits and third-release migration', () => {
+    let p = core.initial();
+    for (const [type, id] of [['encipher-correct', 'encipher-02'], ['challenge-correct', 'history-01'],
+        ['challenge-correct', 'encipher-01'], ['encipher-correct', 'mystery-01'], ['recovery-solved', 'history-01']]) {
+        assert.deepEqual(core.reduce(p, { type, id, hintsUsed: 0 }), p);
+    }
+    for (const hintsUsed of [0, 1, 3, 4]) {
+        const next = core.reduce(p, { type: 'encipher-correct', id: 'encipher-01', hintsUsed });
+        assert.equal(next.challenges['encipher-01'].points, 10);
+        assert.equal(core.statuses(next).find(item => item.id === 'E1').star, hintsUsed === 0);
+        assert.equal(core.isLocked(next, 'E2'), false);
+        assert.deepEqual(core.reduce(next, { type: 'encipher-correct', id: 'encipher-01', hintsUsed: 0 }), next);
+        assert.deepEqual(core.migrate(core.serialize(next)), next);
+    }
+    for (const hintsUsed of [5, -1, 1.1, null, '0']) {
+        assert.deepEqual(core.reduce(p, { type: 'encipher-correct', id: 'encipher-01', hintsUsed }), p);
+    }
+    for (const id of ['mystery-01', 'mystery-02', 'mystery-03']) p = core.reduce(p, { type: 'challenge-correct', id, hintsUsed: 0 });
+    for (const id of ['recover-01', 'recover-02', 'recover-03']) p = core.reduce(p, { type: 'recovery-solved', id, hintsUsed: 24 });
+    p.missions = Object.fromEntries(Array.from({ length: 8 }, (_, i) => ['M' + (i + 1), true]));
+    assert.deepEqual(core.migrate(core.serialize(p)), p);
+    assert.equal(core.summary(p).points, 120);
+    assert.equal(core.isLocked(p, 'H1'), false);
+    const history = core.reduce(p, { type: 'challenge-correct', id: 'history-01', hintsUsed: 4 });
+    assert.deepEqual(history.challenges['history-01'], { points: 30, hintsUsed: 4 });
+    assert.deepEqual(core.reduce(history, { type: 'challenge-correct', id: 'history-01', hintsUsed: 0 }), history);
+    assert.equal(core.statuses(history).find(item => item.id === 'H1').star, false);
+    assert.equal(core.statuses(core.reduce(p, { type: 'challenge-correct', id: 'history-01', hintsUsed: 0 }))
+        .find(item => item.id === 'H1').star, true);
+    assert.deepEqual(core.reduce(p, { type: 'challenge-correct', id: 'history-01', hintsUsed: 5 }), p);
+});
+
+test('Challenges G-3 E1-E3 and H1 navigation checks the specified snapshot conditions', () => {
+    for (const [mission, id] of [['E1', 'encipher-01'], ['E2', 'encipher-02'], ['E3', 'encipher-03']]) {
+        assert.deepEqual(core.STEPS[mission], [['challenge-start-' + id, null],
+            ['tab-key-generation', 'key-generation'], ['encipher-answer', 'encryption']]);
+        assert.deepEqual(core.stepStates(mission, {}), ['current', 'todo', 'todo']);
+        assert.deepEqual(core.stepStates(mission, { loaded: { kind: 'encipher', id } }), ['done', 'current', 'todo']);
+        assert.deepEqual(core.stepStates(mission, { matrix: core.requiredMatrix(id) }), ['current', 'todo', 'todo']);
+        assert.deepEqual(core.stepStates(mission, { loaded: { kind: 'encipher', id }, matrix: core.requiredMatrix(id) }),
+            ['done', 'done', 'current']);
+        assert.deepEqual(core.stepStates(mission, { lastCorrect: id }), ['done', 'done', 'done']);
+        assert.deepEqual(core.stepStates(mission, { loaded: { kind: 'challenge', id }, lastCorrect: 'other' }), ['current', 'todo', 'todo']);
+    }
+    const id = 'history-01';
+    const matrix = 'ROYALNEWZDVBCFGHIKMPQSTUX';
+    assert.equal(core.requiredMatrix(id), matrix);
+    assert.deepEqual(core.STEPS.H1, [['tab-key-generation', 'key-generation'], ['challenge-start-history-01', null],
+        ['decrypt-btn', 'decryption'], ['challenge-answer', 'decryption']]);
+    assert.deepEqual(core.stepStates('H1', {}), ['current', 'todo', 'todo', 'todo']);
+    assert.deepEqual(core.stepStates('H1', { matrix }), ['done', 'current', 'todo', 'todo']);
+    assert.deepEqual(core.stepStates('H1', { loaded: { kind: 'challenge', id } }), ['done', 'done', 'current', 'todo']);
+    const ciphertext = 'KXIEYUREBEZWEHEWRYTUHEYFSKREHEGOYFIWTTTUOLKSYCAIPOBOTEIZONTXBYBWTGONEYCUZWRGDSONSXBOUYWRHEBAAHYUSEDQ';
+    assert.deepEqual(core.stepStates('H1', { decryption: { ciphertext, matrix, variant: 'no-change' } }), ['done', 'done', 'done', 'current']);
+    for (const variant of [null, 'right-shift', 'bottom-right']) {
+        assert.deepEqual(core.stepStates('H1', { decryption: { ciphertext, matrix, variant } }), ['current', 'todo', 'todo', 'todo']);
+    }
+    assert.deepEqual(core.stepStates('H1', { lastCorrect: id }), ['done', 'done', 'done', 'done']);
+});
 
 test('H-1 serialize roundtrip and reducer immutability', () => {
     const p = core.reduce(core.initial(), { type: 'challenge-correct', id: 'mystery-01', hintsUsed: 1 });

@@ -155,6 +155,21 @@
             </div>
           </div>
           
+          <section class="exercise-section" aria-labelledby="encipher-heading">
+            <h3 id="encipher-heading" tabindex="-1" data-i18n="encipher.heading"></h3>
+            <label for="encipher-select" data-i18n="encipher.choose"></label>
+            <select id="encipher-select" class="exercise-select"></select>
+            <div id="encipher-info" class="challenge-info" hidden></div>
+            <label for="encipher-answer" data-i18n="encipher.answer"></label>
+            <input type="text" id="encipher-answer" class="challenge-answer-input" autocomplete="off" disabled />
+            <div class="answer-actions">
+              <button type="button" id="encipher-check" class="btn btn-success" data-i18n="encipher.check" disabled></button>
+              <button type="button" id="encipher-hint" class="btn btn-secondary" data-i18n="encipher.hint" disabled></button>
+            </div>
+            <p data-i18n="encipher.star-warning"></p>
+            <div id="encipher-result" class="answer-result" aria-live="polite"></div>
+            <div id="encipher-hints" class="hint-display" hidden></div>
+          </section>
           <p id="matrix-status-encryption" class="matrix-status"></p>
           <div class="input-section">
             <label for="plaintext">平文入力:</label>
@@ -326,6 +341,10 @@
                 <button type="button" id="challenge-guide" class="btn btn-secondary" data-i18n="guide.short"></button>
                 <div class="challenge-points"></div>
               </div>
+            </div>
+            <div id="history-explanation" class="challenge-info" hidden>
+              <p data-i18n="history.explanation"></p>
+              <p data-i18n="history.source"></p>
             </div>
             <div id="answer-check" class="answer-check hidden">
               <h4>解読チャレンジ解答</h4>

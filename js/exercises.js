@@ -171,7 +171,8 @@ class ExerciseManager {
     }
     
     getChallenges(type) {
-        return this.exercises[type].challenges || [];
+        const challenges = this.exercises[type].challenges || [];
+        return type === 'decryption' ? [...challenges, this.getHistoryChallenge()] : challenges;
     }
     
     getPractices() {

@@ -3,6 +3,55 @@ class I18nManager {
         this.currentLang = this.loadLanguage();
         this.translations = {
             ja: {
+                'encipher.heading': '暗号化チャレンジ',
+                'encipher.choose': '挑戦する課題',
+                'encipher.answer': '手で求めた暗号文:',
+                'encipher.check': '解答をチェック',
+                'encipher.hint': 'ヒント',
+                'encipher.plaintext': '平文: {text}',
+                'encipher.keyword': '鍵語: {keyword}',
+                'encipher.star-warning': '暗号化ボタンで確かめると★は付きません',
+                'encipher.hint.1': '前処理の組（埋め文字に印）: ',
+                'encipher.hint.2': '組ごとの規則: {rules}',
+                'encipher.hint.3': '最初の組の答え: {pair}→{answer}',
+                'mission.group.encipher': '暗号化チャレンジ',
+                'mission.group.history': '史料',
+                'mission.E1.title': '暗号化チャレンジ（入門）',
+                'mission.E1.learn': '埋め文字を挟んで、手で暗号化する',
+                'mission.E1.step.1': '『挑戦する』で暗号化課題を読み込む',
+                'mission.E1.step.2': '『🔑 鍵生成』タブで既定の表に戻し、表を見ながら手で求める',
+                'mission.E1.step.3': '暗号化課題の解答欄に暗号文を入れて『解答をチェック』',
+                'mission.E2.title': '暗号化チャレンジ（中級）',
+                'mission.E2.learn': '鍵語の表で、同じ行・同じ列・長方形の3つを手で使う',
+                'mission.E2.step.1': '『挑戦する』で暗号化課題を読み込む',
+                'mission.E2.step.2': '『🔑 鍵生成』タブで鍵語CIPHERを保存し、表を見ながら手で求める',
+                'mission.E2.step.3': '暗号化課題の解答欄に暗号文を入れて『解答をチェック』',
+                'mission.E3.title': '暗号化チャレンジ（上級）',
+                'mission.E3.learn': '組の境目の同じ文字と、末尾の埋め文字に気をつけて暗号化する',
+                'mission.E3.step.1': '『挑戦する』で暗号化課題を読み込む',
+                'mission.E3.step.2': '『🔑 鍵生成』タブで鍵語SECRETを保存し、表を見ながら手で求める',
+                'mission.E3.step.3': '暗号化課題の解答欄に暗号文を入れて『解答をチェック』',
+                'mission.H1.title': '史料: PT-109の電文',
+                'mission.H1.learn': '実際の電文が教科書の規則から外れていたことを、復号して確かめる',
+                'mission.H1.step.1': '『🔑 鍵生成』タブで鍵語ROYAL NEW ZEALAND NAVYを保存する',
+                'mission.H1.step.2': '『挑戦する』で史料PT-109を読み込む',
+                'mission.H1.step.3': '復号タブの同一ペア処理ルールを『変種: 変化なし』にして『復号』',
+                'mission.H1.step.4': '失われた艇の番号を解答欄に入れて『解答をチェック』',
+                'example.history-01': '史料PT-109',
+                'exercise.history-01.description': '鍵語が分かっている史料の電文を復号し、問いに答えてください。',
+                'history.question': '電文が伝えた、失われた艇の番号は？',
+                'challenge.history-01.hint.0': '標準の規則で復号すると、『同じ文字の組』のエラーになります',
+                'challenge.history-01.hint.1': '復号タブの同一ペア処理ルールで『変種: 変化なし』を選んでください',
+                'challenge.history-01.hint.2': '数字は英語の綴りで書かれています',
+                'challenge.history-01.hint.3': 'ONE OWE NINEは数字3つです',
+                'history.explanation': 'この電文は1943年8月2日、沿岸監視員Arthur Reginald Evansが受け取ったものです。'
+                    + '鍵語はROYAL NEW ZEALAND NAVYでした。実際の電文は教科書の規則どおりではありません。'
+                    + 'BLACKETTのTTを分けずに送っているので、標準の規則では『同じ文字の組』のエラーになり、変種『変化なし』で読めます。'
+                    + '暗号文にはJも入っていて、表ではIとして扱います。数字はONE OWE NINE（109）のように綴っています。'
+                    + '伝わっている平文はMERESU COVEですが、この暗号文を復号するとCOCEになり、流布している暗号文のどこかに1文字の誤りがあるとみられます。',
+                'history.source': '出典: 暗号文は二次資料（Programming Praxisほか）によります。'
+                    + '原典はDavid Kahn『The Codebreakers』（1996年版、p.592）とされますが、このツールの作成では原典を確認していません。'
+                    + '平文と日時はWikipedia『Arthur Reginald Evans』によります。',
                 'mission.group.recovery': '復元',
                 'mission.R1.title': '鍵表の復元（入門）',
                 'mission.R1.learn': '16文字が置かれた表に、既知の組11個から残り9文字を推理して置く',
@@ -298,7 +347,9 @@ class I18nManager {
 <li>R3：鍵表の復元（上級）。置き字3文字と既知の組27個から推理する</li>
 </ul>
 <p>C1、C2、C3は順に10、20、30点で計60点です。C1を達成するとC2、C2を達成するとC3が開きます。得点は各課題の初回正解だけです。</p>
-<p>R1、R2、R3も順に10、20、30点です。R1でR2、R2でR3が開きます。復元を含む全14ミッションの合計は120点です。</p>
+<p>E1：暗号化チャレンジ（入門）。E2：暗号化チャレンジ（中級）。E3：暗号化チャレンジ（上級）。順に10・20・30点です。</p>
+<p>H1：史料: PT-109の電文（30点）。C3を解くと開きます。</p>
+<p>R1、R2、R3も順に10、20、30点です。R1でR2、R2でR3が開きます。全18ミッションの合計は210点です。</p>
 <p>帯や各行の「ナビ開始」で下のカードを開きます。手順は操作に合わせて自動で済みになります。あとの手順を済ませた場合、前の手順も済みになります。</p>
 <p>「この場所へ移動」はタブを開いて対象を枠で示し、フォーカスを移します。答え、鍵語、平文は入力しません。ナビによる減点はありません。</p>
 <p>「次」か「再生」で見た暗号化の規則だけをM3に数えます。「最後まで」や動きを減らす設定で飛ばした組は数えません。</p>
@@ -579,6 +630,56 @@ class I18nManager {
                 'help.warning.desc': '<strong>このツールは教育目的です。</strong>プレイフェア暗号は古典暗号であり、現代の暗号学的用途には適していません。'
             },
             en: {
+                'encipher.heading': 'Encryption challenges',
+                'encipher.choose': 'Choose a challenge',
+                'encipher.answer': 'Ciphertext calculated by hand:',
+                'encipher.check': 'Check Answer',
+                'encipher.hint': 'Hint',
+                'encipher.plaintext': 'Plaintext: {text}',
+                'encipher.keyword': 'Keyword: {keyword}',
+                'encipher.star-warning': 'Checking with the Encrypt button means you will not earn a star.',
+                'encipher.hint.1': 'Prepared pairs (padding marked): ',
+                'encipher.hint.2': 'Rules for each pair: {rules}',
+                'encipher.hint.3': 'First pair: {pair}→{answer}',
+                'mission.group.encipher': 'Encryption challenges',
+                'mission.group.history': 'Historical record',
+                'mission.E1.title': 'Encryption challenge (beginner)',
+                'mission.E1.learn': 'Insert padding and encrypt by hand',
+                'mission.E1.step.1': 'Load the encryption task with “Start challenge”.',
+                'mission.E1.step.2': 'Open “🔑 Key Generation”, reset to the default matrix, and calculate by hand using the matrix.',
+                'mission.E1.step.3': 'Enter the ciphertext in the challenge answer field and press “Check Answer”.',
+                'mission.E2.title': 'Encryption challenge (intermediate)',
+                'mission.E2.learn': 'Use the same-row, same-column and rectangle rules by hand with a keyword matrix',
+                'mission.E2.step.1': 'Load the encryption task with “Start challenge”.',
+                'mission.E2.step.2': 'Open “🔑 Key Generation”, save keyword CIPHER, and calculate by hand using the matrix.',
+                'mission.E2.step.3': 'Enter the ciphertext in the challenge answer field and press “Check Answer”.',
+                'mission.E3.title': 'Encryption challenge (advanced)',
+                'mission.E3.learn': 'Encrypt carefully with identical letters across pair boundaries and final padding',
+                'mission.E3.step.1': 'Load the encryption task with “Start challenge”.',
+                'mission.E3.step.2': 'Open “🔑 Key Generation”, save keyword SECRET, and calculate by hand using the matrix.',
+                'mission.E3.step.3': 'Enter the ciphertext in the challenge answer field and press “Check Answer”.',
+                'mission.H1.title': 'Historical record: the PT-109 message',
+                'mission.H1.learn': 'Decrypt a real message to see how its rules differed from textbook Playfair',
+                'mission.H1.step.1': 'Open “🔑 Key Generation” and save keyword ROYAL NEW ZEALAND NAVY.',
+                'mission.H1.step.2': 'Load the PT-109 historical challenge with “Start challenge”.',
+                'mission.H1.step.3': 'On the Decryption tab choose “Variant: No Change” under same-pair rules, then press “Decrypt”.',
+                'mission.H1.step.4': 'Enter the number of the lost boat and press “Check Answer”.',
+                'example.history-01': 'Historical record: PT-109',
+                'exercise.history-01.description': 'Decrypt this historical message using its known keyword, then answer the question.',
+                'history.question': 'What was the number of the boat reported lost in the message?',
+                'challenge.history-01.hint.0': 'Decrypting with the standard rules produces an identical-letter pair error.',
+                'challenge.history-01.hint.1': 'Choose “Variant: No Change” in the same-pair rules on the Decryption tab.',
+                'challenge.history-01.hint.2': 'Numbers are written as English words.',
+                'challenge.history-01.hint.3': 'ONE OWE NINE represents three digits.',
+                'history.explanation': 'Coastwatcher Arthur Reginald Evans received this message on 2 August 1943. '
+                    + 'The keyword was ROYAL NEW ZEALAND NAVY. The actual message does not follow textbook rules: '
+                    + 'the TT in BLACKETT was sent without splitting it. Standard decryption therefore reports an identical-letter pair error; '
+                    + 'the No Change variant can read it. The ciphertext also contains J, treated as I in the matrix. '
+                    + 'Numbers are spelled out, as in ONE OWE NINE (109). The reported plaintext says MERESU COVE, '
+                    + 'but this ciphertext decrypts to COCE, suggesting a one-letter error somewhere in the circulated ciphertext.',
+                'history.source': 'Sources: the ciphertext comes from secondary sources including Programming Praxis. '
+                    + 'They cite David Kahn, The Codebreakers (1996 edition, p. 592), but the original source was not checked for this tool. '
+                    + 'The plaintext and date are from Wikipedia, “Arthur Reginald Evans”.',
                 'mission.group.recovery': 'Recovery',
                 'mission.R1.title': 'Recover a key square (Beginner)',
                 'mission.R1.learn': 'Deduce the remaining 9 letters from 16 givens and 11 known pairs',
@@ -887,7 +988,9 @@ These puzzles fix the orientation with givens and require the specified square.<
 <li>R3: Recover a key square (Advanced). Deduce positions from 3 givens and 27 known pairs.</li>
 </ul>
 <p>C1, C2 and C3 award 10, 20 and 30 points, for 60 total. C1 unlocks C2; C2 unlocks C3. Only the first correct answer earns points.</p>
-<p>R1, R2 and R3 also award 10, 20 and 30 points. R1 unlocks R2; R2 unlocks R3. All fourteen missions together award 120 points.</p>
+<p>E1: Encryption challenge (beginner). E2: Encryption challenge (intermediate). E3: Encryption challenge (advanced). Worth 10, 20 and 30 points.</p>
+<p>H1: Historical record: the PT-109 message (30 points). Unlocks after C3.</p>
+<p>R1, R2 and R3 also award 10, 20 and 30 points. R1 unlocks R2; R2 unlocks R3. All eighteen missions together award 210 points.</p>
 <p>Open the bottom card with “Start guide” in the summary or a mission row. Steps are checked automatically from screen state.</p>
 <p>Completing a later step also checks earlier steps. “Go to this step” switches tabs, outlines the control and moves focus.</p>
 <p>The guide never enters an answer, keyword or plaintext. It costs no points. Use “Next mission” after completing a mission.</p>
