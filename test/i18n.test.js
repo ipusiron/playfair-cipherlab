@@ -7,6 +7,41 @@ const root = path.join(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const dictionaries = vm.runInNewContext(read('js/i18n.js') + '; i18n.translations;', {});
 
+test('D-4 initially hidden labels are translated inside updateUI', () => {
+    const method = vm.runInNewContext(read('js/i18n.js') + '; I18nManager.prototype.updateUI.toString();', {});
+    for (const [id, key] of [
+        ['finish-encryption', 'playback.finish'],
+        ['finish-decryption', 'playback.finish'],
+        ['candidate-label', 'padding.stripped']
+    ]) {
+        assert.ok(method.includes(`this.updateElement('#${id}', '${key}')`), id);
+    }
+});
+
+test('C-1 hidden labels use dictionary values immediately and on language changes', () => {
+    const elements = Object.fromEntries(['finish-encryption', 'finish-decryption', 'candidate-label']
+        .map(id => ['#' + id, { textContent: '' }]));
+    const document = {
+        documentElement: {},
+        querySelector: selector => elements[selector] || null,
+        querySelectorAll: () => [],
+        getElementById: () => ({ setAttribute() {} })
+    };
+    const manager = vm.runInNewContext(read('js/i18n.js') + '; i18n;', {
+        document, window: { dispatchEvent() {} }, CustomEvent: function () {}
+    });
+    for (const name of ['updateDropdownOptions', 'updateFooter', 'updateAnimationControls', 'updateHelpModalContent']) {
+        manager[name] = () => {};
+    }
+    for (const language of ['en', 'ja', 'en']) {
+        manager.currentLang = language;
+        manager.updateUI();
+        assert.equal(elements['#finish-encryption'].textContent, dictionaries[language]['playback.finish']);
+        assert.equal(elements['#finish-decryption'].textContent, dictionaries[language]['playback.finish']);
+        assert.equal(elements['#candidate-label'].textContent, dictionaries[language]['padding.stripped']);
+    }
+});
+
 test('C-1 footer construction does not use innerHTML', () => {
     const method = vm.runInNewContext(read('js/i18n.js') + '; I18nManager.prototype.updateFooter.toString();', {});
     assert.doesNotMatch(method, /innerHTML/);
