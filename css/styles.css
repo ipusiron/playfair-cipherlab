@@ -1986,3 +1986,54 @@ body.dark-mode .challenge-info {
         animation: none;
     }
 }
+
+@media (min-width: 1000px) {
+    .mission-group {
+        margin-bottom: 0.5rem;
+    }
+
+    .mission-group h3 {
+        padding: 0.25rem 0.75rem;
+    }
+
+    .mission-row {
+        display: grid;
+        grid-template-columns: 7rem minmax(0, 1fr) auto;
+        gap: 0.25rem 0.75rem;
+        align-items: center;
+        padding: 0.5rem 0.75rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .mission-state {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    .mission-title {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    .mission-learn {
+        grid-column: 1 / 3;
+        grid-row: 2;
+    }
+
+    .mission-points {
+        grid-column: 1;
+        grid-row: 3;
+    }
+
+    .mission-lock {
+        grid-column: 2 / 4;
+        grid-row: 3;
+    }
+
+    .mission-actions {
+        grid-column: 3;
+        grid-row: 1 / 4;
+        margin: 0;
+        flex-wrap: nowrap;
+    }
+}

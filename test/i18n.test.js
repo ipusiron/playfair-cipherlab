@@ -68,3 +68,19 @@ test('K-4 help describes variants as nonstandard', () => {
         assert.match(dictionaries[lang]['help.body'], /HELXLO/);
     }
 });
+
+test('E-1 initial language priority never writes storage', () => {
+    for (const [query, saved, browser, expected] of [
+        ['?lang=en', 'ja', 'ja-JP', 'en'], ['?lang=ja', 'en', 'en-US', 'ja'],
+        ['', 'en', 'ja-JP', 'en'], ['', 'ja', 'en-US', 'ja'],
+        ['', null, 'ja-JP', 'ja'], ['', null, 'en-US', 'en'],
+        ['?lang=xx', 'en', 'ja-JP', 'en'], ['?lang=xx', 'bad', 'fr-FR', 'en']
+    ]) {
+        const context = { URLSearchParams, location: { search: query }, navigator: { language: browser },
+            localStorage: { getItem: () => saved, setItem: () => assert.fail('must not save on load') } };
+        assert.equal(vm.runInNewContext(read('js/i18n.js') + '; i18n.currentLang;', context), expected);
+    }
+    const context = { URLSearchParams, location: { search: '' }, navigator: { language: 'ja-JP' },
+        localStorage: { getItem: () => { throw Error('blocked'); } } };
+    assert.equal(vm.runInNewContext(read('js/i18n.js') + '; i18n.currentLang;', context), 'ja');
+});

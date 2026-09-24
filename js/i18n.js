@@ -136,6 +136,28 @@ class I18nManager {
 <p>mystery-01は既定の表、mystery-02はSECRET、mystery-03はMILITARYを使います。得点は順に10、20、30で、正解時に1回だけ加算します。</p>
 <p>HELLOの復号はHELXLOです。HELLOもHELXLOも正解ですが、HELLOXは不正解です。</p>
 </section>
+<section><h3>学習進捗とナビ</h3>
+<p>9個のミッションを画面の操作で達成します。「次はこれ」はおすすめ順で、M1〜M6は自由に進められます。</p>
+<ul>
+<li>M1：鍵語から鍵表を作る。鍵語の文字を重複なしで並べ、残りのアルファベットで埋める。I と J は同じマス</li>
+<li>M2：埋め文字が入るところを見る。組の2文字が同じなら X を挟む（HELLO → HE LX LO）</li>
+<li>M3：3つの規則を再生で見る。同じ行は右へ、同じ列は下へ、長方形は相手の列の文字へ</li>
+<li>M4：組の境目の同じ文字。境目にまたがる EE には X を挟まない（ME ET ME …）</li>
+<li>M5：埋め文字の候補を見分ける。復号結果の X は候補。本物の X と区別できないことがある</li>
+<li>M6：鍵語を自分で設定して復号する。復号には、暗号化と同じ鍵表が要る</li>
+<li>C1：謎の単語。鍵語なしで解読する</li>
+<li>C2：秘密のメッセージ。鍵語をヒントから推理して解読する</li>
+<li>C3：軍事作戦。鍵語をヒントから推理して解読する</li>
+</ul>
+<p>C1、C2、C3は順に10、20、30点で計60点です。C1を達成するとC2、C2を達成するとC3が開きます。得点は各課題の初回正解だけです。</p>
+<p>帯や各行の「ナビ開始」で下のカードを開きます。手順は操作に合わせて自動で済みになります。あとの手順を済ませた場合、前の手順も済みになります。</p>
+<p>「この場所へ移動」はタブを開いて対象を枠で示し、フォーカスを移します。答え、鍵語、平文は入力しません。ナビによる減点はありません。</p>
+<p>「次」か「再生」で見た暗号化の規則だけをM3に数えます。「最後まで」や動きを減らす設定で飛ばした組は数えません。</p>
+<p>解読ヒントも減点しません。ヒントを見ずに初回正解した課題には★が付きます。旧版から移した進捗には★を付けません。</p>
+<p>復号練習は鍵語を表示しますが、鍵表は変更しません。自分で鍵生成タブへ移って設定します。チャレンジの鍵語はヒントから推理します。</p>
+<p>「挑戦する」で復号タブへ移り、課題の情報と解答欄を開きます。必要な鍵表と現在の鍵表の一致を確認してください。</p>
+<p>「既定の表に戻す」で鍵語なしの表に戻せます。ナビはEscや「閉じる」で閉じ、開いたボタンへ戻ります。</p>
+</section>
 <section><h3>保存と安全性</h3>
 <p>進捗、言語、配色だけを同じブラウザーに保存します。保存を許可しなくても使えます。入力した文章と鍵を外部へ送信しません。</p>
 <p>このツールは教育用です。プレイフェア暗号は現代の秘密の保護には使えません。</p>
@@ -209,13 +231,7 @@ class I18nManager {
                 
                 // Progress
                 'progress.title': '📊 学習進捗',
-                'progress.total-points': '総ポイント',
-                'progress.completed-challenges': 'クリア課題数',
-                'progress.unlocked-levels': '解放レベル',
                 'progress.reset': '🔄 進捗をリセット',
-                'progress.tooltip.points': '復号タブの解読チャレンジをクリアするとポイントが獲得できます',
-                'progress.tooltip.challenges': '復号タブの解読チャレンジを正解するとカウントされます',
-                'progress.tooltip.levels': 'レベル内の全チャレンジをクリアすると次レベルが解放されます',
                 
                 // Tabs
                 'tab.key-generation': '🔑 鍵生成',
@@ -316,7 +332,6 @@ class I18nManager {
                 'dropdown.decryption-challenge': '解読チャレンジ',
                 
                 // Progress Summary
-                'progress.summary': '総ポイント: {points} | クリア課題: {challenges} | レベル: {level}/3',
                 
                 // Same Pair Rules
                 'rule.no-change': '変種: 変化なし（同じ文字のまま）',
@@ -395,10 +410,6 @@ class I18nManager {
                 // Help Modal
                 'help.title': 'Playfair CipherLab ヘルプ',
                 'help.progress.title': '📊 学習進捗',
-                'help.progress.desc': 'タブの上にあるアコーディオン式の進捗パネルで学習状況を確認できます。',
-                'help.progress.points': '<strong>総ポイント</strong>：復号タブの解読チャレンジをクリアすると獲得',
-                'help.progress.challenges': '<strong>クリア課題数</strong>：正解した解読チャレンジの数',
-                'help.progress.levels': '<strong>解放レベル</strong>：レベル内の全チャレンジクリアで次レベル解放',
                 'help.progress.reset': '<strong>進捗リセット</strong>：確認ダイアログ付きで全進捗をリセット可能',
                 'help.key.title': '🔑 鍵生成タブ',
                 'help.key.desc': 'プレイフェア暗号で使用する5×5マトリクスを設定します。',
@@ -471,7 +482,7 @@ class I18nManager {
                 "mission.M3.learn": "Same row: move right. Same column: move down. Rectangle: use the other letter’s column.",
                 "mission.M3.step.1": "On the Encryption tab, load “Known Examples” → “Wikipedia Example” (another text is also fine).",
                 "mission.M3.step.2": "Press “Encrypt”.",
-                "mission.M3.step.3": "Use “Next” or “Play” pair by pair to see row, column and rectangle rules. “Finish” does not count skipped pairs.",
+                "mission.M3.step.3": "Use “Next” or “Play” pair by pair to see row, column and rectangle rules. “Go to end” skips pairs; they do not count.",
                 "mission.M4.title": "Identical letters across pair boundaries",
                 "mission.M4.learn": "Do not insert X between EE across pair boundaries (ME ET ME …).",
                 "mission.M4.step.1": "Press “Restore default matrix” on the Key Generation tab.",
@@ -554,6 +565,29 @@ automatically.</p>
 <p>mystery-01 uses the default matrix, mystery-02 uses SECRET, and mystery-03 uses MILITARY. They award 10, 20, and 30 points respectively, once each.</p>
 <p>HELLO decrypts as HELXLO. Both HELLO and HELXLO are accepted, but HELLOX is incorrect.</p>
 </section>
+<section><h3>Learning roadmap and guide</h3>
+<p>Complete nine missions through screen actions. “Next” recommends an order; M1–M6 remain freely available.</p>
+<ul>
+<li>M1: Build a matrix from a keyword. Remove repeated keyword letters, then fill with the remaining alphabet. I and J share a cell.</li>
+<li>M2: See where padding is inserted. Insert X between identical letters in a pair (HELLO → HE LX LO).</li>
+<li>M3: Play all three rules. Same row: move right. Same column: move down. Rectangle: use the other letter’s column.</li>
+<li>M4: Identical letters across pair boundaries. Do not insert X between EE across pair boundaries (ME ET ME …).</li>
+<li>M5: Identify possible padding. An X in decrypted text is only a candidate. It may be a genuine X.</li>
+<li>M6: Set the keyword yourself and decrypt. Decryption needs the same matrix as encryption.</li>
+<li>C1: Mystery word. Decode without a keyword.</li>
+<li>C2: Secret message. Infer the keyword from hints and decode.</li>
+<li>C3: Military operation. Infer the keyword from hints and decode.</li>
+</ul>
+<p>C1, C2 and C3 award 10, 20 and 30 points, for 60 total. C1 unlocks C2; C2 unlocks C3. Only the first correct answer earns points.</p>
+<p>Open the bottom card with “Start guide” in the summary or a mission row. Steps are checked automatically from screen state.</p>
+<p>Completing a later step also checks earlier steps. “Go to this step” switches tabs, outlines the control and moves focus.</p>
+<p>The guide never enters an answer, keyword or plaintext. It costs no points. Use “Next mission” after completing a mission.</p>
+<p>M3 counts only encryption rules displayed with “Next” or “Play”. Pairs skipped by “Go to end” or reduced motion do not count.</p>
+<p>Decryption hints cost no points either. A first correct answer without hints earns a star (★). Migrated old progress has no stars.</p>
+<p>Practice shows the keyword but does not change the matrix. Set it yourself on the Key Generation tab. Infer challenge keywords from hints.</p>
+<p>“Start challenge” opens its information and answer field on the Decryption tab. Check that the required and current matrices match.</p>
+<p>“Restore default matrix” restores the no-keyword matrix. Close the guide with Escape or “Close” to return focus to its opener.</p>
+</section>
 <section><h3>Storage and safety</h3>
 <p>Only progress, language, and theme are saved in this browser. Storage is optional. Text and keys are not sent to external services.</p>
 <p>This tool is educational. Playfair is not suitable for protecting modern secrets.</p>
@@ -627,13 +661,7 @@ automatically.</p>
                 
                 // Progress
                 'progress.title': '📊 Learning Progress',
-                'progress.total-points': 'Total Points',
-                'progress.completed-challenges': 'Completed Challenges',
-                'progress.unlocked-levels': 'Unlocked Levels',
                 'progress.reset': '🔄 Reset Progress',
-                'progress.tooltip.points': 'Points are earned by completing decryption challenges',
-                'progress.tooltip.challenges': 'Count of correctly solved decryption challenges',
-                'progress.tooltip.levels': 'Next level unlocks when all challenges in current level are completed',
                 
                 // Tabs
                 'tab.key-generation': '🔑 Key Generation',
@@ -734,7 +762,6 @@ automatically.</p>
                 'dropdown.decryption-challenge': 'Decryption Challenge',
                 
                 // Progress Summary
-                'progress.summary': 'Total Points: {points} | Completed: {challenges} | Level: {level}/3',
                 
                 // Same Pair Rules
                 'rule.no-change': 'Variant: leave identical letters unchanged',
@@ -813,10 +840,6 @@ automatically.</p>
                 // Help Modal
                 'help.title': 'Playfair CipherLab Help',
                 'help.progress.title': '📊 Learning Progress',
-                'help.progress.desc': 'You can check your learning status with the accordion-style progress panel above the tabs.',
-                'help.progress.points': '<strong>Total Points</strong>: Earned by completing decryption challenges in the decryption tab',
-                'help.progress.challenges': '<strong>Completed Challenges</strong>: Number of correctly solved decryption challenges',
-                'help.progress.levels': '<strong>Unlocked Levels</strong>: Next level unlocks when all challenges in current level are completed',
                 'help.progress.reset': '<strong>Progress Reset</strong>: Reset all progress with confirmation dialog',
                 'help.key.title': '🔑 Key Generation Tab',
                 'help.key.desc': 'Set up the 5×5 matrix used for Playfair cipher.',
@@ -842,11 +865,14 @@ automatically.</p>
 
     loadLanguage() {
         try {
+            const requested = new URLSearchParams(location.search).get('lang');
+            if (requested === 'ja' || requested === 'en') return requested;
+        } catch (_error) { /* No location in a non-browser test environment. */ }
+        try {
             const saved = localStorage.getItem('playfair-language');
-            return saved === 'en' ? 'en' : 'ja';
-        } catch (_error) {
-            return 'ja';
-        }
+            if (saved === 'ja' || saved === 'en') return saved;
+        } catch (_error) { /* Fall back to the browser language. */ }
+        return typeof navigator !== 'undefined' && /^ja/i.test(navigator.language) ? 'ja' : 'en';
     }
 
     saveLanguage(lang) {
@@ -907,9 +933,6 @@ automatically.</p>
 
         // Update progress section
         this.updateElement('.progress-title', 'progress.title');
-        this.updateElement('#total-points + .progress-stat-label', 'progress.total-points');
-        this.updateElement('#completed-challenges + .progress-stat-label', 'progress.completed-challenges');
-        this.updateElement('#unlocked-levels + .progress-stat-label', 'progress.unlocked-levels');
         this.updateElement('#reset-progress', 'progress.reset');
 
         // Update tabs
@@ -971,9 +994,6 @@ automatically.</p>
         this.updatePlaceholder('#challenge-answer', 'decrypt.answer.placeholder');
 
         // Update tooltips
-        this.updateTooltip('[title*="復号タブの解読チャレンジをクリア"], [title*="Points are earned"]', 'progress.tooltip.points');
-        this.updateTooltip('[title*="復号タブの解読チャレンジを正解"], [title*="Count of correctly"]', 'progress.tooltip.challenges');
-        this.updateTooltip('[title*="レベル内の全チャレンジをクリア"], [title*="Next level unlocks"]', 'progress.tooltip.levels');
 
         // Update dropdown options
         this.updateDropdownOptions();
