@@ -1396,7 +1396,7 @@ class UI {
         const matching = this.getCurrentMatrixString() === PlayfairCore.matrixFromKeyword(challenge.keyword);
         for (const text of [i18n.t(`mission.${mission.id}.title`),
             i18n.t('encipher.plaintext', { text: challenge.plaintext }),
-            i18n.t('encipher.keyword', { keyword: challenge.keyword || i18n.t('matrix.required-default') }),
+            i18n.t('encipher.keyword', { keyword: challenge.keyword || i18n.t('encipher.keyword-none') }),
             `${challenge.points}pt`, (matching ? '✅ ' : '✗ ') + i18n.t(matching ? 'matrix.match' : 'matrix.mismatch')]) {
             const line = document.createElement('p');
             line.textContent = text;
