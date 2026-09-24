@@ -3,6 +3,25 @@ const assert = require('node:assert/strict');
 const { PlayfairAnalysis: analysis } = require('../js/analysis.js');
 const { PlayfairCore: core } = require('../js/cipher.js');
 
+test('Polish C-1 Day009 URL preserves input case and punctuation while trimming outer whitespace', () => {
+    assert.equal(analysis.frequencyAnalyzerUrl('TCITIGCTSMCTCBBCCT'),
+        'https://ipusiron.github.io/frequency-analyzer/?text=TCITIGCTSMCTCBBCCT');
+    assert.equal(analysis.frequencyAnalyzerUrl('Khoor, Zruog!'),
+        'https://ipusiron.github.io/frequency-analyzer/?text=Khoor%2C%20Zruog!');
+    assert.equal(analysis.frequencyAnalyzerUrl(' \tKhoor, Zruog!\n '),
+        'https://ipusiron.github.io/frequency-analyzer/?text=Khoor%2C%20Zruog!');
+    assert.equal(analysis.frequencyAnalyzerUrl('A&B?#='),
+        'https://ipusiron.github.io/frequency-analyzer/?text=A%26B%3F%23%3D');
+});
+
+test('Polish C-1 Day009 URL rejects empty input and enforces the 5000-character boundary', () => {
+    assert.equal(analysis.frequencyAnalyzerUrl('   '), null);
+    assert.equal(analysis.frequencyAnalyzerUrl(''), null);
+    assert.equal(analysis.frequencyAnalyzerUrl('A'.repeat(5000)),
+        'https://ipusiron.github.io/frequency-analyzer/?text=' + 'A'.repeat(5000));
+    assert.equal(analysis.frequencyAnalyzerUrl('A'.repeat(5001)), null);
+});
+
 const examples = [
     ['TCITIGCTSMCTCBBCCT', 'TCITIGCTSMCTCBBCCT', [], [true, true, true], [], [
         { pair: 'CT', reverse: 'TC', at: [3, 5, 8], reverseAt: [0] },

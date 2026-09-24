@@ -50,7 +50,7 @@ Use it directly in your browser. You can also download the files and open index.
 
 > *TCITIGCTSMCTCBBCCT is analyzed with the SECRET matrix and entry ① selected. CT→ER and TC→RE show reversal after decryption.*
 
-1280×1600px, 73,243 bytes.
+1280×1600px, 79,195 bytes.
 
 ## ✨ Features
 
@@ -82,6 +82,7 @@ Use it directly in your browser. You can also download the files and open index.
 - Numbered pairs, linked reversal badges and a list showing reversed decryption with the current matrix
 - The five most frequent pairs, distinct-letter count and ignored characters
 - Send encryption output or decryption input to analysis; editing the input or sample hides stale results
+- Send ciphertext to [Day009 (Frequency Analyzer)](https://ipusiron.github.io/frequency-analyzer/) to analyze letter and digram frequencies; its overlapping digrams differ from the fixed pairs counted here
 
 ### 🎬 Playback and display
 
@@ -174,6 +175,11 @@ Samples include ciphertext with reversed pairs made using SECRET, the Wikipedia 
 “Send to analysis” also copies encryption output or decryption input and analyzes it.
 J is checked without merging it into I. Whitespace is removed; other nonletters are listed as ignored characters.
 The matrix never changes automatically. Save the SECRET matrix on the Key Generation tab to reproduce the sample's decryption.
+
+Click “Open in Day009 Frequency Analyzer (new tab)” below the results to fill the input field in [Day009](https://ipusiron.github.io/frequency-analyzer/).
+Press its Frequency Analysis button to examine letter and digram frequencies.
+Day009 counts digrams with a one-letter sliding window within words, unlike the fixed two-letter pairs here.
+The original ciphertext, with only leading and trailing whitespace trimmed, is passed in the URL. The link is hidden above 5,000 characters.
 
 ## 🧠 About the Playfair cipher
 
@@ -340,6 +346,7 @@ Answer: `ATTACK AT DAWN`.
 ## 🔒 Security
 
 All cipher operations run in the browser with no runtime API, CDN, external font or dependency.
+Only clicking the Day009 link opens Day009 with ciphertext in the URL. Ciphertext is not otherwise sent outside the tool.
 Playfair is an educational classical cipher and must not be used to protect secrets.
 
 The meta CSP allows scripts and styles only from self, without unsafe-inline.

@@ -3,6 +3,11 @@ class I18nManager {
         this.currentLang = this.loadLanguage();
         this.translations = {
             ja: {
+                'analysis.open-frequency': 'Day009で頻度分析（新しいタブ）',
+                'analysis.frequency-description': 'Day009（Frequency Analyzer）が開き、この暗号文が入力欄に入ります。'
+                    + '『📊 頻度分析』を押すと、1文字ずつの頻度や二重字を調べられます。'
+                    + 'Day009の二重字は1文字ずつずらして数えるので、ここでの組（2文字ずつ区切る）とは数え方が違います。暗号文はURLに含めて渡します。',
+                'analysis.frequency-too-long': '5,000文字を超えるため、Day009へは渡せません',
                 'tab.analysis': '🔍 解析',
                 'analysis.heading': '暗号文を解析',
                 'analysis.sample': '見本',
@@ -17,11 +22,13 @@ class I18nManager {
                 'analysis.impossible': '標準のプレイフェアではあり得ません',
                 'analysis.consistent': '標準のプレイフェアと矛盾しません',
                 'analysis.caution': 'これらは必要条件です。満たしていてもプレイフェアとは限りません。変種のルールでは同じ文字の組が出ることがあります',
-                'analysis.check.even': '文字数が偶数（{n}文字）',
+                'analysis.check.even.one': '文字数が偶数（{n}文字）',
+                'analysis.check.even.other': '文字数が偶数（{n}文字）',
                 'analysis.check.noJ': 'Jがない',
                 'analysis.check.noDoublePair': '同じ文字の組がない',
                 'analysis.double': '{n}組目{pair}',
-                'analysis.ignored': '英字以外の文字は無視しました: {chars}',
+                'analysis.ignored.one': '英字以外の文字は無視しました: {chars}',
+                'analysis.ignored.other': '英字以外の文字は無視しました: {chars}',
                 'analysis.pairs': '組の表示',
                 'analysis.legend': '✗は同じ文字の組、①②などの同じ番号は逆順の組です。末尾の1文字は組に数えません。',
                 'analysis.pair-number': '{n}組目',
@@ -29,14 +36,17 @@ class I18nManager {
                 'analysis.double-mark': '同じ文字の組',
                 'analysis.reverse-mark': '逆順の組{n}',
                 'analysis.reversed': '逆順の組',
-                'analysis.reverse-entry': '{badge}{pair}（{at}組目）↔{reverse}（{reverseAt}組目）',
+                'analysis.positions.one': '{at}組目',
+                'analysis.positions.other': '{at}組目',
+                'analysis.reverse-entry': '{badge}{pair}（{at}）↔{reverse}（{reverseAt}）',
                 'analysis.no-reversed': '逆順の組は見つかりませんでした',
                 'analysis.decrypted': 'いまの鍵表で復号: {pair}→{plain}、{reverse}→{reversePlain}（逆順になります）',
                 'analysis.no-j-decrypt': '標準の鍵表にJはないため、この組はそのまま復号できません。',
                 'analysis.frequency': '組の回数（上位5つ）',
                 'analysis.pair': '組',
                 'analysis.count': '回数',
-                'analysis.distinct': '使われている文字: {n}種類（プレイフェアの暗号文は多くても25種類）',
+                'analysis.distinct.one': '使われている文字: {n}種類（プレイフェアの暗号文は多くても25種類）',
+                'analysis.distinct.other': '使われている文字: {n}種類（プレイフェアの暗号文は多くても25種類）',
                 "mission.label": "{id}{separator}{title}",
                 "mission.group.key": "鍵表",
                 "mission.group.encryption": "暗号化",
@@ -196,6 +206,8 @@ class I18nManager {
 <p>逆順の組には同じ番号を付けます。一覧のボタンを押すと、いまの鍵表での復号と鍵表の出どころを表示します。</p>
 <p>Wikipediaの例のREとERのように、組の順序を逆にすると変換後の順序も逆になります。</p>
 <p>見本は鍵語SECRETのTCITIGCTSMCTCBBCCT、Wikipediaの例の暗号文、シーザー暗号の文（Khoor, Zruog!）です。暗号化の出力と復号の入力からも「解析へ送る」で移せます。</p>
+<p>「Day009で頻度分析（新しいタブ）」を押したときだけ暗号文をURLに含めてDay009の入力欄へ渡し、移動先の「📊 頻度分析」で分析します（5,000文字まで）。</p>
+<p>Day009の二重字は語ごとに1文字ずつずらして数えるため、ここでの2文字ずつ区切った組とは数え方が違います。</p>
 </section>
 <section><h3>学習進捗とナビ</h3>
 <p>11個のミッションを画面の操作で達成します。「次はこれ」はおすすめ順で、M1〜M8は自由に進められます。</p>
@@ -493,6 +505,12 @@ class I18nManager {
                 'help.warning.desc': '<strong>このツールは教育目的です。</strong>プレイフェア暗号は古典暗号であり、現代の暗号学的用途には適していません。'
             },
             en: {
+                'analysis.open-frequency': 'Open in Day009 Frequency Analyzer (new tab)',
+                'analysis.frequency-description': 'Day009 (Frequency Analyzer) opens with this ciphertext in its input field. '
+                    + 'Press its Frequency Analysis button to examine individual-letter and digram frequencies. '
+                    + 'Day009 counts digrams with a one-letter sliding window, unlike the fixed two-letter pairs here. '
+                    + 'The ciphertext is passed in the URL.',
+                'analysis.frequency-too-long': 'Cannot send to Day009 because the text exceeds 5,000 characters',
                 'tab.analysis': '🔍 Analysis',
                 'analysis.heading': 'Analyze ciphertext',
                 'analysis.sample': 'Sample',
@@ -507,11 +525,13 @@ class I18nManager {
                 'analysis.impossible': 'Impossible under standard Playfair',
                 'analysis.consistent': 'Consistent with standard Playfair',
                 'analysis.caution': 'These are necessary conditions, not proof of Playfair. Variant rules may produce identical-letter pairs.',
-                'analysis.check.even': 'Even number of letters ({n} letters)',
+                'analysis.check.even.one': 'Even number of letters ({n} letter)',
+                'analysis.check.even.other': 'Even number of letters ({n} letters)',
                 'analysis.check.noJ': 'No J',
                 'analysis.check.noDoublePair': 'No identical-letter pairs',
                 'analysis.double': 'Pair {n}: {pair}',
-                'analysis.ignored': 'Nonletter characters were ignored: {chars}',
+                'analysis.ignored.one': 'A nonletter character was ignored: {chars}',
+                'analysis.ignored.other': 'Nonletter characters were ignored: {chars}',
                 'analysis.pairs': 'Ciphertext pairs',
                 'analysis.legend': '✗ marks identical letters; matching badges such as ①② link reversed pairs. A final single letter is not a pair.',
                 'analysis.pair-number': 'Pair {n}',
@@ -519,14 +539,17 @@ class I18nManager {
                 'analysis.double-mark': 'Identical-letter pair',
                 'analysis.reverse-mark': 'Reversed pair {n}',
                 'analysis.reversed': 'Reversed pairs',
-                'analysis.reverse-entry': '{badge}{pair} (pairs {at}) ↔ {reverse} (pairs {reverseAt})',
+                'analysis.positions.one': 'pair {at}',
+                'analysis.positions.other': 'pairs {at}',
+                'analysis.reverse-entry': '{badge}{pair} ({at}) ↔ {reverse} ({reverseAt})',
                 'analysis.no-reversed': 'No reversed pairs were found',
                 'analysis.decrypted': 'Decrypted with the current matrix: {pair}→{plain}, {reverse}→{reversePlain} (in reverse order)',
                 'analysis.no-j-decrypt': 'J is absent from a standard matrix, so this pair cannot be decrypted as written.',
                 'analysis.frequency': 'Pair frequency (top five)',
                 'analysis.pair': 'Pair',
                 'analysis.count': 'Count',
-                'analysis.distinct': 'Letters used: {n} distinct letters (Playfair ciphertext uses at most 25)',
+                'analysis.distinct.one': 'Letters used: {n} distinct letter (Playfair ciphertext uses at most 25)',
+                'analysis.distinct.other': 'Letters used: {n} distinct letters (Playfair ciphertext uses at most 25)',
                 "mission.label": "{id} {title}",
                 "mission.group.key": "Key matrix",
                 "mission.group.encryption": "Encryption",
@@ -690,6 +713,9 @@ Variant rules may produce identical-letter pairs.</p>
 <p>As with RE and ER in the Wikipedia example, reversing a pair also reverses its transformed result.</p>
 <p>Samples include TCITIGCTSMCTCBBCCT with keyword SECRET, the Wikipedia example ciphertext, and Caesar cipher text (Khoor, Zruog!).
 Use “Send to analysis” beside encryption output or below decryption input to analyze your own text.</p>
+<p>Only clicking “Open in Day009 Frequency Analyzer (new tab)” sends up to 5,000 characters in the URL to its input field;
+press its Frequency Analysis button to analyze them. Day009 counts overlapping digrams within words,
+unlike the fixed two-letter pairs here.</p>
 </section>
 <section><h3>Learning roadmap and guide</h3>
 <p>Complete eleven missions through screen actions. “Next” recommends an order; M1–M8 remain freely available.</p>
