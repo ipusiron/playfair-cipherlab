@@ -40,6 +40,8 @@ const headingPairs = [
     ['## 🔬 規則と既知解答', '## 🔬 Rules and known answers'],
     ['### 現行版からの変更点', '### Changes from the previous version'],
     ['## 🏆 チャレンジ一覧', '## 🏆 Challenges'],
+    ['### ✍️ 暗号化チャレンジ', '### ✍️ Encryption challenges'],
+    ['### 📜 史料PT-109', '### 📜 Historical PT-109 message'],
     ['## 🔒 セキュリティ', '## 🔒 Security'],
     ['## 📚 教育利用', '## 📚 Educational use'],
     ['### 対象レベル', '### Target levels'],
@@ -55,7 +57,7 @@ const headingPairs = [
 test('D-1 bilingual heading text, count, order and levels match the complete mapping', () => {
     for (const [index, source] of [readme, read('README.en.md')].entries()) {
         const headings = source.match(/^#{2,4} .+$/gm);
-        assert.equal(headingPairs.length, 34);
+        assert.equal(headingPairs.length, 36);
         assert.deepEqual(headings, headingPairs.map(pair => pair[index]));
     }
 });
@@ -113,7 +115,8 @@ function section(heading, source = readme) {
 }
 
 function table(heading, source = readme) {
-    return section(heading, source).split('\n').filter(line => line.startsWith('|'))
+    // A challenge section now also contains a separately tested encryption table.
+    return section(heading, source).match(/^\|.*(?:\n\|.*)*/m)[0].split('\n')
         .slice(2).map(line => line.split('|').slice(1, -1).map(cell => cell.trim()));
 }
 
@@ -134,7 +137,7 @@ test('K-7 all three challenge rows and exact dictionary hints match', () => {
     const rows = table('🏆 チャレンジ一覧');
     assert.equal(rows.length, 3);
     const details = [...section('🏆 チャレンジ一覧').matchAll(/<details>([\s\S]*?)<\/details>/g)];
-    assert.equal(details.length, 3);
+    assert.equal(details.length, 5);
     challenges.forEach((challenge, index) => {
         const encrypted = core.encrypt(core.matrixFromKeyword(challenge.keyword || ''), challenge.answer);
         assert.equal(encrypted.ciphertext, challenge.ciphertext);
@@ -196,7 +199,7 @@ test('K-7 complete repository tree, with aligned comments on every line', () => 
 test('K-7 images, test section, and obsolete wording', () => {
     const images = [...readme.matchAll(/!\[[^\]]*\]\(([^)]+)\)/g)].map(match => match[1])
         .filter(file => !/^https?:/.test(file));
-    assert.equal(images.length, 6);
+    assert.equal(images.length, 7);
     for (const image of images) assert.ok(fs.existsSync(path.join(root, image)), image);
     const pngs = fs.readdirSync(path.join(root, 'assets')).filter(file => file.endsWith('.png'));
     assert.deepEqual(pngs.map(file => `assets/${file}`).sort(), images.sort());
@@ -245,7 +248,7 @@ test('H-5 English known answers and challenge data and hints match', () => {
     const challengeRows = table('🏆 Challenges', english);
     assert.equal(challengeRows.length, 3);
     const details = [...section('🏆 Challenges', english).matchAll(/<details>([\s\S]*?)<\/details>/g)];
-    assert.equal(details.length, 3);
+    assert.equal(details.length, 5);
     challenges.forEach((challenge, index) => {
         const encrypted = core.encrypt(core.matrixFromKeyword(challenge.keyword || ''), challenge.answer);
         assert.deepEqual(challengeRows[index], [String(challenge.level), en[`example.${challenge.title}`],
@@ -256,7 +259,7 @@ test('H-5 English known answers and challenge data and hints match', () => {
     });
 });
 
-test('H-5 mutual links, English text, complete parallel trees and eleven image references', () => {
+test('H-5 mutual links, English text, complete parallel trees and thirteen image references', () => {
     assert.equal(english.split('\n')[0], 'English · [日本語](README.md)');
     assert.ok(readme.includes('[English](README.en.md)'));
     // Only the first-line Japanese language link and these three bibliography titles outside details are exempt.
@@ -274,8 +277,8 @@ test('H-5 mutual links, English text, complete parallel trees and eleven image r
     for (const line of trees[1]) assert.match(line, /# [A-Za-z]/);
     assert.equal(new Set(trees[1].map(l => l.indexOf('#'))).size, 1);
     const images = source => [...source.matchAll(/!\[[^\]]*\]\(([^)]+)\)/g)].map(m => m[1]).filter(p => !/^https?:/.test(p));
-    assert.equal(images(readme).length, 6);
-    assert.equal(images(english).length, 5);
+    assert.equal(images(readme).length, 7);
+    assert.equal(images(english).length, 6);
     const referenced = [...images(readme), ...images(english)];
     for (const file of referenced) assert.ok(fs.existsSync(path.join(root, file)), file);
     const pngs = ['assets', 'assets/en'].flatMap(folder => fs.readdirSync(path.join(root, folder))
@@ -316,6 +319,50 @@ test('G-4 both README recovery counts match all three core problems', () => {
         assert.deepEqual(jaRows[index].slice(1), expected);
         assert.deepEqual(enRows[index].slice(1), expected);
     });
+});
+
+test('G-4 bilingual encryption tables and hidden answers match all three core challenges', () => {
+    const manager = new ExerciseManager();
+    for (const [source, heading, defaultName] of [[readme, '✍️ 暗号化チャレンジ', '既定の表'],
+        [english, '✍️ Encryption challenges', 'Default matrix']]) {
+        const rows = table(heading, source);
+        assert.equal(rows.length, 3);
+        const block = section(heading, source);
+        const answers = block.match(/<details>([\s\S]*?)<\/details>/)[1];
+        for (const [index, challenge] of manager.getChallenges('encryption').entries()) {
+            assert.deepEqual(rows[index], [challenge.id, challenge.plaintext, challenge.keyword || defaultName, String(challenge.points)]);
+            const result = manager.encipherResult(challenge.id);
+            assert.ok(answers.includes('`' + result.prepared + '`'));
+            assert.ok(answers.includes('`' + result.ciphertext + '`'));
+            assert.ok(!block.slice(0, block.indexOf('<details>')).includes(result.ciphertext));
+        }
+    }
+});
+
+test('G-4 bilingual PT-109 data, explanation and unverified primary-source notice agree', () => {
+    const history = new ExerciseManager().getHistoryChallenge();
+    for (const [source, heading, dictionary, disclaimer] of [
+        [readme, '📜 史料PT-109', ja, /原典を確認していません/],
+        [english, '📜 Historical PT-109 message', en, /original source was not consulted/]
+    ]) {
+        const block = section(heading, source), answers = block.match(/<details>([\s\S]*?)<\/details>/)[1];
+        assert.ok(block.includes(history.keyword));
+        assert.ok(block.includes(history.ciphertext));
+        assert.match(block.slice(0, block.indexOf('<details>')), /30/);
+        const result = core.decrypt(core.matrixFromKeyword(history.keyword), history.ciphertext, { variant: 'no-change' });
+        assert.equal(result.ok, true);
+        assert.ok(answers.includes(result.plaintext));
+        for (const token of ['`109`', '`ONE OWE NINE`', 'TT', 'COCE', 'COVE', '1996', '592', 'Programming Praxis', 'David Kahn']) {
+            assert.ok(answers.includes(token), token);
+        }
+        assert.match(answers, disclaimer);
+        for (const link of ['https://programmingpraxis.com/2009/07/03/the-playfair-cipher/',
+            'https://en.wikipedia.org/wiki/Arthur_Reginald_Evans']) assert.ok(answers.includes(link));
+        for (const token of ['E1', 'E2', 'E3', 'H1', '210', 'ROYAL NEW ZEALAND NAVY', 'Programming Praxis', '★']) {
+            assert.ok(dictionary['help.body'].includes(token), token);
+        }
+        assert.ok(!/14個のミッション|fourteen missions/.test(dictionary['help.body']));
+    }
 });
 
 test('E-3 Japanese README prose has no spaces at Japanese and ASCII boundaries', () => {

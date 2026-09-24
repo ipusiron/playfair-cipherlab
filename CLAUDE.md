@@ -58,8 +58,12 @@ immediately after body opens so the saved theme applies before the first paint.
 2. **exercises.js** - `ExerciseManager` class: challenge/practice data and pure answer validation
    - No DOM, localStorage, or i18n access; no progress state or writes
    - Validate the actual matrix before accepting original, prepared, or candidate-stripped answers
+   - E1/E2/E3: SHEEP with default / HIDE THE MAP with CIPHER / ATTACK THE HILL with SECRET
+   - Derive encryption answers through PlayfairCore, never store ciphertext fields for E1–E3
+   - validateEncipher normalizes the answer without requiring the current matrix
+   - H1 requires ROYAL NEW ZEALAND NAVY and accepts 109 or normalized ONEOWENINE
 
-2a. **progress.js** - Pure `ProgressCore`: fourteen missions, event reducer, locks,
+2a. **progress.js** - Pure `ProgressCore`: eighteen missions, event reducer, locks,
     stars, summary, strict version-2 storage validation and legacy migration.
     Conditional CommonJS export; no DOM, storage or translation dependency.
 
@@ -84,8 +88,8 @@ immediately after body opens so the saved theme applies before the first paint.
 7. **main.js** - Entry point, initializes i18n then UI
 
 Other files: index.html supplies semantic markup and CSP; css/styles.css holds
-the light/dark palette and responsive layout. assets/ contains six Japanese README
-screenshots (including the dark English preview); assets/en/ has five English screenshots.
+the light/dark palette and responsive layout. assets/ contains seven Japanese README
+screenshots (including the dark English preview); assets/en/ has six English screenshots.
 test/ has ten files.
 
 ### Key State
@@ -107,12 +111,17 @@ Validate all saved data and catch getItem/setItem failures. Only progress,
 language, and theme are persisted; never save keys or input/output text.
 
 Progress has the shape `{version:2, missions:{}, challenges:{}, rulesSeen:[]}`.
-Missions stores only M1–M8; challenge and recovery entries share challenges,
+Missions stores only M1–M8; encryption, decryption, history and recovery entries share challenges,
 with fixed points and hintsUsed. Never add a storage key or change version 2.
 Keep version 2 and accept existing saves with only M1–M6. Total missions comes
-from MISSIONS.length; sum mission points for the maximum score (120). Analysis awards no points.
+from MISSIONS.length; sum mission points for the maximum score (210). Analysis awards no points.
 C1/C2/C3 are inferred from mystery-01/02/03 entries and award 10/20/30 points.
 R1/R2/R3 are inferred from recover-01/02/03 entries and also award 10/20/30 points.
+E1/E2/E3 use encipher-01/02/03 and award 10/20/30 points; H1 uses history-01 and awards 30.
+Insert E1–E3 after M4 and H1 after C3; retain R1–R3 last. Old fourteen-mission saves still load.
+Encryption and history hint counts allow 0–4. An encryption check with the same normalized
+plaintext and matching matrix after loading adds one hint per problem, even if repeated.
+Only a first correct answer with neither hints nor this check earns the encryption star.
 Challenge hint counts remain 0–4. Recovery hint counts allow any nonnegative safe integer
 because level 3 can repeat. Resetting a puzzle does not reset its in-page hint count.
 The first correct answer is retained. Zero hints earns a star; migrated legacy
@@ -121,7 +130,8 @@ Migration rejects malformed data, unknown keys and invalid ranges.
 
 Record progress only through `UI.recordProgress(event)`: reduce, save, redraw.
 Events: matrix-saved, encrypted, step-rendered, decrypted, analyzed,
-reversed-selected, challenge-correct, recovery-solved. Recovery events accept only recovery IDs.
+reversed-selected, encipher-correct, challenge-correct, recovery-solved.
+Encryption events accept only encryption IDs; challenge-correct includes H1; recovery events accept only recovery IDs.
 Count a rule only when a new nonzero playback position is actually rendered;
 repainting the same pair for language changes does not count. Skipped pairs do
 not count. rulesSeenNow is page-local and separate from saved rulesSeen.
@@ -135,9 +145,24 @@ M7 requires an analyzed event with verdict impossible; consistent or empty never
 completes it. M8 requires selection in the reversed-pair list. Their navigation
 targets the analysis tab, sample selector, Analyze button and (M8) reversal list.
 Use standard rules for M2–M6. C2/C3 are locked by C1/C2; R2/R3 are locked by R1/R2.
+E2/E3 are locked by E1/E2; H1 is locked by C3. Encryption loading never changes the matrix or plaintext input.
+E guide steps: load, match the required matrix, answer. Step 2 requires both the loaded
+encryption ID and matching matrix so the default E1 square cannot skip loading.
+H1 guide steps: set the matrix, load, decrypt the exact normalized message with no-change, answer.
 R1–R3 guide steps target the Analysis tab, problem selector and recovery grid:
 open Analysis, select the puzzle, place at least one nongiven letter, then solve it.
 Navigation completion comes from the current snapshot, not saved achievements.
+At <=480px, recovery pairs use two columns with compact rule names and full accessible labels.
+Show contradictory pairs in the polite live region directly below the recovery square.
+
+### Historical challenge sources
+
+Retain the PT-109 ciphertext exactly as supplied by secondary sources (Programming Praxis,
+https://programmingpraxis.com/2009/07/03/the-playfair-cipher/). Standard decryption rejects TT;
+no-change reads it, merging J into I. Do not fix the COCE/COVE discrepancy in the ciphertext.
+The attributed original is David Kahn, The Codebreakers (1996, p. 592), not consulted for this tool.
+The date and reported plaintext come from https://en.wikipedia.org/wiki/Arthur_Reginald_Evans.
+Show the explanation and source limitation only after a correct H1 answer; its keyword is public.
 
 ### Encryption Rules
 
@@ -196,7 +221,7 @@ The Test workflow in .github/workflows/test.yml runs on push and pull_request.
 | test/cipher.test.js | Exact known answers, preparation, variants, candidates, validation, 200 seeded roundtrips |
 | test/analysis.test.js | All eight reference inputs, pair counts, reversal decryptions and 200 seeded reversal cases |
 | test/recovery.test.js | Three exact puzzle datasets, 9/17/22 deduction steps, hints and 25 cyclic shifts across all 600 pairs |
-| test/exercises.test.js | Six exercises, answer acceptance/rejection, pure fixed-point return |
+| test/exercises.test.js | Ten exercises/challenges, encryption preparation and rules, PT-109 variants, answer validation |
 | test/progress.test.js | Missions, migration, reducer, locks, stars, snapshot steps, blocked storage |
 | test/i18n.test.js | Matching dictionaries, translation calls, literal policy, help rules |
 | test/html.test.js | CSP, referrer, ARIA, four tabs, labels, buttons, defer order, inline attribute restrictions |
@@ -208,7 +233,7 @@ Also check HTTP and file:// with existing browser tooling: five viewport widths
 (1280/768/390/360/320), both languages/themes, keyboard operation, reduced motion,
 blocked storage, rejected clipboard writes, and zero console/CSP/network errors.
 Keep header p word-break:keep-all and verify whole subtitle words with Range at 320/360px.
-Complete all fourteen missions through the guide to reach 14/14 and 120/120pt.
+Complete all eighteen missions through the guide to reach 18/18 and 210/210pt.
 Do not install new dependencies for these checks.
 
 ## GitHub Pages Deployment

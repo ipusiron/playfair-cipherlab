@@ -1569,7 +1569,8 @@ class UI {
         document.getElementById('history-explanation').hidden = !history || !this.historyExplained;
         document.getElementById('challenge-info').classList.remove('hidden');
         document.querySelector('.challenge-title').textContent = i18n.t(`example.${challenge.title}`);
-        document.querySelector('.challenge-description').textContent = i18n.t(challenge.description);
+        document.querySelector('.challenge-description').textContent = i18n.t(challenge.description)
+            + (history ? ' ' + i18n.t('history.question') : '');
         const required = (practice || history) && challenge.keyword
             ? i18n.t('matrix.practice', { keyword: challenge.keyword })
             : i18n.t(challenge.keyword ? 'matrix.required-hint' : 'matrix.required-default');

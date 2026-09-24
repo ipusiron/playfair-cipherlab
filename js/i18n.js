@@ -330,10 +330,19 @@ class I18nManager {
 <p>マスを選び、文字キーか文字の一覧で置きます。矢印で移動し、BackspaceかDeleteで消します。25マスが答えと一致すると、復元した表で隠された暗号文を復号します。埋め文字の候補は本物の文字かもしれないため、自動では消しません。</p>
 <p>ヒントは①規則の説明、②組の種類、③間違ったマスの指摘、なければ1文字の配置です。3段目は何度でも使えます。減点はなく、ヒントなしの初回成功には★が付きます。</p>
 <p>表全体の行と列を循環してずらした25通りは同じ暗号になります。この演習では置き字で向きを固定し、指定の表を復元します。</p>
+<p>幅480px以下では組を2列に並べます。状態と規則の完全な名前は読み上げ用ラベルに残し、矛盾している組は表の直下にも表示します。</p>
 <p>手作業による復元の出典：米陸軍FM 34-40-2第7章。</p>
 </section>
+<section><h3>暗号化チャレンジと史料</h3>
+<p>E1〜E3では表示された平文と鍵語を使い、表を見ながら手で暗号文を求めます。読み込みでは平文欄や鍵表は変わりません。E1でE2、E2でE3が開きます。</p>
+<p>ヒントは①前処理の組と埋め文字、②組ごとの規則、③最初の組の答えです。ヒントなしの初回正解に★が付きます。</p>
+<p>暗号化ボタンで確かめると★は付きません。読み込み後に同じ平文を同じ鍵表で暗号化すると、その課題のヒント1回として数えます。繰り返しても1回です。</p>
+<p>H1はC3のあとに開く史料チャレンジです。鍵語ROYAL NEW ZEALAND NAVYを自分で設定し、電文を読み込みます。標準では同じ文字の組TTがエラーになります。</p>
+<p>復号の同一ペア処理ルールを「変種: 同じ文字のまま」（変化なし）にすると読めます。問いには失われた艇の番号を答えます。正解後の解説で、実際の運用が教科書の規則と違ったことを確かめられます。</p>
+<p>暗号文は二次資料Programming Praxisほかによります。原典とされるDavid Kahn『The Codebreakers』（1996年版、p.592）は未確認です。日時と平文はWikipedia『Arthur Reginald Evans』によります。暗号文の食い違いは修正していません。</p>
+</section>
 <section><h3>学習進捗とナビ</h3>
-<p>14個のミッションを画面の操作で達成します。「次はこれ」はおすすめ順で、M1〜M8は自由に進められます。</p>
+<p>18個のミッションを画面の操作で達成します。「次はこれ」はおすすめ順で、M1〜M8は自由に進められます。</p>
 <ul>
 <li>M1：鍵語から鍵表を作る。鍵語の文字を重複なしで並べ、残りのアルファベットで埋める。IとJは同じマス</li>
 <li>M2：埋め文字が入るところを見る。組の2文字が同じならXを挟む（HELLO → HE LX LO）</li>
@@ -358,8 +367,8 @@ class I18nManager {
 <p>「この場所へ移動」はタブを開いて対象を枠で示し、フォーカスを移します。答え、鍵語、平文は入力しません。ナビによる減点はありません。</p>
 <p>「次」か「再生」で見た暗号化の規則だけをM3に数えます。「最後まで」や動きを減らす設定で飛ばした組は数えません。</p>
 <p>解読ヒントも減点しません。ヒントを見ずに初回正解した課題には★が付きます。旧版から移した進捗には★を付けません。</p>
-<p>復号練習は鍵語を表示しますが、鍵表は変更しません。自分で鍵生成タブへ移って設定します。チャレンジの鍵語はヒントから推理します。</p>
-<p>「挑戦する」で復号タブへ移り、課題の情報と解答欄を開きます。必要な鍵表と現在の鍵表の一致を確認してください。</p>
+<p>復号練習は鍵語を表示しますが、鍵表は変更しません。自分で鍵生成タブへ移って設定します。C1〜C3の鍵語はヒントから推理します。</p>
+<p>「挑戦する」で課題のタブへ移り、情報と解答欄を開きます。必要な鍵表と現在の鍵表の一致を確認してください。暗号化チャレンジの解答判定では鍵表の一致は問いません。</p>
 <p>「既定の表に戻す」で鍵語なしの表に戻せます。ナビはEscや「閉じる」で閉じ、開いたボタンへ戻ります。</p>
 </section>
 <section><h3>保存と安全性</h3>
@@ -975,10 +984,25 @@ Matching all 25 cells decrypts the hidden ciphertext with your recovered square.
 Repeat the third hint as needed. Hints cost no points; a first success without hints earns a star (★).</p>
 <p>Cyclically shifting all rows and columns gives 25 equivalent squares that produce the same cipher.
 These puzzles fix the orientation with givens and require the specified square.</p>
+<p>At widths of 480px or less, pairs use two columns. Accessible labels retain full status and rule names;
+contradictory pairs also appear directly below the square.</p>
 <p>Source for the manual recovery method: U.S. Army FM 34-40-2, Chapter 7.</p>
 </section>
+<section><h3>Encryption challenges and historical record</h3>
+<p>In E1–E3, use the displayed plaintext and keyword to calculate ciphertext by hand.
+Loading never fills the plaintext input or changes the matrix. E1 unlocks E2; E2 unlocks E3.</p>
+<p>The three hints show prepared pairs with padding, each pair's rule, then the first pair's answer. A first correct answer without hints earns a star (★).</p>
+<p>Checking with Encrypt prevents a star: encrypting the same plaintext with the matching matrix after loading
+counts as one hint for that problem, even if repeated.</p>
+<p>H1 unlocks after C3. Set ROYAL NEW ZEALAND NAVY yourself and load the historical message. Standard rules reject the identical-letter pair TT.</p>
+<p>Choose “Variant: leave identical letters unchanged” (No Change) under Same Pair Processing Rule to decrypt it.
+Answer with the lost boat's number. The explanation after a correct answer shows how actual operation differed from textbook rules.</p>
+<p>The ciphertext comes from secondary sources including Programming Praxis.
+The attributed original, David Kahn's The Codebreakers (1996, p. 592), was not consulted.
+The date and plaintext come from Wikipedia, Arthur Reginald Evans. The ciphertext discrepancy is not corrected.</p>
+</section>
 <section><h3>Learning roadmap and guide</h3>
-<p>Complete fourteen missions through screen actions. “Next” recommends an order; M1–M8 remain freely available.</p>
+<p>Complete eighteen missions through screen actions. “Next” recommends an order; M1–M8 remain freely available.</p>
 <ul>
 <li>M1: Build a matrix from a keyword. Remove repeated keyword letters, then fill with the remaining alphabet. I and J share a cell.</li>
 <li>M2: See where padding is inserted. Insert X between identical letters in a pair (HELLO → HE LX LO).</li>
@@ -1004,8 +1028,9 @@ These puzzles fix the orientation with givens and require the specified square.<
 <p>The guide never enters an answer, keyword or plaintext. It costs no points. Use “Next mission” after completing a mission.</p>
 <p>M3 counts only encryption rules displayed with “Next” or “Play”. Pairs skipped by “Go to end” or reduced motion do not count.</p>
 <p>Decryption hints cost no points either. A first correct answer without hints earns a star (★). Migrated old progress has no stars.</p>
-<p>Practice shows the keyword but does not change the matrix. Set it yourself on the Key Generation tab. Infer challenge keywords from hints.</p>
-<p>“Start challenge” opens its information and answer field on the Decryption tab. Check that the required and current matrices match.</p>
+<p>Practice shows the keyword but does not change the matrix. Set it yourself on the Key Generation tab. Infer C1–C3 keywords from hints.</p>
+<p>“Start challenge” opens the problem's tab, information and answer field. Check that the required and current matrices match.
+Encryption challenge answer validation does not require a matching matrix.</p>
 <p>“Restore default matrix” restores the no-keyword matrix. Close the guide with Escape or “Close” to return focus to its opener.</p>
 </section>
 <section><h3>Storage and safety</h3>
