@@ -1,3 +1,72 @@
+.recovery {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 2px solid var(--text-fg);
+}
+
+.recovery p, .recovery h2, .recovery h3, .recovery label {
+    overflow-wrap: anywhere;
+}
+
+.recovery-crib { margin: 1rem 0; }
+.recovery-crib dt { font-weight: bold; margin-top: 0.5rem; }
+.recovery-crib dd { margin: 0; overflow-wrap: anywhere; }
+.recovery-inserted { color: var(--warning-fg); background: var(--warning-bg); text-decoration: underline; }
+
+.recovery-grid, .recovery-palette {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(44px, 1fr));
+    gap: 0.25rem;
+    width: 100%;
+    max-width: 22rem;
+    margin: 1rem 0;
+}
+
+.recovery-grid button, .recovery-palette button {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.25rem;
+    border: 1px solid currentColor;
+    border-radius: 0.25rem;
+    font-size: 1rem;
+    color: var(--text-fg);
+    background: var(--text-bg);
+    cursor: pointer;
+}
+
+.recovery-grid .recovery-given {
+    border: 3px double currentColor;
+    font-weight: bold;
+    color: var(--keyword-fg);
+    background: var(--keyword-bg);
+}
+
+.recovery-grid button[aria-pressed="true"] {
+    color: var(--analysis-selected-fg);
+    background: var(--analysis-selected-bg);
+    outline: 2px solid var(--focus);
+    outline-offset: 1px;
+}
+
+.recovery-grid .recovery-wrong {
+    color: var(--error-fg);
+    background: var(--error-bg);
+    border: 3px dashed currentColor;
+}
+
+.recovery-palette button:disabled { opacity: 1; cursor: default; }
+.recovery-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.recovery-actions .btn { margin: 0; }
+.recovery-pairs { list-style: none; padding: 0; display: grid; gap: 0.5rem; }
+.recovery-pair { padding: 0.5rem; border: 1px solid currentColor; overflow-wrap: anywhere; }
+.recovery-open { color: var(--text-fg); background: var(--text-bg); }
+.recovery-ok { color: var(--success-fg); background: var(--success-bg); }
+.recovery-ng { color: var(--error-fg); background: var(--error-bg); }
+
+@media (min-width: 768px) {
+    .recovery-pairs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
 .analysis-select {
     display: block;
     width: 100%;
@@ -224,6 +293,7 @@ header p {
     font-size: 1rem;
     opacity: 1;
     text-align: center;
+    word-break: keep-all;
 }
 
 .header-buttons {

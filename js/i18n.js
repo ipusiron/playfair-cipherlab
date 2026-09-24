@@ -3,6 +3,68 @@ class I18nManager {
         this.currentLang = this.loadLanguage();
         this.translations = {
             ja: {
+                'mission.group.recovery': '復元',
+                'mission.R1.title': '鍵表の復元（入門）',
+                'mission.R1.learn': '16文字が置かれた表に、既知の組11個から残り9文字を推理して置く',
+                'mission.R1.step.1': '『🔍 解析』タブを開く',
+                'mission.R1.step.2': '『既知平文から鍵表を復元』でR1入門を選ぶ',
+                'mission.R1.step.3': '空いたマスに文字を置く（組ごとの✓と✗で確かめながら）',
+                'mission.R1.step.4': 'すべての組が成り立つように25マスを埋める',
+                'mission.R2.title': '鍵表の復元（中級）',
+                'mission.R2.learn': '8文字だけの表に、既知の組14個から残り17文字を推理して置く',
+                'mission.R2.step.1': '『🔍 解析』タブを開く',
+                'mission.R2.step.2': '『既知平文から鍵表を復元』でR2中級を選ぶ',
+                'mission.R2.step.3': '空いたマスに文字を置く（組ごとの✓と✗で確かめながら）',
+                'mission.R2.step.4': 'すべての組が成り立つように25マスを埋める',
+                'mission.R3.title': '鍵表の復元（上級）',
+                'mission.R3.learn': '3文字だけの表から、既知の組27個で鍵表全体を復元する',
+                'mission.R3.step.1': '『🔍 解析』タブを開く',
+                'mission.R3.step.2': '『既知平文から鍵表を復元』でR3上級を選ぶ',
+                'mission.R3.step.3': '空いたマスに文字を置く（組ごとの✓と✗で確かめながら）',
+                'mission.R3.step.4': 'すべての組が成り立つように25マスを埋める',
+                'recovery.heading': '🧩 既知平文から鍵表を復元',
+                'recovery.intro': '平文と暗号文の組が分かれば、鍵表を推理できます。空いたマスに文字を置き、'
+                    + 'すべての組が成り立つように埋めてください。最初に置かれた文字（置き字）は動かせません。',
+                'recovery.choose': '復元する問題',
+                'recovery.problem.recover-01': 'R1入門（置き字16・組11）',
+                'recovery.problem.recover-02': 'R2中級（置き字8・組14）',
+                'recovery.problem.recover-03': 'R3上級（置き字3・組27）',
+                'recovery.locked': '{previous}を解くと開きます',
+                'recovery.crib-plain': '既知の平文',
+                'recovery.crib-prepared': '前処理後の平文（挟んだXに印）',
+                'recovery.crib-cipher': '既知の暗号文',
+                'recovery.inserted': '前処理で挟んだ埋め文字',
+                'recovery.controls': 'マスを選び、文字キーか下の文字ボタンで置きます。JはIとして扱います。'
+                    + '矢印キーで移動し、BackspaceまたはDeleteで消します。置き済みの文字は元のマスから移ります。',
+                'recovery.grid': '復元する5×5の鍵表',
+                'recovery.palette': '置く文字を選択',
+                'recovery.cell.given': '{row}行{col}列、置き字{letter}',
+                'recovery.cell.letter': '{row}行{col}列、{letter}',
+                'recovery.cell.empty': '{row}行{col}列、空き',
+                'recovery.letter': '{letter}を置く',
+                'recovery.letter.used': '{letter}、置き済み',
+                'recovery.fixed': '置き字は動かせません',
+                'recovery.moved': '{letter}を{row}行{col}列から移しました',
+                'recovery.placed': '{row}行{col}列に{letter}を置きました',
+                'recovery.reset': '最初からやり直す',
+                'recovery.hint': '💡 ヒント{n}/3',
+                'recovery.hints.one': 'ヒント使用{n}回（減点なし・★なし）',
+                'recovery.hints.other': 'ヒント使用{n}回（ヒントなしで解くと★・減点なし）',
+                'recovery.rules': '平文の組と暗号文の組の関係は3つです。同じ行なら右隣、同じ列なら下隣、'
+                    + '長方形なら同じ行の相手の列の文字です。平文の1文字目と暗号文の1文字目は、必ず同じ行か同じ列にあります。2文字目どうしも同じです。',
+                'recovery.wrong': 'このマスの文字が違います',
+                'recovery.full-wrong': '答えと違うマスがあります',
+                'recovery.pair.ok': '✓成り立つ',
+                'recovery.pair.ng': '✗矛盾',
+                'recovery.pair.open': '…まだ決まらない',
+                'recovery.pairs': '既知の組',
+                'recovery.caution': '✗が出なくても、組の残りの文字が決まるまでは間違いに気づけないことがあります',
+                'recovery.status': '置いた文字{n}/25・成り立つ組{k}/{N}・矛盾{m}',
+                'recovery.solved': '復元できました',
+                'recovery.secret-cipher': '隠された暗号文',
+                'recovery.secret-plain': '利用者の鍵表で復号した文',
+                'recovery.secret-stripped': '埋め文字の候補を除いた文',
+                'recovery.equivalent': '鍵表の行や列を丸ごと回した表（25通り）も同じ暗号になります。今回は置き字で位置が決まっています。',
                 'analysis.open-frequency': 'Day009で頻度分析（新しいタブ）',
                 'analysis.frequency-description': 'Day009（Frequency Analyzer）が開き、この暗号文が入力欄に入ります。'
                     + '『📊 頻度分析』を押すと、1文字ずつの頻度や二重字を調べられます。'
@@ -209,8 +271,16 @@ class I18nManager {
 <p>「Day009で頻度分析（新しいタブ）」を押したときだけ暗号文をURLに含めてDay009の入力欄へ渡し、移動先の「📊 頻度分析」で分析します（5,000文字まで）。</p>
 <p>Day009の二重字は語ごとに1文字ずつずらして数えるため、ここでの2文字ずつ区切った組とは数え方が違います。</p>
 </section>
+<section><h3>🧩 鍵表の復元</h3>
+<p>解析タブで既知の平文と暗号文から5×5の鍵表を復元します。置き字は動かせません。R1は置き字16文字と組11個、R2は8文字と14個、R3は3文字と27個です。</p>
+<p>同じ行なら右隣、同じ列なら下隣、長方形なら同じ行の相手の列へ変わります。平文と暗号文の1文字目どうし、2文字目どうしは、それぞれ同じ行か同じ列にあるので、位置を絞れます。</p>
+<p>マスを選び、文字キーか文字の一覧で置きます。矢印で移動し、BackspaceかDeleteで消します。25マスが答えと一致すると、復元した表で隠された暗号文を復号します。埋め文字の候補は本物の文字かもしれないため、自動では消しません。</p>
+<p>ヒントは①規則の説明、②組の種類、③間違ったマスの指摘、なければ1文字の配置です。3段目は何度でも使えます。減点はなく、ヒントなしの初回成功には★が付きます。</p>
+<p>表全体の行と列を循環してずらした25通りは同じ暗号になります。この演習では置き字で向きを固定し、指定の表を復元します。</p>
+<p>手作業による復元の出典：米陸軍FM 34-40-2第7章。</p>
+</section>
 <section><h3>学習進捗とナビ</h3>
-<p>11個のミッションを画面の操作で達成します。「次はこれ」はおすすめ順で、M1〜M8は自由に進められます。</p>
+<p>14個のミッションを画面の操作で達成します。「次はこれ」はおすすめ順で、M1〜M8は自由に進められます。</p>
 <ul>
 <li>M1：鍵語から鍵表を作る。鍵語の文字を重複なしで並べ、残りのアルファベットで埋める。IとJは同じマス</li>
 <li>M2：埋め文字が入るところを見る。組の2文字が同じならXを挟む（HELLO → HE LX LO）</li>
@@ -223,8 +293,12 @@ class I18nManager {
 <li>C1：謎の単語。鍵語なしで解読する</li>
 <li>C2：秘密のメッセージ。鍵語をヒントから推理して解読する</li>
 <li>C3：軍事作戦。鍵語をヒントから推理して解読する</li>
+<li>R1：鍵表の復元（入門）。置き字16文字と既知の組11個から推理する</li>
+<li>R2：鍵表の復元（中級）。置き字8文字と既知の組14個から推理する</li>
+<li>R3：鍵表の復元（上級）。置き字3文字と既知の組27個から推理する</li>
 </ul>
 <p>C1、C2、C3は順に10、20、30点で計60点です。C1を達成するとC2、C2を達成するとC3が開きます。得点は各課題の初回正解だけです。</p>
+<p>R1、R2、R3も順に10、20、30点です。R1でR2、R2でR3が開きます。復元を含む全14ミッションの合計は120点です。</p>
 <p>帯や各行の「ナビ開始」で下のカードを開きます。手順は操作に合わせて自動で済みになります。あとの手順を済ませた場合、前の手順も済みになります。</p>
 <p>「この場所へ移動」はタブを開いて対象を枠で示し、フォーカスを移します。答え、鍵語、平文は入力しません。ナビによる減点はありません。</p>
 <p>「次」か「再生」で見た暗号化の規則だけをM3に数えます。「最後まで」や動きを減らす設定で飛ばした組は数えません。</p>
@@ -505,6 +579,70 @@ class I18nManager {
                 'help.warning.desc': '<strong>このツールは教育目的です。</strong>プレイフェア暗号は古典暗号であり、現代の暗号学的用途には適していません。'
             },
             en: {
+                'mission.group.recovery': 'Recovery',
+                'mission.R1.title': 'Recover a key square (Beginner)',
+                'mission.R1.learn': 'Deduce the remaining 9 letters from 16 givens and 11 known pairs',
+                'mission.R1.step.1': 'Open the 🔍 Analysis tab',
+                'mission.R1.step.2': 'Select R1 Beginner in Recover a key square from known plaintext',
+                'mission.R1.step.3': 'Place letters in empty cells, checking ✓ and ✗ for each pair',
+                'mission.R1.step.4': 'Fill all 25 cells so that every pair is consistent',
+                'mission.R2.title': 'Recover a key square (Intermediate)',
+                'mission.R2.learn': 'Deduce the remaining 17 letters from 8 givens and 14 known pairs',
+                'mission.R2.step.1': 'Open the 🔍 Analysis tab',
+                'mission.R2.step.2': 'Select R2 Intermediate in Recover a key square from known plaintext',
+                'mission.R2.step.3': 'Place letters in empty cells, checking ✓ and ✗ for each pair',
+                'mission.R2.step.4': 'Fill all 25 cells so that every pair is consistent',
+                'mission.R3.title': 'Recover a key square (Advanced)',
+                'mission.R3.learn': 'Recover the full key square from only 3 givens and 27 known pairs',
+                'mission.R3.step.1': 'Open the 🔍 Analysis tab',
+                'mission.R3.step.2': 'Select R3 Advanced in Recover a key square from known plaintext',
+                'mission.R3.step.3': 'Place letters in empty cells, checking ✓ and ✗ for each pair',
+                'mission.R3.step.4': 'Fill all 25 cells so that every pair is consistent',
+                'recovery.heading': '🧩 Recover a key square from known plaintext',
+                'recovery.intro': 'Use known plaintext and ciphertext pairs to deduce the key square. Fill the empty cells '
+                    + 'so that every pair is consistent. The letters provided at the start (givens) cannot be moved.',
+                'recovery.choose': 'Recovery puzzle',
+                'recovery.problem.recover-01': 'R1 Beginner (16 givens, 11 pairs)',
+                'recovery.problem.recover-02': 'R2 Intermediate (8 givens, 14 pairs)',
+                'recovery.problem.recover-03': 'R3 Advanced (3 givens, 27 pairs)',
+                'recovery.locked': 'Solve {previous} to unlock',
+                'recovery.crib-plain': 'Known plaintext',
+                'recovery.crib-prepared': 'Prepared plaintext (inserted X letters marked)',
+                'recovery.crib-cipher': 'Known ciphertext',
+                'recovery.inserted': 'Padding inserted during preparation',
+                'recovery.controls': 'Select a cell, then type a letter or use a letter button below. J is treated as I. '
+                    + 'Use arrow keys to move, and Backspace or Delete to clear. Placed letters move from their previous cells.',
+                'recovery.grid': '5 by 5 key square to recover',
+                'recovery.palette': 'Choose a letter to place',
+                'recovery.cell.given': 'Row {row}, column {col}, given {letter}',
+                'recovery.cell.letter': 'Row {row}, column {col}, {letter}',
+                'recovery.cell.empty': 'Row {row}, column {col}, empty',
+                'recovery.letter': 'Place {letter}',
+                'recovery.letter.used': '{letter}, already placed',
+                'recovery.fixed': 'Givens cannot be moved',
+                'recovery.moved': 'Moved {letter} from row {row}, column {col}',
+                'recovery.placed': 'Placed {letter} in row {row}, column {col}',
+                'recovery.reset': 'Start over',
+                'recovery.hint': '💡 Hint {n}/3',
+                'recovery.hints.one': 'Hint used {n} time (no point penalty; no star)',
+                'recovery.hints.other': 'Hints used {n} times (solve without hints for a star; no point penalty)',
+                'recovery.rules': 'There are three relations: in the same row, use the letter to the right; in the same column, '
+                    + 'use the letter below; for a rectangle, use the other column in the same row. The first plaintext '
+                    + 'and ciphertext letters always share a row or column, as do the second letters.',
+                'recovery.wrong': 'The letter in this cell is incorrect',
+                'recovery.full-wrong': 'Some cells differ from the answer',
+                'recovery.pair.ok': '✓Consistent',
+                'recovery.pair.ng': '✗Contradiction',
+                'recovery.pair.open': '…Undetermined',
+                'recovery.pairs': 'Known pairs',
+                'recovery.caution': 'Even without a ✗, a mistake may remain undetected until the other letters in the pair are placed.',
+                'recovery.status': 'Placed: {n}/25 · Consistent pairs: {k}/{N} · Contradictions: {m}',
+                'recovery.solved': 'Key square recovered',
+                'recovery.secret-cipher': 'Hidden ciphertext',
+                'recovery.secret-plain': 'Decrypted with your key square',
+                'recovery.secret-stripped': 'Text with candidate padding removed',
+                'recovery.equivalent': 'Cyclically shifting all rows or all columns gives 25 equivalent squares. '
+                    + 'The givens fix the position in this puzzle.',
                 'analysis.open-frequency': 'Open in Day009 Frequency Analyzer (new tab)',
                 'analysis.frequency-description': 'Day009 (Frequency Analyzer) opens with this ciphertext in its input field. '
                     + 'Press its Frequency Analysis button to examine individual-letter and digram frequencies. '
@@ -717,8 +855,21 @@ Use “Send to analysis” beside encryption output or below decryption input to
 press its Frequency Analysis button to analyze them. Day009 counts overlapping digrams within words,
 unlike the fixed two-letter pairs here.</p>
 </section>
+<section><h3>🧩 Key-square recovery</h3>
+<p>Recover a 5×5 key square from known plaintext and ciphertext on the Analysis tab. Givens cannot move.
+R1 has 16 givens and 11 pairs, R2 has 8 givens and 14 pairs, and R3 has 3 givens and 27 pairs.</p>
+<p>A same-row pair moves right, a same-column pair moves down, and a rectangle uses the other letter’s column in the same row.
+The first plaintext and ciphertext letters share a row or column, as do the second letters. Use these constraints to narrow positions.</p>
+<p>Select a cell and type a letter or use the palette. Move with arrow keys and erase with Backspace or Delete.
+Matching all 25 cells decrypts the hidden ciphertext with your recovered square. Possible padding is never removed automatically because it may be genuine.</p>
+<p>Hints show (1) the rules, (2) pair types, then (3) a wrong cell, or place one letter if no cell is wrong.
+Repeat the third hint as needed. Hints cost no points; a first success without hints earns a star (★).</p>
+<p>Cyclically shifting all rows and columns gives 25 equivalent squares that produce the same cipher.
+These puzzles fix the orientation with givens and require the specified square.</p>
+<p>Source for the manual recovery method: U.S. Army FM 34-40-2, Chapter 7.</p>
+</section>
 <section><h3>Learning roadmap and guide</h3>
-<p>Complete eleven missions through screen actions. “Next” recommends an order; M1–M8 remain freely available.</p>
+<p>Complete fourteen missions through screen actions. “Next” recommends an order; M1–M8 remain freely available.</p>
 <ul>
 <li>M1: Build a matrix from a keyword. Remove repeated keyword letters, then fill with the remaining alphabet. I and J share a cell.</li>
 <li>M2: See where padding is inserted. Insert X between identical letters in a pair (HELLO → HE LX LO).</li>
@@ -731,8 +882,12 @@ unlike the fixed two-letter pairs here.</p>
 <li>C1: Mystery word. Decode without a keyword.</li>
 <li>C2: Secret message. Infer the keyword from hints and decode.</li>
 <li>C3: Military operation. Infer the keyword from hints and decode.</li>
+<li>R1: Recover a key square (Beginner). Deduce positions from 16 givens and 11 known pairs.</li>
+<li>R2: Recover a key square (Intermediate). Deduce positions from 8 givens and 14 known pairs.</li>
+<li>R3: Recover a key square (Advanced). Deduce positions from 3 givens and 27 known pairs.</li>
 </ul>
 <p>C1, C2 and C3 award 10, 20 and 30 points, for 60 total. C1 unlocks C2; C2 unlocks C3. Only the first correct answer earns points.</p>
+<p>R1, R2 and R3 also award 10, 20 and 30 points. R1 unlocks R2; R2 unlocks R3. All fourteen missions together award 120 points.</p>
 <p>Open the bottom card with “Start guide” in the summary or a mission row. Steps are checked automatically from screen state.</p>
 <p>Completing a later step also checks earlier steps. “Go to this step” switches tabs, outlines the control and moves focus.</p>
 <p>The guide never enters an answer, keyword or plaintext. It costs no points. Use “Next mission” after completing a mission.</p>

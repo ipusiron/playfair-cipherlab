@@ -5,6 +5,17 @@ const path = require('node:path');
 const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
 const attribute = (tag, name) => tag.match(new RegExp(`\\b${name}="([^"]*)"`))?.[1];
 
+test('Recovery G-2 labelled section, controls and live status exist once', () => {
+    for (const id of ['recovery', 'recovery-problem', 'recovery-pairs', 'recovery-grid',
+        'recovery-palette', 'recovery-hint', 'recovery-reset', 'recovery-status']) {
+        assert.equal([...html.matchAll(new RegExp(`\\bid="${id}"`, 'g'))].length, 1, id);
+    }
+    assert.match(html, /<section[^>]*id="recovery"[^>]*aria-labelledby="recovery-heading"/);
+    assert.match(html, /id="recovery-status"[^>]*aria-live="polite"/);
+    assert.match(html, /<label for="recovery-problem"/);
+    assert.ok(html.indexOf('id="recovery"') > html.indexOf('id="analysis-result"'));
+});
+
 test('Polish C-2 Day009 link is safe, initially hidden and follows the existing analysis output', () => {
     const tag = html.match(/<a\b[^>]*id="analysis-open-frequency"[^>]*>/)[0];
     assert.equal(attribute(tag, 'target'), '_blank');
@@ -31,7 +42,7 @@ test('G-2 ordered deferred head scripts with only synchronous early theme in bod
     const body = html.match(/<body>([\s\S]*?)<\/body>/)[1];
     const headScripts = [...head.matchAll(/<script\b[^>]*>/g)].map(match => match[0]);
     assert.deepEqual(headScripts.map(tag => attribute(tag, 'src')), [
-        'js/cipher.js', 'js/analysis.js', 'js/exercises.js', 'js/progress.js', 'js/guide.js',
+        'js/cipher.js', 'js/analysis.js', 'js/recovery.js', 'js/exercises.js', 'js/progress.js', 'js/guide.js',
         'js/ui.js', 'js/theme.js', 'js/help.js', 'js/i18n.js', 'js/main.js'
     ]);
     headScripts.forEach(tag => assert.match(tag, /\sdefer(?:\s|>)/));
@@ -95,6 +106,11 @@ test('H-2 roadmap and matrix controls exist; answers are outside the result', ()
     assert.ok(html.indexOf('src="js/progress.js"') > html.indexOf('src="js/exercises.js"'));
     assert.doesNotMatch(html.match(/id="progress-toggle"[\s\S]*?<\/button>/)[0], /id="progress-next-guide"/);
     assert.doesNotMatch(html, /id="mission-M\d"/);
+});
+
+test('E-3 header subtitle keeps words intact', () => {
+    const css = fs.readFileSync(path.join(__dirname, '../css/styles.css'), 'utf8');
+    assert.match(css, /header p\s*\{[^}]*word-break:\s*keep-all\s*;/);
 });
 
 test('H-2 guide markup and script order', () => {

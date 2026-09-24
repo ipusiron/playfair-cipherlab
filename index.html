@@ -11,6 +11,7 @@
     <link rel="icon" href="data:," />
     <script src="js/cipher.js" defer></script>
     <script src="js/analysis.js" defer></script>
+    <script src="js/recovery.js" defer></script>
     <script src="js/exercises.js" defer></script>
     <script src="js/progress.js" defer></script>
     <script src="js/guide.js" defer></script>
@@ -496,6 +497,39 @@
           <p id="analysis-frequency-description" data-i18n="analysis.frequency-description" hidden></p>
           <p id="analysis-frequency-too-long" data-i18n="analysis.frequency-too-long" hidden></p>
         </div>
+        <section id="recovery" class="recovery" aria-labelledby="recovery-heading">
+          <h2 id="recovery-heading" data-i18n="recovery.heading"></h2>
+          <p data-i18n="recovery.intro"></p>
+          <label for="recovery-problem" data-i18n="recovery.choose"></label>
+          <select id="recovery-problem" class="analysis-select"></select>
+          <dl class="recovery-crib">
+            <dt data-i18n="recovery.crib-plain"></dt><dd id="recovery-crib-plain"></dd>
+            <dt data-i18n="recovery.crib-prepared"></dt><dd id="recovery-crib-prepared"></dd>
+            <dt data-i18n="recovery.crib-cipher"></dt><dd id="recovery-crib-cipher"></dd>
+          </dl>
+          <p data-i18n="recovery.controls"></p>
+          <div id="recovery-grid" class="recovery-grid" role="group" tabindex="-1" data-i18n-aria="recovery.grid"></div>
+          <div id="recovery-palette" class="recovery-palette" role="group" data-i18n-aria="recovery.palette"></div>
+          <div class="recovery-actions">
+            <button type="button" id="recovery-hint" class="btn btn-primary"></button>
+            <button type="button" id="recovery-reset" class="btn btn-secondary" data-i18n="recovery.reset"></button>
+          </div>
+          <p id="recovery-hint-count"></p>
+          <p id="recovery-rules" data-i18n="recovery.rules" hidden></p>
+          <p id="recovery-status" aria-live="polite" aria-atomic="true"></p>
+          <h3 data-i18n="recovery.pairs"></h3>
+          <p data-i18n="recovery.caution"></p>
+          <ul id="recovery-pairs" class="recovery-pairs"></ul>
+          <div id="recovery-result" hidden>
+            <h3 data-i18n="recovery.solved"></h3>
+            <dl class="recovery-crib">
+              <dt data-i18n="recovery.secret-cipher"></dt><dd id="recovery-secret-cipher"></dd>
+              <dt data-i18n="recovery.secret-plain"></dt><dd id="recovery-secret-plain"></dd>
+              <dt data-i18n="recovery.secret-stripped"></dt><dd id="recovery-secret-stripped"></dd>
+            </dl>
+            <p data-i18n="recovery.equivalent"></p>
+          </div>
+        </section>
         </div>
       </div>
     </main>

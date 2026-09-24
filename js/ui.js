@@ -21,6 +21,9 @@ class UI {
         this.currentChallenge = null;
         this.selectedChallenge = null;
         this.notices = {};
+        this.recoveryState = null;
+        this.recoveryHints = {};
+        this.lastRecoverySolved = null;
     }
 
     init() {
@@ -29,6 +32,7 @@ class UI {
         this.setupEncryption();
         this.setupDecryption();
         this.setupAnalysis();
+        this.setupRecovery();
         this.setupExercises();
         this.setupPlaybackControls();
         this.displayMatrix('key-matrix');
@@ -64,6 +68,186 @@ class UI {
         this.render('encryption');
         this.render('decryption');
         this.renderAnalysis();
+        this.renderRecovery();
+    }
+
+    setupRecovery() {
+        const grid = document.getElementById('recovery-grid');
+        const palette = document.getElementById('recovery-palette');
+        for (let cell = 0; cell < 25; cell++) {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.dataset.cell = cell;
+            button.addEventListener('click', () => this.selectRecoveryCell(cell));
+            grid.appendChild(button);
+        }
+        for (const letter of PlayfairCore.ALPHABET) {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.dataset.letter = letter;
+            button.addEventListener('click', () => this.placeRecoveryLetter(letter));
+            palette.appendChild(button);
+        }
+        grid.addEventListener('keydown', event => {
+            if (event.ctrlKey || event.metaKey || event.altKey) return;
+            const moves = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -5, ArrowDown: 5 };
+            const cell = this.recoveryState.selected;
+            if (Object.hasOwn(moves, event.key)) {
+                event.preventDefault();
+                this.selectRecoveryCell((cell + moves[event.key] + 25) % 25, true);
+            } else if (/^[a-z]$/i.test(event.key)) {
+                event.preventDefault();
+                this.placeRecoveryLetter(event.key.toUpperCase().replace('J', 'I'));
+            } else if (['Backspace', 'Delete'].includes(event.key)) {
+                event.preventDefault();
+                this.placeRecoveryLetter('');
+            }
+        });
+        document.getElementById('recovery-problem').addEventListener('change', event => this.startRecovery(event.target.value));
+        document.getElementById('recovery-reset').addEventListener('click', () => this.startRecovery(this.recoveryState.p.id));
+        document.getElementById('recovery-hint').addEventListener('click', () => this.showRecoveryHint());
+        this.startRecovery('recover-01');
+    }
+
+    isRecoveryLocked(id) {
+        return ProgressCore.isLocked(this.progress, id);
+    }
+
+    startRecovery(id) {
+        const p = PlayfairRecovery.problem(id);
+        if (!p || this.isRecoveryLocked(id)) return;
+        this.recoveryState = { p, grid: [...p.givens], selected: p.givens.indexOf(''), wrong: -1, notice: null };
+        this.renderRecovery();
+        this.guide?.render();
+    }
+
+    selectRecoveryCell(cell, focus = false) {
+        this.recoveryState.selected = cell;
+        this.renderRecovery();
+        if (focus) document.querySelector(`#recovery-grid [data-cell="${cell}"]`).focus();
+    }
+
+    placeRecoveryLetter(letter) {
+        const s = this.recoveryState, cell = s.selected;
+        if (s.p.givens[cell] || (letter && s.p.givens.includes(letter))) {
+            s.notice = { key: 'recovery.fixed' };
+        } else {
+            const from = letter ? s.grid.indexOf(letter) : -1;
+            if (from >= 0 && from !== cell) {
+                s.grid[from] = '';
+                s.notice = { key: 'recovery.moved', params: { letter, row: Math.floor(from / 5) + 1, col: from % 5 + 1 } };
+            } else s.notice = null;
+            s.grid[cell] = letter;
+            s.wrong = -1;
+            this.completeRecovery();
+        }
+        this.renderRecovery();
+        this.guide?.render();
+    }
+
+    completeRecovery() {
+        const s = this.recoveryState;
+        if (PlayfairRecovery.isSolved(s.p, s.grid)) {
+            this.lastRecoverySolved = s.p.id;
+            this.recordProgress({ type: 'recovery-solved', id: s.p.id, hintsUsed: this.recoveryHints[s.p.id] || 0 });
+        }
+    }
+
+    showRecoveryHint() {
+        const s = this.recoveryState;
+        const count = (this.recoveryHints[s.p.id] || 0) + 1;
+        this.recoveryHints[s.p.id] = count;
+        const h = PlayfairRecovery.hint(s.p, s.grid, Math.min(count, 3));
+        s.notice = null;
+        s.wrong = -1;
+        if (h?.type === 'wrong') {
+            s.wrong = h.cell;
+            s.selected = h.cell;
+            s.notice = { key: 'recovery.wrong' };
+        } else if (h?.type === 'place') {
+            s.grid[h.cell] = h.letter;
+            s.selected = h.cell;
+            s.notice = { key: 'recovery.placed', params: { letter: h.letter, row: Math.floor(h.cell / 5) + 1, col: h.cell % 5 + 1 } };
+            this.completeRecovery();
+        }
+        this.renderRecovery();
+        this.guide?.render();
+    }
+
+    renderRecovery() {
+        const s = this.recoveryState;
+        if (!s) return;
+        const count = this.recoveryHints[s.p.id] || 0;
+        const select = document.getElementById('recovery-problem');
+        if (!select.options.length) for (const p of PlayfairRecovery.PROBLEMS) {
+            const option = document.createElement('option');
+            option.value = p.id;
+            select.appendChild(option);
+        }
+        [...select.options].forEach((option, index) => {
+            option.disabled = this.isRecoveryLocked(option.value);
+            option.textContent = i18n.t(`recovery.problem.${option.value}`);
+            if (option.disabled) option.textContent += ' — ' + i18n.t('recovery.locked', { previous: `R${index}` });
+        });
+        select.value = s.p.id;
+        document.getElementById('recovery-crib-plain').textContent = s.p.cribPlain;
+        const prepared = document.getElementById('recovery-crib-prepared');
+        const inserted = PlayfairCore.prepare(s.p.cribPlain).inserted;
+        prepared.replaceChildren(...[...s.p.cribPrepared].map((letter, index) => {
+            const span = document.createElement(inserted.includes(index) ? 'mark' : 'span');
+            span.textContent = letter;
+            if (inserted.includes(index)) {
+                span.className = 'recovery-inserted';
+                span.title = i18n.t('recovery.inserted');
+            }
+            return span;
+        }));
+        document.getElementById('recovery-crib-cipher').textContent = s.p.cribCipher;
+        [...document.querySelectorAll('#recovery-grid button')].forEach((button, cell) => {
+            const given = !!s.p.givens[cell], letter = s.grid[cell];
+            const key = given ? 'recovery.cell.given' : letter ? 'recovery.cell.letter' : 'recovery.cell.empty';
+            button.textContent = letter || '·';
+            button.setAttribute('aria-label', i18n.t(key, { row: Math.floor(cell / 5) + 1, col: cell % 5 + 1, letter }));
+            button.setAttribute('aria-pressed', String(cell === s.selected));
+            button.tabIndex = cell === s.selected ? 0 : -1;
+            button.classList.toggle('recovery-given', given);
+            button.classList.toggle('recovery-wrong', cell === s.wrong);
+        });
+        for (const button of document.querySelectorAll('#recovery-palette button')) {
+            const letter = button.dataset.letter, used = s.grid.includes(letter);
+            button.textContent = letter + (used ? ' ✓' : '');
+            button.disabled = s.p.givens.includes(letter);
+            button.setAttribute('aria-label', i18n.t(used ? 'recovery.letter.used' : 'recovery.letter', { letter }));
+        }
+        const statuses = s.p.pairs.map(pair => PlayfairRecovery.pairStatus(s.grid, pair));
+        document.getElementById('recovery-pairs').replaceChildren(...s.p.pairs.map((pair, index) => {
+            const li = document.createElement('li');
+            li.dataset.pair = pair.plain;
+            li.dataset.state = statuses[index];
+            li.className = 'recovery-pair recovery-' + statuses[index];
+            li.textContent = `${pair.plain}→${pair.cipher} ` + i18n.t(`recovery.pair.${statuses[index]}`);
+            if (count >= 2) li.textContent += ' · ' + i18n.t(`rule.name.${pair.kind}`);
+            return li;
+        }));
+        document.getElementById('recovery-rules').hidden = !count;
+        const hintCountKey = count === 1 ? 'recovery.hints.one' : 'recovery.hints.other';
+        document.getElementById('recovery-hint-count').textContent = i18n.t(hintCountKey, { n: count });
+        document.getElementById('recovery-hint').textContent = i18n.t('recovery.hint', { n: Math.min(count + 1, 3) });
+        const solved = PlayfairRecovery.isSolved(s.p, s.grid);
+        document.getElementById('recovery-hint').disabled = solved;
+        const status = i18n.t('recovery.status', { n: s.grid.filter(Boolean).length,
+            k: statuses.filter(x => x === 'ok').length, N: statuses.length, m: statuses.filter(x => x === 'ng').length });
+        const separator = i18n.currentLang === 'ja' ? String.fromCodePoint(0x3002) : ' ';
+        const notice = s.notice ? separator + i18n.t(s.notice.key, s.notice.params) : '';
+        const full = !solved && s.grid.every(Boolean) ? separator + i18n.t('recovery.full-wrong') : '';
+        const statusNode = document.getElementById('recovery-status');
+        const message = status + notice + full + (solved ? separator + i18n.t('recovery.solved') : '');
+        if (statusNode.textContent !== message) statusNode.textContent = message;
+        document.getElementById('recovery-result').hidden = !solved;
+        const plain = solved ? PlayfairCore.decrypt(s.grid.join(''), s.p.secretCipher).plaintext : '';
+        document.getElementById('recovery-secret-cipher').textContent = solved ? s.p.secretCipher : '';
+        document.getElementById('recovery-secret-plain').textContent = plain;
+        document.getElementById('recovery-secret-stripped').textContent = PlayfairCore.stripCandidates(plain, PlayfairCore.paddingCandidates(plain));
     }
 
     updateExampleCategories() {
@@ -1378,6 +1562,9 @@ class UI {
             ciphertextDraft: PlayfairCore.normalize(document.getElementById('ciphertext-input').value),
             analysisDraft: document.getElementById('analysis-input').value.trim(),
             analysis: this.analysisResult, selectedReversed: this.selectedReversed,
+            recovery: this.recoveryState ? { id: this.recoveryState.p.id,
+                placed: this.recoveryState.grid.filter((letter, cell) => letter && !this.recoveryState.p.givens[cell]).length } : null,
+            lastRecoverySolved: this.lastRecoverySolved,
             matrix: this.getCurrentMatrixString(), loaded: this.loaded,
             encryption: this.results.encryption, decryption: this.results.decryption,
             rulesSeenNow: [...this.rulesSeenNow], lastCorrect: this.lastCorrect
@@ -1423,6 +1610,9 @@ class UI {
             this.rulesSeenNow = [];
             this.lastCorrect = null;
             this.hintsUsed = {};
+            this.recoveryHints = {};
+            this.lastRecoverySolved = null;
+            this.startRecovery('recover-01');
             this.invalidateAll();
             this.resetExerciseUI();
             this.updateProgressDisplay();
@@ -1455,7 +1645,7 @@ class UI {
     updateProgressDisplay() {
         const list = document.getElementById('mission-list');
         const statuses = ProgressCore.statuses(this.progress);
-        for (const group of ['key', 'encryption', 'decryption', 'analysis', 'challenge']) {
+        for (const group of ['key', 'encryption', 'decryption', 'analysis', 'challenge', 'recovery']) {
             let section = document.getElementById('mission-group-' + group);
             if (!section) {
                 section = document.createElement('section');

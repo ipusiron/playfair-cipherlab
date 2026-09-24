@@ -6,6 +6,7 @@ const vm = require('node:vm');
 const { execFileSync } = require('node:child_process');
 const { PlayfairCore: core } = require('../js/cipher.js');
 const { PlayfairAnalysis } = require('../js/analysis.js');
+const { PlayfairRecovery } = require('../js/recovery.js');
 const { ExerciseManager } = require('../js/exercises.js');
 const { ProgressCore } = require('../js/progress.js');
 const root = path.join(__dirname, '..');
@@ -195,13 +196,13 @@ test('K-7 complete repository tree, with aligned comments on every line', () => 
 test('K-7 images, test section, and obsolete wording', () => {
     const images = [...readme.matchAll(/!\[[^\]]*\]\(([^)]+)\)/g)].map(match => match[1])
         .filter(file => !/^https?:/.test(file));
-    assert.equal(images.length, 5);
+    assert.equal(images.length, 6);
     for (const image of images) assert.ok(fs.existsSync(path.join(root, image)), image);
     const pngs = fs.readdirSync(path.join(root, 'assets')).filter(file => file.endsWith('.png'));
     assert.deepEqual(pngs.map(file => `assets/${file}`).sort(), images.sort());
     assert.ok(section('🧪 テスト').includes('npm test'));
     const testFiles = fs.readdirSync(__dirname).filter(file => file.endsWith('.test.js'));
-    assert.equal(testFiles.length, 9);
+    assert.equal(testFiles.length, 10);
     for (const file of testFiles) assert.ok(section('🧪 テスト').includes(`test/${file}`), file);
     for (const forbidden of ['ATTACK DAWN', 'ブラウザー間で保持', '右隣置換（標準）']) {
         assert.ok(!readme.includes(forbidden), forbidden);
@@ -214,9 +215,9 @@ const en = vm.runInNewContext(read('js/i18n.js') + '; i18n.translations.en;', {}
 for (const [lang, source, dictionary, heading] of [
     ['ja', readme, ja, '🗺️ 学習ロードマップ'], ['en', english, en, '🗺️ Learning roadmap']
 ]) {
-    test(`H-5 ${lang} roadmap matches all eleven missions, titles and points`, () => {
+    test(`H-5 ${lang} roadmap matches all fourteen missions, titles and points`, () => {
         const rows = table(heading, source);
-        assert.equal(rows.length, 11);
+        assert.equal(rows.length, 14);
         ProgressCore.MISSIONS.forEach((mission, index) => {
             assert.equal(rows[index].length, 6);
             assert.equal(rows[index][0], mission.id);
@@ -255,7 +256,7 @@ test('H-5 English known answers and challenge data and hints match', () => {
     });
 });
 
-test('H-5 mutual links, English text, complete parallel trees and nine image references', () => {
+test('H-5 mutual links, English text, complete parallel trees and eleven image references', () => {
     assert.equal(english.split('\n')[0], 'English · [日本語](README.md)');
     assert.ok(readme.includes('[English](README.en.md)'));
     // Only the first-line Japanese language link and these three bibliography titles outside details are exempt.
@@ -273,8 +274,8 @@ test('H-5 mutual links, English text, complete parallel trees and nine image ref
     for (const line of trees[1]) assert.match(line, /# [A-Za-z]/);
     assert.equal(new Set(trees[1].map(l => l.indexOf('#'))).size, 1);
     const images = source => [...source.matchAll(/!\[[^\]]*\]\(([^)]+)\)/g)].map(m => m[1]).filter(p => !/^https?:/.test(p));
-    assert.equal(images(readme).length, 5);
-    assert.equal(images(english).length, 4);
+    assert.equal(images(readme).length, 6);
+    assert.equal(images(english).length, 5);
     const referenced = [...images(readme), ...images(english)];
     for (const file of referenced) assert.ok(fs.existsSync(path.join(root, file)), file);
     const pngs = ['assets', 'assets/en'].flatMap(folder => fs.readdirSync(path.join(root, folder))
@@ -299,6 +300,22 @@ test('G-5 bilingual analysis examples match the analysis and cipher cores', () =
             assert.equal(decrypted.plain, core.decrypt(matrix, entry.pair).plaintext);
         }
     }
+});
+
+test('G-4 both README recovery counts match all three core problems', () => {
+    const japanese = section('🔬 規則と既知解答');
+    const translated = section('🔬 Rules and known answers', english);
+    const jaRows = [...japanese.matchAll(/^- R(\d)（(recover-\d+)）：置き字(\d+)文字・既知の組(\d+)個・(\d+)点。$/gm)];
+    const enRows = [...translated.matchAll(/^- R(\d) \((recover-\d+)\): (\d+) givens, (\d+) known pairs, (\d+) points\.$/gm)];
+    assert.equal(jaRows.length, 3);
+    assert.equal(enRows.length, 3);
+    PlayfairRecovery.PROBLEMS.forEach((data, index) => {
+        const problem = PlayfairRecovery.problem(data.id);
+        const expected = [String(index + 1), problem.id, String(problem.givens.filter(Boolean).length),
+            String(problem.pairs.length), String(problem.points)];
+        assert.deepEqual(jaRows[index].slice(1), expected);
+        assert.deepEqual(enRows[index].slice(1), expected);
+    });
 });
 
 test('E-3 Japanese README prose has no spaces at Japanese and ASCII boundaries', () => {
