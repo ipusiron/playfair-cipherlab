@@ -30,6 +30,16 @@ function luminance(hex) {
     return values[0] * 0.2126 + values[1] * 0.7152 + values[2] * 0.0722;
 }
 
+test('C-5 selected analysis pairs meet 4.5:1 in both themes', () => {
+    for (const mode of [':root', 'body.dark-mode']) {
+        const block = css.slice(css.indexOf(mode + ' {')).split('}')[0];
+        const fg = block.match(/--analysis-selected-fg:\s*(#[a-f0-9]{6});/i)[1];
+        const bg = block.match(/--analysis-selected-bg:\s*(#[a-f0-9]{6});/i)[1];
+        const a = luminance(fg), b = luminance(bg);
+        assert.ok((Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05) >= 4.5, mode);
+    }
+});
+
 for (const mode of [':root', 'body.dark-mode']) {
     test(`K-6 all 18 contrast pairs: ${mode}`, () => {
         const block = css.slice(css.indexOf(mode + ' {')).split('}')[0];

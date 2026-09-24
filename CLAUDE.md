@@ -24,6 +24,12 @@ so opening index.html directly through file:// continues to work.
 
 ### Core Modules (in load order)
 
+Load cipher, analysis, exercises, progress, guide, ui, theme, help, i18n and main
+as classic scripts in the head with defer, in exactly that order. Fetches can
+run concurrently; execution stays ordered before DOMContentLoaded. Never use
+async, modules, bundling or new dependencies. Only theme-init stays synchronous
+immediately after body opens so the saved theme applies before the first paint.
+
 0. **theme-init.js** - Synchronous script immediately after body opens; applies the
    validated saved theme or OS preference before the first paint.
 
@@ -34,11 +40,17 @@ so opening index.html directly through file:// continues to work.
    - Three optional, explicitly nonstandard same-pair variants
    - No DOM, storage, or translation dependency; conditional CommonJS export
 
+1a. **analysis.js** - Pure `PlayfairAnalysis`, with a conditional CommonJS export
+   - Uppercase A–Z but keep J: even length, no J, no identical-letter pair
+   - Empty, impossible or consistent verdict; conditions are necessary, not proof
+   - Pair positions, reversals, top-five frequencies, distinct and ignored characters
+   - Decrypt a pair and its reversal with the current matrix through PlayfairCore
+
 2. **exercises.js** - `ExerciseManager` class: challenge/practice data and pure answer validation
    - No DOM, localStorage, or i18n access; no progress state or writes
    - Validate the actual matrix before accepting original, prepared, or candidate-stripped answers
 
-2a. **progress.js** - Pure `ProgressCore`: nine missions, event reducer, locks,
+2a. **progress.js** - Pure `ProgressCore`: eleven missions, event reducer, locks,
     stars, summary, strict version-2 storage validation and legacy migration.
     Conditional CommonJS export; no DOM, storage or translation dependency.
 
@@ -47,7 +59,8 @@ so opening index.html directly through file:// continues to work.
     The guide never enters an answer, keyword or plaintext automatically.
 
 3. **ui.js** - `UI` class: main controller
-   - Tab management and form handling
+   - Four tabs: key generation, encryption, decryption and analysis
+   - Analysis sends from encryption output and decryption input; numbered reversal selection
    - Independent playback states; render synchronously from the completed pair count
    - Invalidate old output when input, settings, or the matrix changes
    - Challenge flow with hint system
@@ -61,8 +74,8 @@ so opening index.html directly through file:// continues to work.
 7. **main.js** - Entry point, initializes i18n then UI
 
 Other files: index.html supplies semantic markup and CSP; css/styles.css holds
-the light/dark palette and responsive layout. assets/ contains four Japanese README
-screenshots and assets/en/ contains three English screenshots. test/ has eight files.
+the light/dark palette and responsive layout. assets/ contains five Japanese README
+screenshots and assets/en/ contains four English screenshots. test/ has nine files.
 
 ### Key State
 
@@ -71,6 +84,8 @@ screenshots and assets/en/ contains three English screenshots. test/ has eight f
 - `UI.progress` - Version-2 progress saved in `localStorage['playfair-progress']`
 - `UI.matrixSource` - Default, keyword or directly entered matrix; never persisted
 - `UI.getSnapshot()` - Live drafts, editor/tab state, loaded exercise, valid results, rulesSeenNow and lastCorrect
+- `UI.analysisResult` / `UI.selectedReversed` - Visible analysis and selected reversal, or null;
+  snapshot `analysisDraft` is trimmed but never cipher-normalized (keep J and punctuation)
 - `I18nManager.currentLang` - Saved in `localStorage['playfair-language']`
 - Theme - Saved in `localStorage['theme']`
 
@@ -78,14 +93,17 @@ Validate all saved data and catch getItem/setItem failures. Only progress,
 language, and theme are persisted; never save keys or input/output text.
 
 Progress has the shape `{version:2, missions:{}, challenges:{}, rulesSeen:[]}`.
-Missions stores only M1–M6; challenge entries store fixed points and hintsUsed.
+Missions stores only M1–M8; challenge entries store fixed points and hintsUsed.
+Keep version 2 and accept existing saves with only M1–M6. Total missions comes
+from MISSIONS.length; maximum score remains 60. Analysis missions award no points.
 C1/C2/C3 are inferred from mystery-01/02/03 entries and award 10/20/30 points.
 The first correct answer is retained. Zero hints earns a star; migrated legacy
 entries have hintsUsed:null, so they never gain a retrospective star.
 Migration rejects malformed data, unknown keys and invalid ranges.
 
 Record progress only through `UI.recordProgress(event)`: reduce, save, redraw.
-Events: matrix-saved, encrypted, step-rendered, decrypted, challenge-correct.
+Events: matrix-saved, encrypted, step-rendered, decrypted, analyzed,
+reversed-selected, challenge-correct.
 Count a rule only when a new nonzero playback position is actually rendered;
 repainting the same pair for language changes does not count. Skipped pairs do
 not count. rulesSeenNow is page-local and separate from saved rulesSeen.
@@ -95,6 +113,9 @@ answer field outside the decryption output. Practice must not set its key.
 M1 saves PLAYFAIR EXAMPLE; M2 encrypts HELLO with the default matrix; M3 sees all
 three encryption rules; M4 encrypts MEET ME TONIGHT with the default matrix;
 M5 decrypts KCNVMP with the default matrix; M6 decrypts BNSY with ANIMAL.
+M7 requires an analyzed event with verdict impossible; consistent or empty never
+completes it. M8 requires selection in the reversed-pair list. Their navigation
+targets the analysis tab, sample selector, Analyze button and (M8) reversal list.
 Use standard rules for M2–M6. Only C2 and C3 are locked, by C1 and C2 respectively.
 Navigation completion comes from the current snapshot, not saved achievements.
 
@@ -136,7 +157,7 @@ Other application JS must not contain Japanese literals
 
 The meta CSP allows scripts and styles only from self, without unsafe-inline.
 Do not add style attributes, inline handlers, external scripts, fonts, or APIs.
-Use textContent and DOM APIs for dynamic content. Only fixed help/footer
+Use textContent and DOM APIs for dynamic content. Only fixed help
 dictionary templates may use innerHTML; never interpolate user input there.
 Use no-referrer and noopener noreferrer for external links. Do not add
 frame-ancestors to a meta CSP because it has no effect there.
@@ -149,11 +170,12 @@ The Test workflow in .github/workflows/test.yml runs on push and pull_request.
 | File | Responsibility |
 |------|----------------|
 | test/cipher.test.js | Exact known answers, preparation, variants, candidates, validation, 200 seeded roundtrips |
+| test/analysis.test.js | All eight reference inputs, pair counts, reversal decryptions and 200 seeded reversal cases |
 | test/exercises.test.js | Six exercises, answer acceptance/rejection, pure fixed-point return |
 | test/progress.test.js | Missions, migration, reducer, locks, stars, snapshot steps, blocked storage |
 | test/i18n.test.js | Matching dictionaries, translation calls, literal policy, help rules |
-| test/html.test.js | CSP, referrer, ARIA, labels, buttons, inline attribute restrictions |
-| test/contrast.test.js | All 18 light/dark text pairs meet 4.5:1 |
+| test/html.test.js | CSP, referrer, ARIA, four tabs, labels, buttons, defer order, inline attribute restrictions |
+| test/contrast.test.js | All 18 existing light/dark pairs plus analysis highlights meet 4.5:1 |
 | test/format.test.js | Maximum line lengths and minimum readable source line counts |
 | test/readme.test.js | Recomputed tables, exact hints, YAML metadata, complete tree, image references |
 

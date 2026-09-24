@@ -12,7 +12,7 @@ English · [日本語](README.md)
 
 Playfair CipherLab is a web tool for visually learning the Playfair cipher, a classical cipher.
 Build a 5×5 key matrix and play through encryption and decryption one pair of letters at a time.
-It offers a Japanese/English interface, a nine-mission learning roadmap, an on-screen guide that points to controls, and decryption challenges with hints.
+It offers a Japanese/English interface, ciphertext analysis, an eleven-mission learning roadmap, an on-screen guide that points to controls, and decryption challenges with hints.
 
 ## 🌐 Demo
 
@@ -26,13 +26,13 @@ Use it directly in your browser. You can also download the files and open index.
 
 > *M1 and M2 are complete. The M3 guide highlights the example category selector.*
 
-1280×1200px, 88,454 bytes.
+1280×1800px, 117,070 bytes.
 
 ![Wikipedia example at pair 10 of 13](assets/en/screenshot2.png)
 
 > *The PLAYFAIR EXAMPLE matrix encrypts the Wikipedia example. Pair 10/13 shows EX → XM.*
 
-1280×1000px, 32,861 bytes.
+1280×1000px, 34,026 bytes.
 
 ![C2 matrix match and correct answer](assets/en/screenshot3.png)
 
@@ -44,14 +44,20 @@ Use it directly in your browser. You can also download the files and open index.
 
 > *PLAYFAIR EXAMPLE is entered in the dark English interface, with letters from the keyword highlighted in a different color.*
 
-1280×1000px, 44,910 bytes.
+1280×1000px, 45,670 bytes.
+
+![Ciphertext analysis and reversed pairs](assets/en/screenshot4.png)
+
+> *TCITIGCTSMCTCBBCCT is analyzed with the SECRET matrix and entry ① selected. CT→ER and TC→RE show reversal after decryption.*
+
+1280×1600px, 73,243 bytes.
 
 ## ✨ Features
 
 ### 📊 Learning progress
 
 - Points for three challenges (10, 20 and 30 points, awarded only once per challenge)
-- Complete, next, incomplete and locked states for nine missions (one key-matrix mission, three encryption missions, two decryption missions and three challenges), with a recommended next action
+- Complete, next, incomplete and locked states for eleven missions (one key-matrix mission, three encryption missions, two decryption missions, two analysis missions and three challenges), with a recommended next action
 - A guide that checks steps automatically as you work, and a ★ for a first correct answer without hints
 - C1 → C2 → C3 unlocking, and a progress reset with a confirmation dialog
 - Progress saved in the same browser, with strict validation of stored values and migration from the old format; the page remains usable without storage
@@ -68,6 +74,14 @@ Use it directly in your browser. You can also download the files and open index.
 - Three nonstandard variants (leave unchanged, shift right and move diagonally)
 - Eight examples, three decryption practices and three decryption challenges
 - Decryption results that never automatically delete padding, with candidate marks and text with candidates removed
+
+### 🔍 Analysis
+
+- Checks of three necessary conditions: even length, no J, and no identical-letter pair
+- “Impossible in standard Playfair” or “Consistent with standard Playfair”, with the reasons for the verdict
+- Numbered pairs, linked reversal badges and a list showing reversed decryption with the current matrix
+- The five most frequent pairs, distinct-letter count and ignored characters
+- Send encryption output or decryption input to analysis; editing the input or sample hides stale results
 
 ### 🎬 Playback and display
 
@@ -87,12 +101,14 @@ Use it directly in your browser. You can also download the files and open index.
 | M4 | Encryption | Identical letters across pair boundaries | Do not insert X between EE across pair boundaries (ME ET ME …). | Encrypt MEET ME TONIGHT with the default matrix and standard rules | 0 |
 | M5 | Decryption | Identify possible padding | An X in decrypted text is only a candidate. It may be a genuine X. | Decrypt KCNVMP with the default matrix and standard rules | 0 |
 | M6 | Decryption | Set the keyword yourself and decrypt | Decryption needs the same matrix as encryption. | Decrypt BNSY with the ANIMAL matrix and standard rules | 0 |
+| M7 | Analysis | Identify ciphertext impossible in Playfair | Odd length, J and identical-letter pairs are impossible under standard rules. | Analyze text classified as impossible | 0 |
+| M8 | Analysis | Find reversed pairs | Ciphertext AB and BA also become reversed pairs in plaintext. | Select an entry in the reversed-pair list | 0 |
 | C1 | Decryption challenges | Mystery word | Decode without a keyword. | Solve mystery-01 with the default matrix | 10 |
 | C2 | Decryption challenges | Secret message | Infer the keyword from hints and decode. | After C1, solve mystery-02 with the SECRET matrix | 20 |
 | C3 | Decryption challenges | Military operation | Infer the keyword from hints and decode. | After C2, solve mystery-03 with the MILITARY matrix | 30 |
 
-M1–M6 can be completed in any order. “Next” recommends the first incomplete unlocked mission.
-Completing everything shows 9/9 and 60/60pt, followed by a suggestion to compare the same text under variant rules.
+M1–M8 can be completed in any order. “Next” recommends the first incomplete unlocked mission.
+Completing everything shows 11/11 and 60/60pt, followed by a suggestion to compare the same text under variant rules.
 
 “Start guide” in the recommendation banner or a mission opens the steps in the card below.
 “Go to this step” opens the appropriate tab, outlines the control and moves focus.
@@ -147,6 +163,17 @@ Loading the Wikipedia text from “Known Examples” also sets the matrix to PLA
 The actual matrix must match even when the answer text is correct.
 Spaces and case are ignored. The original answer, prepared plaintext and candidate-stripped answer are accepted.
 Appending an unrelated final letter is not accepted.
+
+### 🔍 Analyze ciphertext
+
+1. Enter ciphertext or choose a sample on the “🔍 Analysis” tab.
+2. Press “Analyze” and inspect the verdict, three checks and marked pairs.
+3. If reversed pairs occur, select an entry and compare the matching badges and decryption with the current matrix.
+
+Samples include ciphertext with reversed pairs made using SECRET, the Wikipedia example ciphertext, and Caesar ciphertext (Khoor, Zruog!).
+“Send to analysis” also copies encryption output or decryption input and analyzes it.
+J is checked without merging it into I. Whitespace is removed; other nonletters are listed as ignored characters.
+The matrix never changes automatically. Save the SECRET matrix on the Key Generation tab to reproduce the sample's decryption.
 
 ## 🧠 About the Playfair cipher
 
@@ -247,6 +274,16 @@ Standard ciphertext has no identical-letter pair.
 With the same matrix, reversing the order within a pair reverses its encrypted pair.
 These properties concern two-letter pairs, not arbitrary adjacent letters or an entire message.
 
+**Ciphertext properties**
+
+Standard Playfair ciphertext has even length, no J, and no identical-letter pair when split into pairs from the start.
+Failing any condition gives “Impossible”; meeting all three gives “Consistent”.
+These are necessary conditions, not proof that text is Playfair. Variants can produce identical-letter pairs.
+
+With the same matrix, reversed ciphertext pairs decrypt into reversed plaintext pairs ([Wikipedia's RE/ER explanation](https://en.wikipedia.org/wiki/Playfair_cipher#Cryptanalysis)).
+Analyzing `TCITIGCTSMCTCBBCCT` with the SECRET matrix gives CT↔TC → ER/RE and BC↔CB → DE/ED.
+This demonstrates the property with the current matrix; it does not recover a key or automatically break the cipher.
+
 ### Changes from the previous version
 
 A bug that inserted padding between identical letters across pair boundaries has been fixed.
@@ -256,7 +293,7 @@ Known answers, exercise data and the README tables are checked using the same ci
 ## 🏆 Challenges
 
 C1 is initially available. C1 unlocks C2; C2 unlocks C3.
-M1–M6 are not prerequisites for the challenges.
+M1–M8 are not prerequisites for the challenges.
 
 | Level | Title | Ciphertext | Keyword | Points |
 |---|---|---|---|---|
@@ -352,15 +389,16 @@ npm test
 
 GitHub Actions also runs the tests on push and pull_request with Node 22.
 Both READMEs are checked against ProgressCore, PlayfairCore, exercise data and dictionaries:
-nine missions, five known answers, three challenges and their exact hints.
+eleven missions, five known answers, three challenges and their exact hints, plus the reversed-pair examples computed by PlayfairAnalysis.
 
 | Test file | Coverage |
 |---|---|
 | test/cipher.test.js | Matrices, preparation, standard rules, variants, candidates and 200 seeded roundtrips |
+| test/analysis.test.js | Necessary ciphertext conditions, reversed pairs, frequency and 200 seeded cases |
 | test/exercises.test.js | Six exercises, answer acceptance/rejection and side-effect-free points |
 | test/i18n.test.js | Matching keys, translations, initial language, Japanese literal policy and help |
-| test/html.test.js | CSP, referrer, ARIA, labels, guide structure and inline attribute restrictions |
-| test/contrast.test.js | All 18 text contrast pairs in light and dark modes meet 4.5:1 |
+| test/html.test.js | CSP, referrer, ARIA, labels, four tabs, defer order, guide structure and inline attribute restrictions |
+| test/contrast.test.js | All 18 existing text pairs and the analysis highlight in light and dark modes meet 4.5:1 |
 | test/format.test.js | Maximum line lengths, line counts and minification detection |
 | test/readme.test.js | Bilingual tables, hints, YAML structure, complete trees and image references |
 | test/progress.test.js | Mission completion rules, migration, locks, stars, guide steps and blocked storage |
@@ -379,20 +417,23 @@ playfair-cipherlab/                # Project root
 ├── README.md                      # Japanese usage, rules, known answers, tests and structure
 ├── README.en.md                   # English README
 ├── package.json                   # Dependency-free npm test command
-├── index.html                     # Three tabs, playback, guide, help and meta CSP
+├── index.html                     # Four tabs, playback, guide, help and meta CSP
 ├── assets/                        # README screenshots
 │   ├── en/                        # English README screenshots
 │   │   ├── screenshot.png         # English roadmap and M3 guide
 │   │   ├── screenshot2.png        # English Wikipedia playback at pair 10
-│   │   └── screenshot3.png        # English C2 matrix match and correct answer
+│   │   ├── screenshot3.png        # English C2 matrix match and correct answer
+│   │   └── screenshot4.png        # English analysis with SECRET and reversed entry one selected
 │   ├── screenshot.png             # Japanese Wikipedia playback at pair 10
 │   ├── screenshot2.png            # Japanese C2 matrix match and correct answer
 │   ├── screenshot3.png            # Dark English keyword preview
-│   └── screenshot4.png            # Japanese roadmap and M3 guide
+│   ├── screenshot4.png            # Japanese roadmap and M3 guide
+│   └── screenshot5.png            # Japanese analysis with SECRET and reversed entry one selected
 ├── css/                           # Stylesheets
 │   └── styles.css                 # Color variables, dark mode and responsive layout
 ├── js/                            # Classic scripts compatible with file URLs
 │   ├── cipher.js                  # Pure standard cipher, variants and padding candidates
+│   ├── analysis.js                # DOM-independent necessary-condition and reversed-pair analysis
 │   ├── exercises.js               # Examples, exercises and pure answer validation
 │   ├── progress.js                # Pure missions, completion rules and storage format
 │   ├── guide.js                   # Guide card and Go to this step navigation
@@ -404,10 +445,11 @@ playfair-cipherlab/                # Project root
 │   └── main.js                    # Startup
 └── test/                          # Automated tests using node --test
     ├── cipher.test.js             # Matrices, preparation, variants, roundtrips and candidates
+    ├── analysis.test.js           # Analysis examples, reversed pairs, frequency and 200 seeded cases
     ├── exercises.test.js          # Exercise data and answer validation
     ├── i18n.test.js               # Dictionary coverage, language choice, literal policy and help
     ├── html.test.js               # Static checks for CSP, referrer, ARIA and attributes
-    ├── contrast.test.js           # All 18 light/dark text contrast pairs
+    ├── contrast.test.js           # All 18 existing pairs and the analysis highlight contrast
     ├── format.test.js             # Minification detection through line lengths and line counts
     ├── progress.test.js           # Missions, migration, locks, guide steps and storage exceptions
     └── readme.test.js             # Bilingual tables, YAML, trees and images

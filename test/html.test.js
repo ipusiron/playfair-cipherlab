@@ -5,6 +5,29 @@ const path = require('node:path');
 const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
 const attribute = (tag, name) => tag.match(new RegExp(`\\b${name}="([^"]*)"`))?.[1];
 
+test('G-3 analysis tab, labelled controls, result regions and send buttons exist', () => {
+    for (const id of ['tab-analysis', 'analysis', 'analysis-sample', 'analysis-input', 'analyze-btn', 'analysis-result',
+        'analysis-pairs', 'analysis-reversed-list', 'send-to-analysis-encryption', 'send-to-analysis-decryption']) {
+        assert.equal([...html.matchAll(new RegExp(`\\bid="${id}"`, 'g'))].length, 1, id);
+    }
+    assert.match(html, /id="analysis-result"[^>]*aria-live="polite"/);
+    for (const id of ['analysis-sample', 'analysis-input']) assert.match(html, new RegExp(`<label for="${id}"`));
+});
+
+test('G-2 ordered deferred head scripts with only synchronous early theme in body', () => {
+    const head = html.match(/<head>([\s\S]*?)<\/head>/)[1];
+    const body = html.match(/<body>([\s\S]*?)<\/body>/)[1];
+    const headScripts = [...head.matchAll(/<script\b[^>]*>/g)].map(match => match[0]);
+    assert.deepEqual(headScripts.map(tag => attribute(tag, 'src')), [
+        'js/cipher.js', 'js/analysis.js', 'js/exercises.js', 'js/progress.js', 'js/guide.js',
+        'js/ui.js', 'js/theme.js', 'js/help.js', 'js/i18n.js', 'js/main.js'
+    ]);
+    headScripts.forEach(tag => assert.match(tag, /\sdefer(?:\s|>)/));
+    assert.match(body, /^\s*<script src="js\/theme-init\.js"><\/script>/);
+    assert.deepEqual([...body.matchAll(/<script\b[^>]*>/g)].map(match => match[0]), ['<script src="js/theme-init.js">']);
+    assert.doesNotMatch(html, /<script\b[^>]*(?:\sasync(?:\s|=|>)|type="module")/);
+});
+
 test('C-1 desktop header uses a symmetric grid from 769px', () => {
     const css = fs.readFileSync(path.join(__dirname, '../css/styles.css'), 'utf8');
     const desktopHeader = css.match(/@media\s*\(min-width:\s*769px\)\s*\{\s*\.header-content\s*\{([^}]+)\}/);
@@ -31,7 +54,7 @@ test('K-5 CSP, referrer, noscript, and safe markup', () => {
 
 test('K-5 tabs, dialog, labels, button types, and external links', () => {
     const tabs = [...html.matchAll(/<button\b[^>]*role="tab"[^>]*>/g)].map(match => match[0]);
-    assert.equal(tabs.length, 3);
+    assert.equal(tabs.length, 4);
     for (const tab of tabs) {
         assert.match(attribute(tab, 'aria-selected'), /^(true|false)$/);
         const id = attribute(tab, 'aria-controls');

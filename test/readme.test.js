@@ -5,6 +5,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 const { execFileSync } = require('node:child_process');
 const { PlayfairCore: core } = require('../js/cipher.js');
+const { PlayfairAnalysis } = require('../js/analysis.js');
 const { ExerciseManager } = require('../js/exercises.js');
 const { ProgressCore } = require('../js/progress.js');
 const root = path.join(__dirname, '..');
@@ -20,12 +21,14 @@ const headingPairs = [
     ['### 📊 学習進捗管理', '### 📊 Learning progress'],
     ['### 🔑 鍵生成', '### 🔑 Key generation'],
     ['### 🔐 暗号化・復号', '### 🔐 Encryption and decryption'],
+    ['### 🔍 解析', '### 🔍 Analysis'],
     ['### 🎬 再生と表示', '### 🎬 Playback and display'],
     ['## 🗺️ 学習ロードマップ', '## 🗺️ Learning roadmap'],
     ['## 📖 使い方', '## 📖 How to use'],
     ['### 🔑 鍵生成', '### 🔑 Key generation'],
     ['### 🔐 暗号化で学習', '### 🔐 Learn with encryption'],
     ['### 🔓 復号でチャレンジ', '### 🔓 Take on decryption challenges'],
+    ['### 🔍 暗号文を解析', '### 🔍 Analyze ciphertext'],
     ['## 🧠 プレイフェア暗号とは', '## 🧠 About the Playfair cipher'],
     ['### 🔎 背景と歴史', '### 🔎 Background and history'],
     ['### ⚙ 仕組みの概要', '### ⚙ How it works'],
@@ -51,7 +54,7 @@ const headingPairs = [
 test('D-1 bilingual heading text, count, order and levels match the complete mapping', () => {
     for (const [index, source] of [readme, read('README.en.md')].entries()) {
         const headings = source.match(/^#{2,4} .+$/gm);
-        assert.equal(headingPairs.length, 32);
+        assert.equal(headingPairs.length, 34);
         assert.deepEqual(headings, headingPairs.map(pair => pair[index]));
     }
 });
@@ -192,13 +195,13 @@ test('K-7 complete repository tree, with aligned comments on every line', () => 
 test('K-7 images, test section, and obsolete wording', () => {
     const images = [...readme.matchAll(/!\[[^\]]*\]\(([^)]+)\)/g)].map(match => match[1])
         .filter(file => !/^https?:/.test(file));
-    assert.equal(images.length, 4);
+    assert.equal(images.length, 5);
     for (const image of images) assert.ok(fs.existsSync(path.join(root, image)), image);
     const pngs = fs.readdirSync(path.join(root, 'assets')).filter(file => file.endsWith('.png'));
     assert.deepEqual(pngs.map(file => `assets/${file}`).sort(), images.sort());
     assert.ok(section('🧪 テスト').includes('npm test'));
     const testFiles = fs.readdirSync(__dirname).filter(file => file.endsWith('.test.js'));
-    assert.equal(testFiles.length, 8);
+    assert.equal(testFiles.length, 9);
     for (const file of testFiles) assert.ok(section('🧪 テスト').includes(`test/${file}`), file);
     for (const forbidden of ['ATTACK DAWN', 'ブラウザー間で保持', '右隣置換（標準）']) {
         assert.ok(!readme.includes(forbidden), forbidden);
@@ -211,9 +214,9 @@ const en = vm.runInNewContext(read('js/i18n.js') + '; i18n.translations.en;', {}
 for (const [lang, source, dictionary, heading] of [
     ['ja', readme, ja, '🗺️ 学習ロードマップ'], ['en', english, en, '🗺️ Learning roadmap']
 ]) {
-    test(`H-5 ${lang} roadmap matches all nine missions, titles and points`, () => {
+    test(`H-5 ${lang} roadmap matches all eleven missions, titles and points`, () => {
         const rows = table(heading, source);
-        assert.equal(rows.length, 9);
+        assert.equal(rows.length, 11);
         ProgressCore.MISSIONS.forEach((mission, index) => {
             assert.equal(rows[index].length, 6);
             assert.equal(rows[index][0], mission.id);
@@ -252,7 +255,7 @@ test('H-5 English known answers and challenge data and hints match', () => {
     });
 });
 
-test('H-5 mutual links, English text, complete parallel trees and seven image references', () => {
+test('H-5 mutual links, English text, complete parallel trees and nine image references', () => {
     assert.equal(english.split('\n')[0], 'English · [日本語](README.md)');
     assert.ok(readme.includes('[English](README.en.md)'));
     // Only the first-line Japanese language link and these three bibliography titles outside details are exempt.
@@ -270,14 +273,34 @@ test('H-5 mutual links, English text, complete parallel trees and seven image re
     for (const line of trees[1]) assert.match(line, /# [A-Za-z]/);
     assert.equal(new Set(trees[1].map(l => l.indexOf('#'))).size, 1);
     const images = source => [...source.matchAll(/!\[[^\]]*\]\(([^)]+)\)/g)].map(m => m[1]).filter(p => !/^https?:/.test(p));
-    assert.equal(images(readme).length, 4);
-    assert.equal(images(english).length, 3);
+    assert.equal(images(readme).length, 5);
+    assert.equal(images(english).length, 4);
     const referenced = [...images(readme), ...images(english)];
     for (const file of referenced) assert.ok(fs.existsSync(path.join(root, file)), file);
     const pngs = ['assets', 'assets/en'].flatMap(folder => fs.readdirSync(path.join(root, folder))
         .filter(file => file.endsWith('.png')).map(file => folder + '/' + file));
     assert.deepEqual(pngs.sort(), referenced.sort());
 });
+test('G-5 bilingual analysis examples match the analysis and cipher cores', () => {
+    const ciphertext = 'TCITIGCTSMCTCBBCCT';
+    const matrix = core.matrixFromKeyword('SECRET');
+    assert.equal(core.encrypt(matrix, 'REMEMBER THE RED DEER').ciphertext, ciphertext);
+    const result = PlayfairAnalysis.analyze(ciphertext);
+    assert.equal(result.verdict, 'consistent');
+    assert.deepEqual(result.reversed.map(({ pair, reverse }) => [pair, reverse]), [['CT', 'TC'], ['BC', 'CB']]);
+    for (const [source, heading, slash] of [[readme, '🔬 規則と既知解答', '／'], [english, '🔬 Rules and known answers', '/']]) {
+        const properties = section(heading, source);
+        assert.ok(properties.includes(ciphertext));
+        assert.ok(properties.includes('https://en.wikipedia.org/wiki/Playfair_cipher#Cryptanalysis'));
+        for (const entry of result.reversed) {
+            const decrypted = PlayfairAnalysis.reversePairsDecrypt(matrix, entry.pair);
+            assert.ok(properties.includes(entry.pair + '↔' + entry.reverse));
+            assert.ok(properties.includes(decrypted.plain + slash + decrypted.reversePlain));
+            assert.equal(decrypted.plain, core.decrypt(matrix, entry.pair).plaintext);
+        }
+    }
+});
+
 test('E-3 Japanese README prose has no spaces at Japanese and ASCII boundaries', () => {
     const ranges = [[0x3000, 0x303f], [0x3040, 0x30ff], [0x4e00, 0x9fff], [0xff01, 0xff60]];
     const jp = '[' + ranges.map(([a, b]) => String.fromCodePoint(a) + '-' + String.fromCodePoint(b)).join('') + ']';

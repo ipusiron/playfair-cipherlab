@@ -15,6 +15,9 @@ class UI {
             decryption: { steps: [], done: 0, playing: false, timerId: null }
         };
         this.results = { encryption: null, decryption: null };
+        this.analysisResult = null;
+        this.selectedReversed = null;
+        this.analysisEmpty = false;
         this.currentChallenge = null;
         this.selectedChallenge = null;
         this.notices = {};
@@ -25,6 +28,7 @@ class UI {
         this.setupKeyGeneration();
         this.setupEncryption();
         this.setupDecryption();
+        this.setupAnalysis();
         this.setupExercises();
         this.setupPlaybackControls();
         this.displayMatrix('key-matrix');
@@ -59,6 +63,7 @@ class UI {
         this.updateChallengeInfoDisplay();
         this.render('encryption');
         this.render('decryption');
+        this.renderAnalysis();
     }
 
     updateExampleCategories() {
@@ -274,6 +279,163 @@ class UI {
                 }
             });
         });
+    }
+
+    setupAnalysis() {
+        const input = document.getElementById('analysis-input');
+        const sample = document.getElementById('analysis-sample');
+        input.addEventListener('input', () => {
+            sample.value = '';
+            this.invalidateAnalysis();
+        });
+        sample.addEventListener('change', () => {
+            input.value = sample.value;
+            this.invalidateAnalysis();
+        });
+        document.getElementById('analyze-btn').addEventListener('click', () => this.analyzeCiphertext());
+        for (const tab of ['encryption', 'decryption']) {
+            document.getElementById('send-to-analysis-' + tab).addEventListener('click', () => {
+                input.value = tab === 'encryption' ? document.getElementById('ciphertext').textContent
+                    : document.getElementById('ciphertext-input').value;
+                sample.value = '';
+                document.getElementById('tab-analysis').click();
+                this.analyzeCiphertext();
+                input.focus();
+            });
+        }
+    }
+
+    invalidateAnalysis() {
+        this.analysisResult = null;
+        this.selectedReversed = null;
+        this.analysisEmpty = false;
+        this.renderAnalysis();
+    }
+
+    analyzeCiphertext() {
+        const result = PlayfairAnalysis.analyze(document.getElementById('analysis-input').value);
+        this.analysisResult = result.verdict === 'empty' ? null : result;
+        this.selectedReversed = null;
+        this.analysisEmpty = result.verdict === 'empty';
+        this.renderAnalysis();
+        this.recordProgress({ type: 'analyzed', verdict: result.verdict, reversedCount: result.reversed.length });
+    }
+
+    analysisBadge(index) {
+        return index < 20 ? String.fromCodePoint(0x2460 + index) : `(${index + 1})`;
+    }
+
+    renderAnalysis() {
+        const result = this.analysisResult;
+        document.getElementById('analysis-empty').textContent = this.analysisEmpty ? i18n.t('analysis.empty') : '';
+        document.getElementById('analysis-result').hidden = !result;
+        if (!result) {
+            for (const id of ['analysis-verdict', 'analysis-checks', 'analysis-ignored', 'analysis-pairs',
+                'analysis-reversed-list', 'analysis-top-pairs', 'analysis-distinct', 'analysis-decrypted', 'matrix-status-analysis']) {
+                document.getElementById(id).replaceChildren();
+            }
+            document.getElementById('analysis-selection').hidden = true;
+            return;
+        }
+        const verdict = document.getElementById('analysis-verdict');
+        verdict.textContent = i18n.t(`analysis.${result.verdict}`);
+        verdict.classList.toggle('analysis-impossible', result.verdict === 'impossible');
+        const checks = document.getElementById('analysis-checks');
+        checks.replaceChildren();
+        for (const name of ['even', 'noJ', 'noDoublePair']) {
+            const item = document.createElement('li');
+            item.dataset.check = name;
+            item.dataset.pass = String(result.checks[name]);
+            item.textContent = (result.checks[name] ? '✓ ' : '✗ ') + i18n.t(`analysis.check.${name}`, { n: result.length });
+            if (name === 'noDoublePair' && result.doubles.length) {
+                item.textContent += ': ' + result.doubles.map(({ pair, index }) =>
+                    i18n.t('analysis.double', { n: index + 1, pair })).join(', ');
+            }
+            checks.appendChild(item);
+        }
+        document.getElementById('analysis-ignored').textContent = result.ignored.length
+            ? i18n.t('analysis.ignored', { chars: result.ignored.join(' ') }) : '';
+        const reversedLookup = new Map();
+        result.reversed.forEach((entry, index) => {
+            reversedLookup.set(entry.pair, index);
+            reversedLookup.set(entry.reverse, index);
+        });
+        const pairs = document.getElementById('analysis-pairs');
+        const fragment = document.createDocumentFragment();
+        for (let offset = 0; offset < result.letters.length; offset += 2) {
+            const pair = result.letters.slice(offset, offset + 2);
+            const item = document.createElement('li');
+            item.className = 'analysis-pair';
+            item.dataset.pair = pair;
+            item.dataset.index = offset / 2;
+            const number = document.createElement('span');
+            number.className = 'analysis-pair-number';
+            number.textContent = i18n.t('analysis.pair-number', { n: offset / 2 + 1 });
+            const letters = document.createElement('strong');
+            letters.textContent = pair;
+            item.append(number, letters);
+            const double = pair.length === 2 && pair[0] === pair[1];
+            item.classList.toggle('analysis-double', double);
+            if (double || reversedLookup.has(pair)) {
+                const badge = document.createElement('span');
+                badge.className = 'analysis-badge';
+                badge.textContent = double ? '✗' : this.analysisBadge(reversedLookup.get(pair));
+                badge.setAttribute('aria-label', i18n.t(double ? 'analysis.double-mark' : 'analysis.reverse-mark', { n: badge.textContent }));
+                item.appendChild(badge);
+            }
+            fragment.appendChild(item);
+        }
+        pairs.replaceChildren(fragment);
+        const list = document.getElementById('analysis-reversed-list');
+        list.replaceChildren();
+        result.reversed.forEach((entry, index) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'btn btn-outline analysis-reversed-button';
+            button.dataset.pair = entry.pair;
+            button.textContent = i18n.t('analysis.reverse-entry', { badge: this.analysisBadge(index), pair: entry.pair,
+                reverse: entry.reverse, at: entry.at.map(n => n + 1).join(i18n.t('analysis.position-separator')),
+                reverseAt: entry.reverseAt.map(n => n + 1).join(i18n.t('analysis.position-separator')) });
+            button.addEventListener('click', () => {
+                this.selectedReversed = entry;
+                this.renderAnalysisSelection();
+                this.recordProgress({ type: 'reversed-selected' });
+            });
+            list.appendChild(button);
+        });
+        if (!result.reversed.length) list.textContent = i18n.t('analysis.no-reversed');
+        const rows = result.topPairs.map(([pair, count]) => {
+            const row = document.createElement('tr');
+            for (const value of [pair, count]) {
+                const cell = document.createElement('td');
+                cell.textContent = value;
+                row.appendChild(cell);
+            }
+            return row;
+        });
+        document.getElementById('analysis-top-pairs').replaceChildren(...rows);
+        document.getElementById('analysis-distinct').textContent = i18n.t('analysis.distinct', { n: result.distinct });
+        this.renderAnalysisSelection();
+    }
+
+    renderAnalysisSelection() {
+        const selected = this.selectedReversed;
+        document.getElementById('analysis-selection').hidden = !selected;
+        for (const item of document.querySelectorAll('#analysis-pairs li')) {
+            item.classList.toggle('analysis-selected', !!selected && [selected.pair, selected.reverse].includes(item.dataset.pair));
+        }
+        for (const button of document.querySelectorAll('#analysis-reversed-list button')) {
+            button.setAttribute('aria-pressed', String(button.dataset.pair === selected?.pair));
+        }
+        if (!selected) return;
+        const text = document.getElementById('analysis-decrypted');
+        if (selected.pair.includes('J')) {
+            text.textContent = i18n.t('analysis.no-j-decrypt');
+        } else {
+            const decrypted = PlayfairAnalysis.reversePairsDecrypt(this.getCurrentMatrixString(), selected.pair);
+            text.textContent = i18n.t('analysis.decrypted', { ...decrypted, reverse: selected.reverse });
+        }
+        document.getElementById('matrix-status-analysis').textContent = i18n.t('matrix.status', { description: this.matrixDescription() });
     }
 
     displayMatrix(containerId) {
@@ -704,6 +866,7 @@ class UI {
     invalidateAll() {
         this.invalidate('encryption');
         this.invalidate('decryption');
+        this.invalidateAnalysis();
     }
 
     startPlayback(tab, result, variant) {
@@ -1193,6 +1356,8 @@ class UI {
             keywordDraft: PlayfairCore.normalize(document.getElementById('keyword-text').value),
             plaintextDraft: PlayfairCore.normalize(document.getElementById('plaintext').value),
             ciphertextDraft: PlayfairCore.normalize(document.getElementById('ciphertext-input').value),
+            analysisDraft: document.getElementById('analysis-input').value.trim(),
+            analysis: this.analysisResult, selectedReversed: this.selectedReversed,
             matrix: this.getCurrentMatrixString(), loaded: this.loaded,
             encryption: this.results.encryption, decryption: this.results.decryption,
             rulesSeenNow: [...this.rulesSeenNow], lastCorrect: this.lastCorrect
@@ -1270,7 +1435,7 @@ class UI {
     updateProgressDisplay() {
         const list = document.getElementById('mission-list');
         const statuses = ProgressCore.statuses(this.progress);
-        for (const group of ['key', 'encryption', 'decryption', 'challenge']) {
+        for (const group of ['key', 'encryption', 'decryption', 'analysis', 'challenge']) {
             let section = document.getElementById('mission-group-' + group);
             if (!section) {
                 section = document.createElement('section');

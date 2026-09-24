@@ -30,6 +30,66 @@ for (const [index, [event, mission]] of events.entries()) {
     });
 }
 
+test('G-4 analysis events award only the specified missions', () => {
+    const initial = core.initial();
+    for (const verdict of ['empty', 'consistent', undefined]) {
+        assert.deepEqual(core.reduce(initial, { type: 'analyzed', verdict, reversedCount: 2 }), initial);
+    }
+    const m7 = core.reduce(initial, { type: 'analyzed', verdict: 'impossible', reversedCount: 0 });
+    assert.deepEqual(m7, { ...initial, missions: { M7: true } });
+    const m8 = core.reduce(initial, { type: 'reversed-selected' });
+    assert.deepEqual(m8, { ...initial, missions: { M8: true } });
+    assert.deepEqual(initial, core.initial());
+    assert.equal(core.summary(m8).points, 0);
+});
+
+test('G-4 version 2 keeps old progress and permits M7/M8 without challenges in missions', () => {
+    const old = '{"version":2,"missions":{"M1":true},"challenges":{},"rulesSeen":[]}';
+    assert.deepEqual(core.migrate(old), JSON.parse(old));
+    const next = { ...core.initial(), missions: { M1: true, M7: true, M8: true } };
+    assert.deepEqual(core.migrate(core.serialize(next)), next);
+    assert.deepEqual(core.migrate(JSON.stringify({ ...next, missions: { C1: true } })), core.initial());
+});
+
+test('G-4 analysis steps require impossible/reversed results and later steps imply earlier ones', () => {
+    assert.deepEqual(core.STEPS.M7, [['tab-analysis', 'analysis'], ['analysis-sample', 'analysis'], ['analyze-btn', 'analysis']]);
+    assert.deepEqual(core.STEPS.M8, [...core.STEPS.M7, ['analysis-reversed-list', 'analysis']]);
+    const s = { activeTab: 'key-generation', analysisDraft: '', analysis: null, selectedReversed: null };
+    assert.deepEqual(core.stepStates('M7', s), ['current', 'todo', 'todo']);
+    assert.deepEqual(core.stepStates('M8', s), ['current', 'todo', 'todo', 'todo']);
+    s.activeTab = 'analysis';
+    assert.deepEqual(core.stepStates('M7', s), ['done', 'current', 'todo']);
+    s.analysisDraft = 'Khoor, Zruog!';
+    assert.deepEqual(core.stepStates('M7', s), ['done', 'done', 'current']);
+    s.analysis = { verdict: 'consistent', reversed: [] };
+    assert.deepEqual(core.stepStates('M7', s), ['done', 'done', 'current']);
+    assert.deepEqual(core.stepStates('M8', s), ['done', 'done', 'current', 'todo']);
+    s.analysis = { verdict: 'impossible', reversed: [] };
+    assert.deepEqual(core.stepStates('M7', s), ['done', 'done', 'done']);
+    s.analysis = { verdict: 'consistent', reversed: [{ pair: 'CT', reverse: 'TC' }] };
+    assert.deepEqual(core.stepStates('M8', s), ['done', 'done', 'done', 'current']);
+    assert.deepEqual(core.stepStates('M7', { analysis: { verdict: 'impossible' } }), ['done', 'done', 'done']);
+    assert.deepEqual(core.stepStates('M8', { selectedReversed: { pair: 'CT' } }), ['done', 'done', 'done', 'done']);
+});
+
+test('G-4 UI snapshot trims analysis without normalizing J or punctuation', () => {
+    const fs = require('node:fs');
+    const path = require('node:path');
+    const vm = require('node:vm');
+    const { PlayfairCore } = require('../js/cipher.js');
+    const UI = vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../js/ui.js'), 'utf8') + '; UI;', {
+        PlayfairCore,
+        document: { getElementById(id) { return { value: id === 'analysis-input' ? '  J, j!  ' : '', classList: { contains() { return true; } } }; } }
+    });
+    const ui = Object.create(UI.prototype);
+    Object.assign(ui, { getCurrentMatrixString: () => defaultMatrix, results: {}, rulesSeenNow: [],
+        analysisResult: { verdict: 'impossible' }, selectedReversed: { pair: 'CT' } });
+    const s = ui.getSnapshot();
+    assert.equal(s.analysisDraft, 'J, j!');
+    assert.equal(s.analysis, ui.analysisResult);
+    assert.equal(s.selectedReversed, ui.selectedReversed);
+});
+
 test('H-1 rendered rules: row, column, ignore same and decryption, then rectangle', () => {
     let p = core.initial();
     for (const rule of ['row', 'column']) p = core.reduce(p, { type: 'step-rendered', tab: 'encryption', rule });
@@ -44,32 +104,33 @@ test('H-1 rendered rules: row, column, ignore same and decryption, then rectangl
 test('H-1 first answer keeps points and hints; challenges unlock in order', () => {
     let p = core.reduce(core.initial(), { type: 'challenge-correct', id: 'mystery-01', hintsUsed: 0 });
     assert.deepEqual(p.challenges, { 'mystery-01': { points: 10, hintsUsed: 0 } });
-    assert.equal(core.statuses(p)[6].star, true);
+    assert.equal(core.statuses(p)[8].star, true);
     assert.deepEqual(core.reduce(p, { type: 'challenge-correct', id: 'mystery-01', hintsUsed: 3 }), p);
     assert.equal(core.isLocked(p, 'C2'), false);
     assert.equal(core.isLocked(p, 'C3'), true);
     p = core.reduce(p, { type: 'challenge-correct', id: 'mystery-02', hintsUsed: 2 });
     assert.equal(core.summary(p).points, 30);
-    assert.equal(core.statuses(p)[7].star, false);
+    assert.equal(core.statuses(p)[9].star, false);
     assert.equal(core.isLocked(p, 'mystery-03'), false);
 });
 
 test('H-1 mission order, groups, points, statuses and summaries', () => {
     assert.deepEqual(core.MISSIONS.map(m => [m.id, m.group, m.points]), [
         ['M1', 'key', 0], ['M2', 'encryption', 0], ['M3', 'encryption', 0], ['M4', 'encryption', 0],
-        ['M5', 'decryption', 0], ['M6', 'decryption', 0], ['C1', 'challenge', 10], ['C2', 'challenge', 20], ['C3', 'challenge', 30]
+        ['M5', 'decryption', 0], ['M6', 'decryption', 0], ['M7', 'analysis', 0], ['M8', 'analysis', 0],
+        ['C1', 'challenge', 10], ['C2', 'challenge', 20], ['C3', 'challenge', 30]
     ]);
     let p = core.initial();
-    assert.deepEqual(core.summary(p), { done: 0, total: 9, points: 0, maxPoints: 60, next: 'M1' });
-    assert.deepEqual(core.statuses(p).map(m => m.state), ['next', 'open', 'open', 'open', 'open', 'open', 'open', 'locked', 'locked']);
+    assert.deepEqual(core.summary(p), { done: 0, total: 11, points: 0, maxPoints: 60, next: 'M1' });
+    assert.deepEqual(core.statuses(p).map(m => m.state), ['next', 'open', 'open', 'open', 'open', 'open', 'open', 'open', 'open', 'locked', 'locked']);
     assert.equal(core.summary({ ...p, missions: { M1: true } }).next, 'M2');
     assert.equal(core.summary({ ...p, missions: { M2: true } }).next, 'M1');
-    p.missions = Object.fromEntries(core.MISSIONS.slice(0, 6).map(m => [m.id, true]));
+    p.missions = Object.fromEntries(core.MISSIONS.slice(0, 8).map(m => [m.id, true]));
     assert.equal(core.summary(p).next, 'C1');
     for (const id of ['mystery-01', 'mystery-02', 'mystery-03']) {
         p = core.reduce(p, { type: 'challenge-correct', id, hintsUsed: 0 });
     }
-    assert.deepEqual(core.summary(p), { done: 9, total: 9, points: 60, maxPoints: 60, next: null });
+    assert.deepEqual(core.summary(p), { done: 11, total: 11, points: 60, maxPoints: 60, next: null });
     assert.deepEqual(core.reduce(p, { type: 'unknown' }), p);
     assert.deepEqual(core.reduce(p, { type: 'matrix-saved', matrix: defaultMatrix }), p);
 });
