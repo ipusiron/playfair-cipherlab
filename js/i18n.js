@@ -29,7 +29,7 @@ class I18nManager {
                 "guide.complete": "達成しました",
                 "guide.advanced": "手順{n}に進みました",
                 "guide.previous": "前の手順を先に済ませてください",
-                "guide.restart": "『最初から』を押してから、『次』で1組ずつ進めてください",
+                "guide.restart": "『🔄 最初から再生』を押してから、『次』で1組ずつ進めてください",
                 "guide.disabled": "このボタンはいまは押せません。手順の文を確かめてください",
                 "guide.m3.remaining": "まだ見ていない規則: {rules}",
                 "guide.m3.missing": "この文には{rules}の組がありません。例文『既知の例』→『Wikipediaの例』なら3つともそろいます",
@@ -121,10 +121,8 @@ class I18nManager {
                 'decrypt-rule.no-change': '変種: 同じ文字のまま',
                 'decrypt-rule.right-shift': '変種: 左隣の文字へ戻す',
                 'decrypt-rule.bottom-right': '変種: 左上の文字へ戻す',
-                'footer.html':
-                    '🔗 GitHubリポジトリー（' +
-                    '<a href="https://github.com/ipusiron/playfair-cipherlab" ' +
-                    'target="_blank" rel="noopener noreferrer">ipusiron/playfair-cipherlab</a>）',
+                'footer.prefix': '🔗 GitHubリポジトリー（',
+                'footer.suffix': '）',
                 'help.body': `
 <section>
 <h3>鍵表と標準の規則</h3>
@@ -137,7 +135,7 @@ class I18nManager {
 <p>同じ文字の組を分割しない設定は標準ではありません。変化なし、右隣、右下の3つの変種を選べます。復号にも同じ変種を指定してください。</p>
 </section>
 <section><h3>再生と埋め文字の候補</h3>
-<p>前、再生、一時停止、次、最初から、最後までで組ごとの変換を確認できます。下線は追加した埋め文字です。</p>
+<p>前、再生、一時停止、次、🔄 最初から再生、最後までで組ごとの変換を確認できます。下線は追加した埋め文字です。</p>
 <p>復号の点線下線は埋め文字の候補です。候補を除いた文も並べますが、復号結果から自動では消しません。</p>
 <p>THE QUICK BROWN FOXの最後のXは本物ですが候補になります。候補を除くとTHEQUICKBROWNFOになり、元の文を失います。</p>
 </section>
@@ -558,10 +556,8 @@ class I18nManager {
                 'decrypt-rule.no-change': 'Variant: leave identical letters unchanged',
                 'decrypt-rule.right-shift': 'Variant: restore identical letters from the left',
                 'decrypt-rule.bottom-right': 'Variant: restore identical letters from the top left',
-                'footer.html':
-                    '🔗 GitHub repository (' +
-                    '<a href="https://github.com/ipusiron/playfair-cipherlab" ' +
-                    'target="_blank" rel="noopener noreferrer">ipusiron/playfair-cipherlab</a>)',
+                'footer.prefix': '🔗 GitHub repository (',
+                'footer.suffix': ')',
                 'help.body': `
 <section>
 <h3>Key matrix and standard rules</h3>
@@ -575,7 +571,7 @@ Decryption shifts left and up.</p>
 <p>Not splitting identical-letter pairs is nonstandard. Choose no change, right shift, or bottom-right shift. Use the same variant for decryption.</p>
 </section>
 <section><h3>Playback and padding candidates</h3>
-<p>Use Previous, Play, Pause, Next, Restart, and Go to end to inspect each pair. Underlines mark inserted padding.</p>
+<p>Use Prev, Play, Pause, Next, Restart Animation, and Go to end to inspect each pair. Underlines mark inserted padding.</p>
 <p>Dotted underlines in decrypted text mark possible padding. A separate line excludes these candidates, but the full decryption is never shortened
 automatically.</p>
 <p>The final X in THE QUICK BROWN FOX is genuine but is marked as a candidate. Removing it gives THEQUICKBROWNFO, losing part of the original message.</p>
@@ -1119,7 +1115,13 @@ automatically.</p>
     updateFooter() {
         const footerElement = document.querySelector('footer .footer');
         if (footerElement) {
-            footerElement.innerHTML = this.t('footer.html');
+            const link = document.createElement('a');
+            link.href = 'https://github.com/ipusiron/playfair-cipherlab';
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            link.textContent = this.t('footer.link');
+            footerElement.textContent = this.t('footer.prefix');
+            footerElement.append(link, this.t('footer.suffix'));
         }
     }
 
