@@ -109,7 +109,7 @@ test('K-7 images, test section, and obsolete wording', () => {
     assert.deepEqual(pngs.map(file => `assets/${file}`).sort(), images.sort());
     assert.ok(section('🧪 テスト').includes('npm test'));
     const testFiles = fs.readdirSync(__dirname).filter(file => file.endsWith('.test.js'));
-    assert.equal(testFiles.length, 7);
+    assert.equal(testFiles.length, 8);
     for (const file of testFiles) assert.ok(section('🧪 テスト').includes(`test/${file}`), file);
     for (const forbidden of ['ATTACK DAWN', 'ブラウザー間で保持', '右隣置換（標準）']) {
         assert.ok(!readme.includes(forbidden), forbidden);

@@ -324,6 +324,7 @@ READMEの既知解答5行・チャレンジ3行とヒントも、PlayfairCore・
 | test/contrast.test.js | ライト・ダークの18組が4.5:1以上 |
 | test/format.test.js | 最長行と行数、minifyの検出 |
 | test/readme.test.js | 表の再計算・ヒント・YAML・ツリー・画像参照 |
+| test/progress.test.js | ミッションの達成条件・移行・ロック・ナビの手順 |
 
 ## 📁 ディレクトリー構造
 
@@ -348,6 +349,7 @@ playfair-cipherlab/             # プロジェクトのルート
 ├── js/                         # classic script（file://対応）
 │   ├── cipher.js               # 暗号の中核（標準・変種・候補。DOM非依存）
 │   ├── exercises.js            # 例文・課題・判定・進捗（DOM非依存）
+│   ├── progress.js             # ミッションと達成判定・保存形式（DOM非依存）
 │   ├── ui.js                   # 画面の処理（タブ・鍵表・再生・課題）
 │   ├── i18n.js                 # 日英の辞書と切り替え（ヘルプを含む）
 │   ├── theme-init.js           # 初回描画前のテーマ適用
@@ -361,6 +363,7 @@ playfair-cipherlab/             # プロジェクトのルート
     ├── html.test.js            # CSP・referrer・ARIA・属性の静的検証
     ├── contrast.test.js        # 明暗18組のコントラスト検証
     ├── format.test.js          # minifyの検出（最長行・行数）
+    ├── progress.test.js        # ミッションの達成条件・移行・ロック・ナビの手順
     └── readme.test.js          # READMEの表・YAML・ツリー・画像の検証
 ```
 
