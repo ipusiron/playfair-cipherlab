@@ -7,6 +7,33 @@ const root = path.join(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const dictionaries = vm.runInNewContext(read('js/i18n.js') + '; i18n.translations;', {});
 
+test('Polish B-1 reversal positions have singular and plural dictionary entries', () => {
+    const manager = vm.runInNewContext(read('js/i18n.js') + '; i18n;', {});
+    const positions = vm.runInNewContext(read('js/ui.js') + '; UI.prototype.analysisPositions;', { i18n: manager });
+    for (const lang of ['ja', 'en']) {
+        manager.currentLang = lang;
+        assert.equal(positions([0]), lang === 'ja' ? '1組目' : 'pair 1');
+        assert.equal(positions([3, 5, 8]), lang === 'ja' ? '4・6・9組目' : 'pairs 4, 6, 9');
+        assert.ok(dictionaries[lang]['analysis.positions.one']);
+        assert.ok(dictionaries[lang]['analysis.positions.other']);
+    }
+    assert.doesNotMatch(dictionaries.en['analysis.reverse-entry'], /\bpairs\b/);
+});
+
+test('Polish B-2 letter counts and ignored characters have singular and plural forms', () => {
+    const manager = vm.runInNewContext(read('js/i18n.js') + '; i18n;', {});
+    manager.currentLang = 'en';
+    assert.equal(manager.t('analysis.check.even.one', { n: 1 }), 'Even number of letters (1 letter)');
+    assert.equal(manager.t('analysis.check.even.other', { n: 2 }), 'Even number of letters (2 letters)');
+    assert.equal(manager.t('analysis.distinct.one', { n: 1 }), 'Letters used: 1 distinct letter (Playfair ciphertext uses at most 25)');
+    assert.equal(manager.t('analysis.distinct.other', { n: 2 }), 'Letters used: 2 distinct letters (Playfair ciphertext uses at most 25)');
+    assert.equal(manager.t('analysis.ignored.one', { chars: '!' }), 'A nonletter character was ignored: !');
+    assert.equal(manager.t('analysis.ignored.other', { chars: ', !' }), 'Nonletter characters were ignored: , !');
+    for (const key of ['analysis.check.even', 'analysis.distinct', 'analysis.ignored']) {
+        assert.equal(dictionaries.ja[key + '.one'], dictionaries.ja[key + '.other']);
+    }
+});
+
 test('D-4 initially hidden labels are translated inside updateUI', () => {
     const method = vm.runInNewContext(read('js/i18n.js') + '; I18nManager.prototype.updateUI.toString();', {});
     for (const [id, key] of [

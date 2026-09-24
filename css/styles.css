@@ -1891,12 +1891,48 @@ body.dark-mode .field-heading {
     }
 
     .tab-button {
-        overflow-wrap: anywhere;
+        overflow-wrap: normal;
+        word-break: keep-all;
 
     color: var(--tab-fg);
 
     background-color: var(--tab-bg);
 }
+}
+
+@media (max-width: 480px) {
+    .progress-toggle {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 0.5rem;
+        text-align: left;
+    }
+
+    .progress-title {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    .progress-arrow {
+        grid-column: 2;
+        grid-row: 1;
+        justify-self: end;
+    }
+
+    .progress-summary {
+        grid-column: 1 / -1;
+        grid-row: 2;
+    }
+}
+
+@media (max-width: 400px) {
+    .tab-button {
+        padding: 0.5rem 0.25rem;
+        font-size: 0.8rem;
+        line-height: 1.5;
+        /* Break at spaces (including after the icon), without extra markup. */
+        word-spacing: 100vw;
+    }
 }
 
 @media (min-width: 769px) {

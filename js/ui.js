@@ -325,6 +325,12 @@ class UI {
         return index < 20 ? String.fromCodePoint(0x2460 + index) : `(${index + 1})`;
     }
 
+    analysisPositions(positions) {
+        return i18n.t(`analysis.positions.${positions.length === 1 ? 'one' : 'other'}`, {
+            at: positions.map(n => n + 1).join(i18n.t('analysis.position-separator'))
+        });
+    }
+
     renderAnalysis() {
         const result = this.analysisResult;
         document.getElementById('analysis-empty').textContent = this.analysisEmpty ? i18n.t('analysis.empty') : '';
@@ -346,7 +352,8 @@ class UI {
             const item = document.createElement('li');
             item.dataset.check = name;
             item.dataset.pass = String(result.checks[name]);
-            item.textContent = (result.checks[name] ? '✓ ' : '✗ ') + i18n.t(`analysis.check.${name}`, { n: result.length });
+            const suffix = name === 'even' ? `.${result.length === 1 ? 'one' : 'other'}` : '';
+            item.textContent = (result.checks[name] ? '✓ ' : '✗ ') + i18n.t(`analysis.check.${name}${suffix}`, { n: result.length });
             if (name === 'noDoublePair' && result.doubles.length) {
                 item.textContent += ': ' + result.doubles.map(({ pair, index }) =>
                     i18n.t('analysis.double', { n: index + 1, pair })).join(', ');
@@ -354,7 +361,7 @@ class UI {
             checks.appendChild(item);
         }
         document.getElementById('analysis-ignored').textContent = result.ignored.length
-            ? i18n.t('analysis.ignored', { chars: result.ignored.join(' ') }) : '';
+            ? i18n.t(`analysis.ignored.${result.ignored.length === 1 ? 'one' : 'other'}`, { chars: result.ignored.join(' ') }) : '';
         const reversedLookup = new Map();
         result.reversed.forEach((entry, index) => {
             reversedLookup.set(entry.pair, index);
@@ -394,8 +401,7 @@ class UI {
             button.className = 'btn btn-outline analysis-reversed-button';
             button.dataset.pair = entry.pair;
             button.textContent = i18n.t('analysis.reverse-entry', { badge: this.analysisBadge(index), pair: entry.pair,
-                reverse: entry.reverse, at: entry.at.map(n => n + 1).join(i18n.t('analysis.position-separator')),
-                reverseAt: entry.reverseAt.map(n => n + 1).join(i18n.t('analysis.position-separator')) });
+                reverse: entry.reverse, at: this.analysisPositions(entry.at), reverseAt: this.analysisPositions(entry.reverseAt) });
             button.addEventListener('click', () => {
                 this.selectedReversed = entry;
                 this.renderAnalysisSelection();
@@ -414,7 +420,8 @@ class UI {
             return row;
         });
         document.getElementById('analysis-top-pairs').replaceChildren(...rows);
-        document.getElementById('analysis-distinct').textContent = i18n.t('analysis.distinct', { n: result.distinct });
+        document.getElementById('analysis-distinct').textContent =
+            i18n.t(`analysis.distinct.${result.distinct === 1 ? 'one' : 'other'}`, { n: result.distinct });
         this.renderAnalysisSelection();
     }
 
