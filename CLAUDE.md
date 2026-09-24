@@ -45,6 +45,8 @@ immediately after body opens so the saved theme applies before the first paint.
    - Empty, impossible or consistent verdict; conditions are necessary, not proof
    - Pair positions, reversals, top-five frequencies, distinct and ignored characters
    - Decrypt a pair and its reversal with the current matrix through PlayfairCore
+   - `frequencyAnalyzerUrl(text)` trims the original input and returns an encoded
+     Day009 URL, or null for empty input or more than 5,000 characters
 
 2. **exercises.js** - `ExerciseManager` class: challenge/practice data and pure answer validation
    - No DOM, localStorage, or i18n access; no progress state or writes
@@ -161,6 +163,10 @@ Use textContent and DOM APIs for dynamic content. Only fixed help
 dictionary templates may use innerHTML; never interpolate user input there.
 Use no-referrer and noopener noreferrer for external links. Do not add
 frame-ancestors to a meta CSP because it has no effect there.
+Analysis creates a Day009 Frequency Analyzer link without fetching anything.
+Ciphertext leaves the tool only when the user clicks that link, in the URL;
+preserve case and punctuation, and remove stale href values when input changes.
+Day009 counts overlapping digrams within words, not fixed Playfair pairs.
 
 ## Automated Tests
 

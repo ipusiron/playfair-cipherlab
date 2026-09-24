@@ -5,6 +5,18 @@ const path = require('node:path');
 const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
 const attribute = (tag, name) => tag.match(new RegExp(`\\b${name}="([^"]*)"`))?.[1];
 
+test('Polish C-2 Day009 link is safe, initially hidden and follows the existing analysis output', () => {
+    const tag = html.match(/<a\b[^>]*id="analysis-open-frequency"[^>]*>/)[0];
+    assert.equal(attribute(tag, 'target'), '_blank');
+    assert.equal(attribute(tag, 'rel'), 'noopener noreferrer');
+    assert.equal(attribute(tag, 'href'), undefined);
+    assert.match(tag, /\bhidden\b/);
+    assert.ok(html.indexOf('id="analysis-open-frequency"') > html.indexOf('id="analysis-distinct"'));
+    for (const id of ['analysis-open-frequency', 'analysis-frequency-description', 'analysis-frequency-too-long']) {
+        assert.equal([...html.matchAll(new RegExp(`\\bid="${id}"`, 'g'))].length, 1, id);
+    }
+});
+
 test('G-3 analysis tab, labelled controls, result regions and send buttons exist', () => {
     for (const id of ['tab-analysis', 'analysis', 'analysis-sample', 'analysis-input', 'analyze-btn', 'analysis-result',
         'analysis-pairs', 'analysis-reversed-list', 'send-to-analysis-encryption', 'send-to-analysis-decryption']) {

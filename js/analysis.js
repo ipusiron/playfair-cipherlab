@@ -38,7 +38,13 @@ const PlayfairAnalysis = (() => {
         return { pair, plain: plain.plaintext, reversePlain: reversePlain.plaintext };
     }
 
-    return Object.freeze({ analyze, reversePairsDecrypt });
+    function frequencyAnalyzerUrl(text) {
+        const trimmed = text.trim();
+        if (!trimmed || trimmed.length > 5000) return null;
+        return 'https://ipusiron.github.io/frequency-analyzer/?text=' + encodeURIComponent(trimmed);
+    }
+
+    return Object.freeze({ analyze, reversePairsDecrypt, frequencyAnalyzerUrl });
 })();
 
 if (typeof module !== 'undefined' && module.exports) {

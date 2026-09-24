@@ -335,6 +335,11 @@ class UI {
         const result = this.analysisResult;
         document.getElementById('analysis-empty').textContent = this.analysisEmpty ? i18n.t('analysis.empty') : '';
         document.getElementById('analysis-result').hidden = !result;
+        const frequencyLink = document.getElementById('analysis-open-frequency');
+        frequencyLink.removeAttribute('href');
+        frequencyLink.hidden = true;
+        document.getElementById('analysis-frequency-description').hidden = true;
+        document.getElementById('analysis-frequency-too-long').hidden = true;
         if (!result) {
             for (const id of ['analysis-verdict', 'analysis-checks', 'analysis-ignored', 'analysis-pairs',
                 'analysis-reversed-list', 'analysis-top-pairs', 'analysis-distinct', 'analysis-decrypted', 'matrix-status-analysis']) {
@@ -422,6 +427,14 @@ class UI {
         document.getElementById('analysis-top-pairs').replaceChildren(...rows);
         document.getElementById('analysis-distinct').textContent =
             i18n.t(`analysis.distinct.${result.distinct === 1 ? 'one' : 'other'}`, { n: result.distinct });
+        const frequencyUrl = PlayfairAnalysis.frequencyAnalyzerUrl(document.getElementById('analysis-input').value);
+        if (frequencyUrl) {
+            frequencyLink.href = frequencyUrl;
+            frequencyLink.hidden = false;
+            document.getElementById('analysis-frequency-description').hidden = false;
+        } else {
+            document.getElementById('analysis-frequency-too-long').hidden = false;
+        }
         this.renderAnalysisSelection();
     }
 
