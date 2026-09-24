@@ -5,6 +5,17 @@ const path = require('node:path');
 const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
 const attribute = (tag, name) => tag.match(new RegExp(`\\b${name}="([^"]*)"`))?.[1];
 
+test('Challenges G-2 encryption controls have labels and a live answer result', () => {
+    for (const id of ['encipher-select', 'encipher-info', 'encipher-answer', 'encipher-check', 'encipher-hint', 'encipher-result']) {
+        assert.equal([...html.matchAll(new RegExp(`\\bid="${id}"`, 'g'))].length, 1, id);
+    }
+    assert.match(html, /<label for="encipher-select"/);
+    assert.match(html, /<label for="encipher-answer"/);
+    assert.match(html, /id="encipher-result"[^>]*aria-live="polite"/);
+    assert.ok(html.indexOf('id="encipher-select"') > html.indexOf('id="load-example"'));
+    assert.ok(html.indexOf('id="encipher-select"') < html.indexOf('id="plaintext"'));
+});
+
 test('Recovery G-2 labelled section, controls and live status exist once', () => {
     for (const id of ['recovery', 'recovery-problem', 'recovery-pairs', 'recovery-grid',
         'recovery-palette', 'recovery-hint', 'recovery-reset', 'recovery-status']) {
@@ -14,6 +25,17 @@ test('Recovery G-2 labelled section, controls and live status exist once', () =>
     assert.match(html, /id="recovery-status"[^>]*aria-live="polite"/);
     assert.match(html, /<label for="recovery-problem"/);
     assert.ok(html.indexOf('id="recovery"') > html.indexOf('id="analysis-result"'));
+});
+
+test('Challenges F/G-2 recovery conflict status follows the grid and narrow pairs have two unwrapped columns', () => {
+    assert.equal([...html.matchAll(/\bid="recovery-conflicts"/g)].length, 1);
+    assert.match(html, /id="recovery-grid"[^>]*><\/div>\s*<p id="recovery-conflicts"[^>]*aria-live="polite"[^>]*hidden/);
+    const css = fs.readFileSync(path.join(__dirname, '../css/styles.css'), 'utf8');
+    const narrow = css.slice(css.indexOf('@media (max-width: 480px)'));
+    assert.match(narrow, /\.recovery-pairs\s*\{\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+    assert.match(narrow, /\.recovery-pair\s*\{[^}]*white-space: nowrap/);
+    const ui = fs.readFileSync(path.join(__dirname, '../js/ui.js'), 'utf8');
+    assert.match(ui, /li\.setAttribute\('aria-label',/);
 });
 
 test('Polish C-2 Day009 link is safe, initially hidden and follows the existing analysis output', () => {

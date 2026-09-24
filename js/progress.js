@@ -6,6 +6,9 @@ const ProgressCore = (() => {
         { id: 'M2', group: 'encryption', points: 0 },
         { id: 'M3', group: 'encryption', points: 0 },
         { id: 'M4', group: 'encryption', points: 0 },
+        { id: 'E1', group: 'encipher', challengeId: 'encipher-01', points: 10 },
+        { id: 'E2', group: 'encipher', challengeId: 'encipher-02', points: 20, requires: 'E1' },
+        { id: 'E3', group: 'encipher', challengeId: 'encipher-03', points: 30, requires: 'E2' },
         { id: 'M5', group: 'decryption', challengeId: 'decrypt-01', points: 0 },
         { id: 'M6', group: 'decryption', challengeId: 'decrypt-03', points: 0 },
         { id: 'M7', group: 'analysis', points: 0 },
@@ -13,12 +16,13 @@ const ProgressCore = (() => {
         { id: 'C1', group: 'challenge', challengeId: 'mystery-01', points: 10 },
         { id: 'C2', group: 'challenge', challengeId: 'mystery-02', points: 20, requires: 'C1' },
         { id: 'C3', group: 'challenge', challengeId: 'mystery-03', points: 30, requires: 'C2' },
+        { id: 'H1', group: 'history', challengeId: 'history-01', points: 30, requires: 'C3' },
         { id: 'R1', group: 'recovery', challengeId: 'recover-01', points: 10 },
         { id: 'R2', group: 'recovery', challengeId: 'recover-02', points: 20, requires: 'R1' },
         { id: 'R3', group: 'recovery', challengeId: 'recover-03', points: 30, requires: 'R2' }
     ].map(Object.freeze));
     const rules = ['row', 'column', 'rectangle'];
-    const challenges = MISSIONS.filter(item => item.group === 'challenge' || item.group === 'recovery');
+    const challenges = MISSIONS.filter(item => ['encipher', 'challenge', 'history', 'recovery'].includes(item.group));
     const matrices = {
         default: core.ALPHABET,
         example: core.matrixFromKeyword('PLAYFAIR EXAMPLE'),
@@ -27,10 +31,15 @@ const ProgressCore = (() => {
     const challengeMatrices = {
         'mystery-01': matrices.default,
         'mystery-02': core.matrixFromKeyword('SECRET'),
-        'mystery-03': core.matrixFromKeyword('MILITARY')
+        'mystery-03': core.matrixFromKeyword('MILITARY'),
+        'encipher-01': matrices.default,
+        'encipher-02': core.matrixFromKeyword('CIPHER'),
+        'encipher-03': core.matrixFromKeyword('SECRET'),
+        'history-01': core.matrixFromKeyword('ROYAL NEW ZEALAND NAVY')
     };
     const challengeTexts = {
-        'mystery-01': 'KCNVMP', 'mystery-02': 'ITCSITEUOHAMCZ', 'mystery-03': 'MAAMDHMAKDUP'
+        'mystery-01': 'KCNVMP', 'mystery-02': 'ITCSITEUOHAMCZ', 'mystery-03': 'MAAMDHMAKDUP',
+        'history-01': 'KXIEYUREBEZWEHEWRYTUHEYFSKREHEGOYFIWTTTUOLKSYCAIPOBOTEIZONTXBYBWTGONEYCUZWRGDSONSXBOUYWRHEBAAHYUSEDQ'
     };
     const STEPS = {
         M1: [['edit-matrix-btn', 'key-generation'], ['keyword-text', 'key-generation'], ['save-matrix-btn', 'key-generation']],
@@ -48,6 +57,8 @@ const ProgressCore = (() => {
     for (const mission of challenges) {
         STEPS[mission.id] = mission.group === 'recovery'
             ? [['tab-analysis', 'analysis'], ['recovery-problem', 'analysis'], ['recovery-grid', 'analysis'], ['recovery-grid', 'analysis']]
+            : mission.group === 'encipher'
+            ? [['challenge-start-' + mission.challengeId, null], ['tab-key-generation', 'key-generation'], ['encipher-answer', 'encryption']]
             : [['tab-key-generation', 'key-generation'], ['challenge-start-' + mission.challengeId, null],
             ['decrypt-btn', 'decryption'], ['challenge-answer', 'decryption']];
     }
@@ -146,9 +157,9 @@ const ProgressCore = (() => {
         }
         if (event.type === 'analyzed' && event.verdict === 'impossible') next.missions.M7 = true;
         if (event.type === 'reversed-selected') next.missions.M8 = true;
-        if (event.type === 'challenge-correct' || event.type === 'recovery-solved') {
-            const group = event.type === 'recovery-solved' ? 'recovery' : 'challenge';
-            const mission = challenges.find(item => item.challengeId === event.id && item.group === group);
+        if (['challenge-correct', 'recovery-solved', 'encipher-correct'].includes(event.type)) {
+            const groups = { 'recovery-solved': ['recovery'], 'encipher-correct': ['encipher'], 'challenge-correct': ['challenge', 'history'] };
+            const mission = challenges.find(item => item.challengeId === event.id && groups[event.type].includes(item.group));
             if (mission && !isLocked(progress, event.id) && !Object.hasOwn(next.challenges, event.id)
                 && event.hintsUsed !== null && validHints(event.hintsUsed, mission)) {
                 next.challenges[event.id] = { points: mission.points, hintsUsed: event.hintsUsed };
@@ -208,11 +219,16 @@ const ProgressCore = (() => {
             s.activeTab === 'analysis', s.recovery?.id === mission.challengeId,
             s.recovery?.id === mission.challengeId && s.recovery.placed >= 1,
             s.lastRecoverySolved === mission.challengeId
+        ] : mission?.group === 'encipher' ? [
+            s.loaded?.kind === 'encipher' && s.loaded.id === mission.challengeId,
+            s.loaded?.kind === 'encipher' && s.loaded.id === mission.challengeId && s.matrix === requiredMatrix(mission.challengeId),
+            s.lastCorrect === mission.challengeId
         ] : mission ? [
             s.matrix === requiredMatrix(mission.challengeId),
             s.loaded?.kind === 'challenge' && s.loaded.id === mission.challengeId,
             s.decryption?.ciphertext === challengeTexts[mission.challengeId]
-                && s.decryption.matrix === requiredMatrix(mission.challengeId),
+                && s.decryption.matrix === requiredMatrix(mission.challengeId)
+                && (mission.group !== 'history' || s.decryption.variant === 'no-change'),
             s.lastCorrect === mission.challengeId
         ] : Object.hasOwn(checks, id) ? checks[id]() : [];
         let last = -1;

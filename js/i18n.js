@@ -3,6 +3,59 @@ class I18nManager {
         this.currentLang = this.loadLanguage();
         this.translations = {
             ja: {
+                'recovery.conflicts': '矛盾している組: {pairs}',
+                'recovery.kind.row': '行',
+                'recovery.kind.column': '列',
+                'recovery.kind.rectangle': '長方形',
+                'encipher.heading': '暗号化チャレンジ',
+                'encipher.choose': '挑戦する課題',
+                'encipher.answer': '手で求めた暗号文:',
+                'encipher.check': '解答をチェック',
+                'encipher.hint': 'ヒント',
+                'encipher.plaintext': '平文: {text}',
+                'encipher.keyword': '鍵語: {keyword}',
+                'encipher.star-warning': '暗号化ボタンで確かめると★は付きません',
+                'encipher.hint.1': '前処理の組（埋め文字に印）: ',
+                'encipher.hint.2': '組ごとの規則: {rules}',
+                'encipher.hint.3': '最初の組の答え: {pair}→{answer}',
+                'mission.group.encipher': '暗号化チャレンジ',
+                'mission.group.history': '史料',
+                'mission.E1.title': '暗号化チャレンジ（入門）',
+                'mission.E1.learn': '埋め文字を挟んで、手で暗号化する',
+                'mission.E1.step.1': '『挑戦する』で暗号化課題を読み込む',
+                'mission.E1.step.2': '『🔑 鍵生成』タブで既定の表に戻し、表を見ながら手で求める',
+                'mission.E1.step.3': '暗号化課題の解答欄に暗号文を入れて『解答をチェック』',
+                'mission.E2.title': '暗号化チャレンジ（中級）',
+                'mission.E2.learn': '鍵語の表で、同じ行・同じ列・長方形の3つを手で使う',
+                'mission.E2.step.1': '『挑戦する』で暗号化課題を読み込む',
+                'mission.E2.step.2': '『🔑 鍵生成』タブで鍵語CIPHERを保存し、表を見ながら手で求める',
+                'mission.E2.step.3': '暗号化課題の解答欄に暗号文を入れて『解答をチェック』',
+                'mission.E3.title': '暗号化チャレンジ（上級）',
+                'mission.E3.learn': '組の境目の同じ文字と、末尾の埋め文字に気をつけて暗号化する',
+                'mission.E3.step.1': '『挑戦する』で暗号化課題を読み込む',
+                'mission.E3.step.2': '『🔑 鍵生成』タブで鍵語SECRETを保存し、表を見ながら手で求める',
+                'mission.E3.step.3': '暗号化課題の解答欄に暗号文を入れて『解答をチェック』',
+                'mission.H1.title': '史料: PT-109の電文',
+                'mission.H1.learn': '実際の電文が教科書の規則から外れていたことを、復号して確かめる',
+                'mission.H1.step.1': '『🔑 鍵生成』タブで鍵語ROYAL NEW ZEALAND NAVYを保存する',
+                'mission.H1.step.2': '『挑戦する』で史料PT-109を読み込む',
+                'mission.H1.step.3': '復号タブの同一ペア処理ルールを『変種: 変化なし』にして『復号』',
+                'mission.H1.step.4': '失われた艇の番号を解答欄に入れて『解答をチェック』',
+                'example.history-01': '史料PT-109',
+                'exercise.history-01.description': '鍵語が分かっている史料の電文を復号し、問いに答えてください。',
+                'history.question': '電文が伝えた、失われた艇の番号は？',
+                'challenge.history-01.hint.0': '標準の規則で復号すると、『同じ文字の組』のエラーになります',
+                'challenge.history-01.hint.1': '復号タブの同一ペア処理ルールで『変種: 変化なし』を選んでください',
+                'challenge.history-01.hint.2': '数字は英語の綴りで書かれています',
+                'challenge.history-01.hint.3': 'ONE OWE NINEは数字3つです',
+                'history.explanation': 'この電文は1943年8月2日、沿岸監視員Arthur Reginald Evansが受け取ったものです。'
+                    + '鍵語はROYAL NEW ZEALAND NAVYでした。実際の電文は教科書の規則どおりではありません。'
+                    + 'BLACKETTのTTを分けずに送っているので、標準の規則では『同じ文字の組』のエラーになり、変種『変化なし』で読めます。'
+                    + '暗号文にはJも入っていて、表ではIとして扱います。数字はONE OWE NINE（109）のように綴っています。'
+                    + '伝わっている平文はMERESU COVEですが、この暗号文を復号するとCOCEになり、流布している暗号文のどこかに1文字の誤りがあるとみられます。',
+                'history.source': '出典: 暗号文は二次資料（Programming Praxisほか）によります。'
+                    + '原典はDavid Kahn『The Codebreakers』（1996年版、p.592）とされますが、このツールの作成では原典を確認していません。'
+                    + '平文と日時はWikipedia『Arthur Reginald Evans』によります。',
                 'mission.group.recovery': '復元',
                 'mission.R1.title': '鍵表の復元（入門）',
                 'mission.R1.learn': '16文字が置かれた表に、既知の組11個から残り9文字を推理して置く',
@@ -277,10 +330,19 @@ class I18nManager {
 <p>マスを選び、文字キーか文字の一覧で置きます。矢印で移動し、BackspaceかDeleteで消します。25マスが答えと一致すると、復元した表で隠された暗号文を復号します。埋め文字の候補は本物の文字かもしれないため、自動では消しません。</p>
 <p>ヒントは①規則の説明、②組の種類、③間違ったマスの指摘、なければ1文字の配置です。3段目は何度でも使えます。減点はなく、ヒントなしの初回成功には★が付きます。</p>
 <p>表全体の行と列を循環してずらした25通りは同じ暗号になります。この演習では置き字で向きを固定し、指定の表を復元します。</p>
+<p>幅480px以下では組を2列に並べます。状態と規則の完全な名前は読み上げ用ラベルに残し、矛盾している組は表の直下にも表示します。</p>
 <p>手作業による復元の出典：米陸軍FM 34-40-2第7章。</p>
 </section>
+<section><h3>暗号化チャレンジと史料</h3>
+<p>E1〜E3では表示された平文と鍵語を使い、表を見ながら手で暗号文を求めます。読み込みでは平文欄や鍵表は変わりません。E1でE2、E2でE3が開きます。</p>
+<p>ヒントは①前処理の組と埋め文字、②組ごとの規則、③最初の組の答えです。ヒントなしの初回正解に★が付きます。</p>
+<p>暗号化ボタンで確かめると★は付きません。読み込み後に同じ平文を同じ鍵表で暗号化すると、その課題のヒント1回として数えます。繰り返しても1回です。</p>
+<p>H1はC3のあとに開く史料チャレンジです。鍵語ROYAL NEW ZEALAND NAVYを自分で設定し、電文を読み込みます。標準では同じ文字の組TTがエラーになります。</p>
+<p>復号の同一ペア処理ルールを「変種: 同じ文字のまま」（変化なし）にすると読めます。問いには失われた艇の番号を答えます。正解後の解説で、実際の運用が教科書の規則と違ったことを確かめられます。</p>
+<p>暗号文は二次資料Programming Praxisほかによります。原典とされるDavid Kahn『The Codebreakers』（1996年版、p.592）は未確認です。日時と平文はWikipedia『Arthur Reginald Evans』によります。暗号文の食い違いは修正していません。</p>
+</section>
 <section><h3>学習進捗とナビ</h3>
-<p>14個のミッションを画面の操作で達成します。「次はこれ」はおすすめ順で、M1〜M8は自由に進められます。</p>
+<p>18個のミッションを画面の操作で達成します。「次はこれ」はおすすめ順で、M1〜M8は自由に進められます。</p>
 <ul>
 <li>M1：鍵語から鍵表を作る。鍵語の文字を重複なしで並べ、残りのアルファベットで埋める。IとJは同じマス</li>
 <li>M2：埋め文字が入るところを見る。組の2文字が同じならXを挟む（HELLO → HE LX LO）</li>
@@ -298,13 +360,15 @@ class I18nManager {
 <li>R3：鍵表の復元（上級）。置き字3文字と既知の組27個から推理する</li>
 </ul>
 <p>C1、C2、C3は順に10、20、30点で計60点です。C1を達成するとC2、C2を達成するとC3が開きます。得点は各課題の初回正解だけです。</p>
-<p>R1、R2、R3も順に10、20、30点です。R1でR2、R2でR3が開きます。復元を含む全14ミッションの合計は120点です。</p>
+<p>E1：暗号化チャレンジ（入門）。E2：暗号化チャレンジ（中級）。E3：暗号化チャレンジ（上級）。順に10・20・30点です。</p>
+<p>H1：史料: PT-109の電文（30点）。C3を解くと開きます。</p>
+<p>R1、R2、R3も順に10、20、30点です。R1でR2、R2でR3が開きます。全18ミッションの合計は210点です。</p>
 <p>帯や各行の「ナビ開始」で下のカードを開きます。手順は操作に合わせて自動で済みになります。あとの手順を済ませた場合、前の手順も済みになります。</p>
 <p>「この場所へ移動」はタブを開いて対象を枠で示し、フォーカスを移します。答え、鍵語、平文は入力しません。ナビによる減点はありません。</p>
 <p>「次」か「再生」で見た暗号化の規則だけをM3に数えます。「最後まで」や動きを減らす設定で飛ばした組は数えません。</p>
 <p>解読ヒントも減点しません。ヒントを見ずに初回正解した課題には★が付きます。旧版から移した進捗には★を付けません。</p>
-<p>復号練習は鍵語を表示しますが、鍵表は変更しません。自分で鍵生成タブへ移って設定します。チャレンジの鍵語はヒントから推理します。</p>
-<p>「挑戦する」で復号タブへ移り、課題の情報と解答欄を開きます。必要な鍵表と現在の鍵表の一致を確認してください。</p>
+<p>復号練習は鍵語を表示しますが、鍵表は変更しません。自分で鍵生成タブへ移って設定します。C1〜C3の鍵語はヒントから推理します。</p>
+<p>「挑戦する」で課題のタブへ移り、情報と解答欄を開きます。必要な鍵表と現在の鍵表の一致を確認してください。暗号化チャレンジの解答判定では鍵表の一致は問いません。</p>
 <p>「既定の表に戻す」で鍵語なしの表に戻せます。ナビはEscや「閉じる」で閉じ、開いたボタンへ戻ります。</p>
 </section>
 <section><h3>保存と安全性</h3>
@@ -579,6 +643,60 @@ class I18nManager {
                 'help.warning.desc': '<strong>このツールは教育目的です。</strong>プレイフェア暗号は古典暗号であり、現代の暗号学的用途には適していません。'
             },
             en: {
+                'recovery.conflicts': 'Conflicting pairs: {pairs}',
+                'recovery.kind.row': 'row',
+                'recovery.kind.column': 'col',
+                'recovery.kind.rectangle': 'rect',
+                'encipher.heading': 'Encryption challenges',
+                'encipher.choose': 'Choose a challenge',
+                'encipher.answer': 'Ciphertext calculated by hand:',
+                'encipher.check': 'Check Answer',
+                'encipher.hint': 'Hint',
+                'encipher.plaintext': 'Plaintext: {text}',
+                'encipher.keyword': 'Keyword: {keyword}',
+                'encipher.star-warning': 'Checking with the Encrypt button means you will not earn a star.',
+                'encipher.hint.1': 'Prepared pairs (padding marked): ',
+                'encipher.hint.2': 'Rules for each pair: {rules}',
+                'encipher.hint.3': 'First pair: {pair}→{answer}',
+                'mission.group.encipher': 'Encryption challenges',
+                'mission.group.history': 'Historical record',
+                'mission.E1.title': 'Encryption challenge (beginner)',
+                'mission.E1.learn': 'Insert padding and encrypt by hand',
+                'mission.E1.step.1': 'Load the encryption task with “Start challenge”.',
+                'mission.E1.step.2': 'Open “🔑 Key Generation”, reset to the default matrix, and calculate by hand using the matrix.',
+                'mission.E1.step.3': 'Enter the ciphertext in the challenge answer field and press “Check Answer”.',
+                'mission.E2.title': 'Encryption challenge (intermediate)',
+                'mission.E2.learn': 'Use the same-row, same-column and rectangle rules by hand with a keyword matrix',
+                'mission.E2.step.1': 'Load the encryption task with “Start challenge”.',
+                'mission.E2.step.2': 'Open “🔑 Key Generation”, save keyword CIPHER, and calculate by hand using the matrix.',
+                'mission.E2.step.3': 'Enter the ciphertext in the challenge answer field and press “Check Answer”.',
+                'mission.E3.title': 'Encryption challenge (advanced)',
+                'mission.E3.learn': 'Encrypt carefully with identical letters across pair boundaries and final padding',
+                'mission.E3.step.1': 'Load the encryption task with “Start challenge”.',
+                'mission.E3.step.2': 'Open “🔑 Key Generation”, save keyword SECRET, and calculate by hand using the matrix.',
+                'mission.E3.step.3': 'Enter the ciphertext in the challenge answer field and press “Check Answer”.',
+                'mission.H1.title': 'Historical record: the PT-109 message',
+                'mission.H1.learn': 'Decrypt a real message to see how its rules differed from textbook Playfair',
+                'mission.H1.step.1': 'Open “🔑 Key Generation” and save keyword ROYAL NEW ZEALAND NAVY.',
+                'mission.H1.step.2': 'Load the PT-109 historical challenge with “Start challenge”.',
+                'mission.H1.step.3': 'On the Decryption tab choose “Variant: No Change” under same-pair rules, then press “Decrypt”.',
+                'mission.H1.step.4': 'Enter the number of the lost boat and press “Check Answer”.',
+                'example.history-01': 'Historical record: PT-109',
+                'exercise.history-01.description': 'Decrypt this historical message using its known keyword, then answer the question.',
+                'history.question': 'What was the number of the boat reported lost in the message?',
+                'challenge.history-01.hint.0': 'Decrypting with the standard rules produces an identical-letter pair error.',
+                'challenge.history-01.hint.1': 'Choose “Variant: No Change” in the same-pair rules on the Decryption tab.',
+                'challenge.history-01.hint.2': 'Numbers are written as English words.',
+                'challenge.history-01.hint.3': 'ONE OWE NINE represents three digits.',
+                'history.explanation': 'Coastwatcher Arthur Reginald Evans received this message on 2 August 1943. '
+                    + 'The keyword was ROYAL NEW ZEALAND NAVY. The actual message does not follow textbook rules: '
+                    + 'the TT in BLACKETT was sent without splitting it. Standard decryption therefore reports an identical-letter pair error; '
+                    + 'the No Change variant can read it. The ciphertext also contains J, treated as I in the matrix. '
+                    + 'Numbers are spelled out, as in ONE OWE NINE (109). The reported plaintext says MERESU COVE, '
+                    + 'but this ciphertext decrypts to COCE, suggesting a one-letter error somewhere in the circulated ciphertext.',
+                'history.source': 'Sources: the ciphertext comes from secondary sources including Programming Praxis. '
+                    + 'They cite David Kahn, The Codebreakers (1996 edition, p. 592), but the original source was not checked for this tool. '
+                    + 'The plaintext and date are from Wikipedia, “Arthur Reginald Evans”.',
                 'mission.group.recovery': 'Recovery',
                 'mission.R1.title': 'Recover a key square (Beginner)',
                 'mission.R1.learn': 'Deduce the remaining 9 letters from 16 givens and 11 known pairs',
@@ -866,10 +984,25 @@ Matching all 25 cells decrypts the hidden ciphertext with your recovered square.
 Repeat the third hint as needed. Hints cost no points; a first success without hints earns a star (★).</p>
 <p>Cyclically shifting all rows and columns gives 25 equivalent squares that produce the same cipher.
 These puzzles fix the orientation with givens and require the specified square.</p>
+<p>At widths of 480px or less, pairs use two columns. Accessible labels retain full status and rule names;
+contradictory pairs also appear directly below the square.</p>
 <p>Source for the manual recovery method: U.S. Army FM 34-40-2, Chapter 7.</p>
 </section>
+<section><h3>Encryption challenges and historical record</h3>
+<p>In E1–E3, use the displayed plaintext and keyword to calculate ciphertext by hand.
+Loading never fills the plaintext input or changes the matrix. E1 unlocks E2; E2 unlocks E3.</p>
+<p>The three hints show prepared pairs with padding, each pair's rule, then the first pair's answer. A first correct answer without hints earns a star (★).</p>
+<p>Checking with Encrypt prevents a star: encrypting the same plaintext with the matching matrix after loading
+counts as one hint for that problem, even if repeated.</p>
+<p>H1 unlocks after C3. Set ROYAL NEW ZEALAND NAVY yourself and load the historical message. Standard rules reject the identical-letter pair TT.</p>
+<p>Choose “Variant: leave identical letters unchanged” (No Change) under Same Pair Processing Rule to decrypt it.
+Answer with the lost boat's number. The explanation after a correct answer shows how actual operation differed from textbook rules.</p>
+<p>The ciphertext comes from secondary sources including Programming Praxis.
+The attributed original, David Kahn's The Codebreakers (1996, p. 592), was not consulted.
+The date and plaintext come from Wikipedia, Arthur Reginald Evans. The ciphertext discrepancy is not corrected.</p>
+</section>
 <section><h3>Learning roadmap and guide</h3>
-<p>Complete fourteen missions through screen actions. “Next” recommends an order; M1–M8 remain freely available.</p>
+<p>Complete eighteen missions through screen actions. “Next” recommends an order; M1–M8 remain freely available.</p>
 <ul>
 <li>M1: Build a matrix from a keyword. Remove repeated keyword letters, then fill with the remaining alphabet. I and J share a cell.</li>
 <li>M2: See where padding is inserted. Insert X between identical letters in a pair (HELLO → HE LX LO).</li>
@@ -887,14 +1020,17 @@ These puzzles fix the orientation with givens and require the specified square.<
 <li>R3: Recover a key square (Advanced). Deduce positions from 3 givens and 27 known pairs.</li>
 </ul>
 <p>C1, C2 and C3 award 10, 20 and 30 points, for 60 total. C1 unlocks C2; C2 unlocks C3. Only the first correct answer earns points.</p>
-<p>R1, R2 and R3 also award 10, 20 and 30 points. R1 unlocks R2; R2 unlocks R3. All fourteen missions together award 120 points.</p>
+<p>E1: Encryption challenge (beginner). E2: Encryption challenge (intermediate). E3: Encryption challenge (advanced). Worth 10, 20 and 30 points.</p>
+<p>H1: Historical record: the PT-109 message (30 points). Unlocks after C3.</p>
+<p>R1, R2 and R3 also award 10, 20 and 30 points. R1 unlocks R2; R2 unlocks R3. All eighteen missions together award 210 points.</p>
 <p>Open the bottom card with “Start guide” in the summary or a mission row. Steps are checked automatically from screen state.</p>
 <p>Completing a later step also checks earlier steps. “Go to this step” switches tabs, outlines the control and moves focus.</p>
 <p>The guide never enters an answer, keyword or plaintext. It costs no points. Use “Next mission” after completing a mission.</p>
 <p>M3 counts only encryption rules displayed with “Next” or “Play”. Pairs skipped by “Go to end” or reduced motion do not count.</p>
 <p>Decryption hints cost no points either. A first correct answer without hints earns a star (★). Migrated old progress has no stars.</p>
-<p>Practice shows the keyword but does not change the matrix. Set it yourself on the Key Generation tab. Infer challenge keywords from hints.</p>
-<p>“Start challenge” opens its information and answer field on the Decryption tab. Check that the required and current matrices match.</p>
+<p>Practice shows the keyword but does not change the matrix. Set it yourself on the Key Generation tab. Infer C1–C3 keywords from hints.</p>
+<p>“Start challenge” opens the problem's tab, information and answer field. Check that the required and current matrices match.
+Encryption challenge answer validation does not require a matching matrix.</p>
 <p>“Restore default matrix” restores the no-keyword matrix. Close the guide with Escape or “Close” to return focus to its opener.</p>
 </section>
 <section><h3>Storage and safety</h3>

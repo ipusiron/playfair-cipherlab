@@ -12,7 +12,7 @@ English · [日本語](README.md)
 
 Playfair CipherLab is a web tool for visually learning the Playfair cipher, a classical cipher.
 Build a 5×5 key matrix and play through encryption and decryption one pair of letters at a time.
-It offers a Japanese/English interface, ciphertext analysis, three key-square recovery puzzles, a fourteen-mission learning roadmap, an on-screen guide that points to controls, and decryption challenges with hints.
+It offers a Japanese/English interface, ciphertext analysis, three key-square recovery puzzles, an eighteen-mission learning roadmap, an on-screen guide that points to controls, and encryption, decryption and historical challenges.
 
 ## 🌐 Demo
 
@@ -26,7 +26,7 @@ Use it directly in your browser. You can also download the files and open index.
 
 > *M1 and M2 are complete. The M3 guide highlights the example category selector.*
 
-1280×2200px, 141,185 bytes.
+1280×2600px, 174,499 bytes.
 
 ![Wikipedia example at pair 10 of 13](assets/en/screenshot2.png)
 
@@ -58,14 +58,20 @@ Use it directly in your browser. You can also download the files and open index.
 
 1280×1800px, 94,590 bytes.
 
+![PT-109 decrypted with the variant and the boat number answered correctly](assets/en/screenshot6.png)
+
+> *The ROYAL NEW ZEALAND NAVY matrix and “leave identical letters unchanged” variant decrypt the message. Answer 109 reveals the explanation and the unverified-original-source notice.*
+
+1280×3000px, 150,364 bytes.
+
 ## ✨ Features
 
 ### 📊 Learning progress
 
-- Points for three challenges and three recovery puzzles (10, 20 and 30 points each, 120 in total, awarded only once per problem)
-- Complete, next, incomplete and locked states for fourteen missions (one key-matrix mission, three encryption missions, two decryption missions, two analysis missions, three challenges and three recovery puzzles), with a recommended next action
+- Points for three encryption, three decryption and three recovery challenges (10, 20 and 30 points per set), plus one historical challenge (30 points): 210 in total, awarded only once per problem
+- Complete, next, incomplete and locked states for eighteen missions (one key-matrix mission, three encryption missions, three encryption challenges, two decryption missions, two analysis missions, three decryption challenges, one historical challenge and three recovery puzzles), with a recommended next action
 - A guide that checks steps automatically as you work, and a ★ for a first correct answer without hints
-- Separate C1 → C2 → C3 and R1 → R2 → R3 unlock chains, and a progress reset with a confirmation dialog
+- Separate E1 → E2 → E3, C1 → C2 → C3 → H1 and R1 → R2 → R3 unlock chains, and a progress reset with a confirmation dialog
 - Progress saved in the same browser, with strict validation of stored values and migration from the old format; the page remains usable without storage
 
 ### 🔑 Key generation
@@ -78,7 +84,7 @@ Use it directly in your browser. You can also download the files and open index.
 
 - Standard Playfair with a choice of X, Q or Z as padding
 - Three nonstandard variants (leave unchanged, shift right and move diagonally)
-- Eight examples, three decryption practices and three decryption challenges
+- Eight examples, three decryption practices, three encryption challenges, three decryption challenges and one historical challenge
 - Decryption results that never automatically delete padding, with candidate marks and text with candidates removed
 
 ### 🔍 Analysis
@@ -107,6 +113,9 @@ Use it directly in your browser. You can also download the files and open index.
 | M2 | Encryption | See where padding is inserted | Insert X between identical letters in a pair (HELLO → HE LX LO). | Encrypt HELLO with the default matrix and standard rules | 0 |
 | M3 | Encryption | Play all three rules | Same row: move right. Same column: move down. Rectangle: use the other letter’s column. | Display row, column and rectangle rules during encryption playback | 0 |
 | M4 | Encryption | Identical letters across pair boundaries | Do not insert X between EE across pair boundaries (ME ET ME …). | Encrypt MEET ME TONIGHT with the default matrix and standard rules | 0 |
+| E1 | Encryption challenges | Encryption challenge (beginner) | Insert padding and encrypt by hand | Calculate encipher-01 by hand and answer correctly | 10 |
+| E2 | Encryption challenges | Encryption challenge (intermediate) | Use the same-row, same-column and rectangle rules by hand with a keyword matrix | After E1, solve encipher-02 | 20 |
+| E3 | Encryption challenges | Encryption challenge (advanced) | Encrypt carefully with identical letters across pair boundaries and final padding | After E2, solve encipher-03 | 30 |
 | M5 | Decryption | Identify possible padding | An X in decrypted text is only a candidate. It may be a genuine X. | Decrypt KCNVMP with the default matrix and standard rules | 0 |
 | M6 | Decryption | Set the keyword yourself and decrypt | Decryption needs the same matrix as encryption. | Decrypt BNSY with the ANIMAL matrix and standard rules | 0 |
 | M7 | Analysis | Identify ciphertext impossible in Playfair | Odd length, J and identical-letter pairs are impossible under standard rules. | Analyze text classified as impossible | 0 |
@@ -114,12 +123,13 @@ Use it directly in your browser. You can also download the files and open index.
 | C1 | Decryption challenges | Mystery word | Decode without a keyword. | Solve mystery-01 with the default matrix | 10 |
 | C2 | Decryption challenges | Secret message | Infer the keyword from hints and decode. | After C1, solve mystery-02 with the SECRET matrix | 20 |
 | C3 | Decryption challenges | Military operation | Infer the keyword from hints and decode. | After C2, solve mystery-03 with the MILITARY matrix | 30 |
+| H1 | Historical record | Historical record: the PT-109 message | Decrypt a real message to see how its rules differed from textbook Playfair | After C3, solve history-01 with its required matrix | 30 |
 | R1 | Recovery | Recover a key square (Beginner) | Deduce 9 letters from 16 givens and 11 known pairs | Fill all 25 cells of recover-01 | 10 |
 | R2 | Recovery | Recover a key square (Intermediate) | Deduce 17 letters from 8 givens and 14 known pairs | After R1, fill all 25 cells of recover-02 | 20 |
 | R3 | Recovery | Recover a key square (Advanced) | Deduce 22 letters from 3 givens and 27 known pairs | After R2, fill all 25 cells of recover-03 | 30 |
 
 M1–M8 can be completed in any order. “Next” recommends the first incomplete unlocked mission.
-Completing everything shows 14/14 and 120/120pt, followed by a suggestion to compare the same text under variant rules.
+Completing everything shows 18/18 and 210/210pt, followed by a suggestion to compare the same text under variant rules.
 
 “Start guide” in the recommendation banner or a mission opens the steps in the card below.
 “Go to this step” opens the appropriate tab, outlines the control and moves focus.
@@ -132,8 +142,9 @@ M3 counts only rules actually displayed as the current encryption pair.
 Use “Restart Animation” and then “Next” or “Play” to view the rules.
 The guide's live step state is separate from saved mission achievements.
 
-Guides and decryption or recovery hints never subtract points.
+Guides and hints for any challenge never subtract points.
 A problem's first correct answer earns a star only if no hints were shown.
+Encryption challenges also withhold the star if you encrypt the same plaintext with the matching matrix after loading the problem.
 Later answers do not replace the first points or hint count.
 Old progress is migrated without stars because it did not record hint use.
 
@@ -164,6 +175,11 @@ The Encryption and Decryption tabs describe the source of the current matrix.
 Turning padding mode OFF selects a nonstandard variant.
 Loading the Wikipedia text from “Known Examples” also sets the matrix to PLAYFAIR EXAMPLE.
 
+Load an encryption challenge below the examples, or use “Start challenge” in the roadmap.
+Read the plaintext and keyword, set the matrix yourself, and enter the ciphertext calculated by hand in the separate answer field.
+Loading a problem never fills the plaintext input or changes the matrix. The three hints show prepared pairs, each pair's rule, then the first pair's answer.
+Checking the same plaintext with the matching matrix using Encrypt counts as one hint for that problem, even if repeated.
+
 ### 🔓 Take on decryption challenges
 
 1. Press “Start challenge” in the roadmap, or load a challenge from the Decryption tab.
@@ -174,6 +190,9 @@ Loading the Wikipedia text from “Known Examples” also sets the matrix to PLA
 The actual matrix must match even when the answer text is correct.
 Spaces and case are ignored. The original answer, prepared plaintext and candidate-stripped answer are accepted.
 Appending an unrelated final letter is not accepted.
+
+Historical challenge H1 unlocks after C3. Set the displayed keyword and choose “Variant: leave identical letters unchanged” (No Change) under Same Pair Processing Rule before decrypting.
+Standard rules produce a TT error. Answer with the lost boat's number, not the whole message. A correct answer reveals the explanation and sources.
 
 ### 🔍 Analyze ciphertext
 
@@ -201,6 +220,8 @@ The original ciphertext, with only leading and trailing whitespace trimmed, is p
 
 “Start over” restores only the givens without resetting the hint count.
 The partial square and inputs are not saved; only first-success points and hint use are stored as progress.
+At widths of 480px or less, the pair list uses two columns with ✓/✗/… and compact row/col/rect labels for hint 2.
+Accessible labels retain the full status and rule, and contradictory pairs are also listed directly below the square.
 
 ## 🧠 About the Playfair cipher
 
@@ -375,6 +396,51 @@ Answer: `ATTACK AT DAWN`.
 
 </details>
 
+### ✍️ Encryption challenges
+
+E1 is available immediately; E2 unlocks after E1 and E3 after E2. Use the displayed plaintext and keyword to calculate the ciphertext by hand.
+Spaces, case and separators in the answer are ignored. Answer validation does not require the current matrix to match, because this is a manual exercise.
+
+| id | Plaintext | Keyword | Points |
+|---|---|---|---|
+| encipher-01 | SHEEP | Default matrix | 10 |
+| encipher-02 | HIDE THE MAP | CIPHER | 20 |
+| encipher-03 | ATTACK THE HILL | SECRET | 30 |
+
+<details>
+<summary>Encryption challenge answers and rules</summary>
+
+- E1: Prepared text `SHEXEP`. SH (column), EX (rectangle), EP (column). Answer: `XNCZKU`.
+- E2: Prepared text `HIDETHEMAP`. HI (row), DE (rectangle), TH (column), EM (rectangle), AP (rectangle). Answer: `EPFHYDHNBI`.
+- E3: Prepared text `ATTACKTHEHILLX`. AT (rectangle), TA (rectangle), CK (column), TH (rectangle), EH (rectangle), IL (row), LX (rectangle). Answer: `GSSGDPSMSIKMKY`.
+
+</details>
+
+### 📜 Historical PT-109 message
+
+H1 unlocks after C3. The keyword is `ROYAL NEW ZEALAND NAVY`; the challenge is worth 30 points.
+The question is: “What was the number of the boat reported lost in the message?”
+
+```text
+KXJEY UREBE ZWEHE WRYTU HEYFS KREHE GOYFI WTTTU OLKSY CAJPO BOTEI ZONTX BYBWT GONEY CUZWR GDSON SXBOU YWRHE BAAHY USEDQ
+```
+
+<details>
+<summary>Historical answer, explanation and sources</summary>
+
+With the required matrix, the accepted answer is `109` or `ONE OWE NINE`.
+Standard rules reject the identical-letter pair TT; the No Change variant produces:
+
+```text
+PTBOATONEOWENINELOSTINACTIONINBLACKETTSTRAITTWOMILESSWMERESUCOCEXCREWOFTWELVEXREQUESTANYINFORMATIONX
+```
+
+Coastwatcher Arthur Reginald Evans received this message on 2 August 1943. The keyword was ROYAL NEW ZEALAND NAVY. Actual operation differed from textbook Playfair: TT in BLACKETT was sent without separation, so standard rules reject it and the No Change variant reads it. The ciphertext also contains J, treated as I in the matrix. Numbers are spelled out as ONE OWE NINE (109). The reported plaintext says MERESU COVE, but decrypting this ciphertext gives COCE, suggesting a one-letter error somewhere in the circulating ciphertext.
+
+Sources: the ciphertext comes from secondary sources including [Programming Praxis](https://programmingpraxis.com/2009/07/03/the-playfair-cipher/). The original is attributed to David Kahn, The Codebreakers (1996 edition, p. 592), but the original source was not consulted when making this tool. The plaintext and date come from [Wikipedia, Arthur Reginald Evans](https://en.wikipedia.org/wiki/Arthur_Reginald_Evans). The ciphertext is retained without correcting the discrepancy.
+
+</details>
+
 ## 🔒 Security
 
 All cipher operations run in the browser with no runtime API, CDN, external font or dependency.
@@ -414,6 +480,9 @@ A failed clipboard write produces a failure notification.
 ## 🔗 References
 
 - [Wikipedia: Playfair cipher](https://en.wikipedia.org/wiki/Playfair_cipher)
+- [Programming Praxis: The Playfair Cipher](https://programmingpraxis.com/2009/07/03/the-playfair-cipher/)
+- [Wikipedia: Arthur Reginald Evans](https://en.wikipedia.org/wiki/Arthur_Reginald_Evans)
+- David Kahn, The Codebreakers (1996 edition, p. 592). The original source was not consulted
 - 『暗号の秘密』 (Japanese-language book), pp. 70–72
 - 『暗号解読事典』 (Japanese-language book), pp. 181–183
 - 『暗号事典』 (Japanese-language book), pp. 556–559
@@ -436,7 +505,7 @@ and given and pair counts for all three puzzles from PlayfairRecovery.
 | test/cipher.test.js | Matrices, preparation, standard rules, variants, candidates and 200 seeded roundtrips |
 | test/analysis.test.js | Necessary ciphertext conditions, reversed pairs, frequency and 200 seeded cases |
 | test/recovery.test.js | Exact data for three recovery puzzles, deduction, hints and cyclic shifts |
-| test/exercises.test.js | Six exercises, answer acceptance/rejection and side-effect-free points |
+| test/exercises.test.js | Ten datasets, encryption preparation and rules, PT-109 variants and answer validation |
 | test/i18n.test.js | Matching keys, translations, initial language, Japanese literal policy and help |
 | test/html.test.js | CSP, referrer, ARIA, labels, four tabs, defer order, guide structure and inline attribute restrictions |
 | test/contrast.test.js | All 18 existing text pairs plus analysis and recovery text colors in light and dark modes meet 4.5:1 |
@@ -465,13 +534,15 @@ playfair-cipherlab/                # Project root
 │   │   ├── screenshot2.png        # English Wikipedia playback at pair 10
 │   │   ├── screenshot3.png        # English C2 matrix match and correct answer
 │   │   ├── screenshot4.png        # English analysis with SECRET and reversed entry one selected
-│   │   └── screenshot5.png        # English R1 success and hidden plaintext
+│   │   ├── screenshot5.png        # English R1 success and hidden plaintext
+│   │   └── screenshot6.png        # English PT-109 variant decryption, answer and explanation
 │   ├── screenshot.png             # Japanese Wikipedia playback at pair 10
 │   ├── screenshot2.png            # Japanese C2 matrix match and correct answer
 │   ├── screenshot3.png            # Dark English keyword preview
 │   ├── screenshot4.png            # Japanese roadmap and M3 guide
 │   ├── screenshot5.png            # Japanese analysis with SECRET and reversed entry one selected
-│   └── screenshot6.png            # Japanese R1 in progress with hint-two pair types
+│   ├── screenshot6.png            # Japanese R1 in progress with hint-two pair types
+│   └── screenshot7.png            # Japanese PT-109 variant decryption, answer and explanation
 ├── css/                           # Stylesheets
 │   └── styles.css                 # Color variables, dark mode and responsive layout
 ├── js/                            # Classic scripts compatible with file URLs

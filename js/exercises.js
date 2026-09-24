@@ -5,6 +5,11 @@ class ExerciseManager {
     constructor() {
         this.exercises = {
             encryption: {
+                challenges: [
+                    { id: 'encipher-01', title: 'encipher-01', keyword: '', plaintext: 'SHEEP', points: 10 },
+                    { id: 'encipher-02', title: 'encipher-02', keyword: 'CIPHER', plaintext: 'HIDE THE MAP', points: 20 },
+                    { id: 'encipher-03', title: 'encipher-03', keyword: 'SECRET', plaintext: 'ATTACK THE HILL', points: 30 }
+                ],
                 examples: [
                     {
                         id: "basic-01",
@@ -66,6 +71,14 @@ class ExerciseManager {
                 ]
             },
             decryption: {
+                history: {
+                    id: 'history-01', title: 'history-01', level: 4, points: 30,
+                    keyword: 'ROYAL NEW ZEALAND NAVY', answer: 'ONE OWE NINE',
+                    ciphertext: 'KXJEY UREBE ZWEHE WRYTU HEYFS KREHE GOYFI WTTTU OLKSY CAJPO '
+                        + 'BOTEI ZONTX BYBWT GONEY CUZWR GDSON SXBOU YWRHE BAAHY USEDQ',
+                    description: 'exercise.history-01.description',
+                    hints: [0, 1, 2, 3].map(index => `challenge.history-01.hint.${index}`)
+                },
                 practices: [
                     {
                         id: "decrypt-01",
@@ -158,11 +171,29 @@ class ExerciseManager {
     }
     
     getChallenges(type) {
-        return this.exercises[type].challenges || [];
+        const challenges = this.exercises[type].challenges || [];
+        return type === 'decryption' ? [...challenges, this.getHistoryChallenge()] : challenges;
     }
     
     getPractices() {
         return this.exercises.decryption.practices || [];
+    }
+
+    getHistoryChallenge() {
+        return this.exercises.decryption.history;
+    }
+
+    encipherResult(id) {
+        const challenge = this.getChallenges('encryption').find(item => item.id === id);
+        return challenge ? ExerciseCore.encrypt(ExerciseCore.matrixFromKeyword(challenge.keyword), challenge.plaintext) : null;
+    }
+
+    validateEncipher(id, userAnswer) {
+        const input = ExerciseCore.normalize(userAnswer);
+        if (!input) return { result: 'empty', points: 0 };
+        const challenge = this.getChallenges('encryption').find(item => item.id === id);
+        if (!challenge || input !== this.encipherResult(id).ciphertext) return { result: 'incorrect', points: 0 };
+        return { result: 'correct', points: challenge.points };
     }
     
     getExamplesByCategory(type) {
@@ -210,6 +241,14 @@ class ExerciseManager {
     
     // 課題検証
     validateAnswer(id, userAnswer, currentMatrixString) {
+        if (id === 'history-01') {
+            const challenge = this.getHistoryChallenge();
+            const input = String(userAnswer).trim();
+            if (!input) return { result: 'empty', points: 0 };
+            if (currentMatrixString !== ExerciseCore.matrixFromKeyword(challenge.keyword)) return { result: 'wrong-key', points: 0 };
+            const correct = input === '109' || ExerciseCore.normalize(input) === 'ONEOWENINE';
+            return { result: correct ? 'correct' : 'incorrect', points: correct ? challenge.points : 0 };
+        }
         const input = ExerciseCore.normalize(userAnswer);
         if (!input) return { result: 'empty', points: 0 };
         const challenge = [...this.getChallenges('decryption'), ...this.getPractices()]
