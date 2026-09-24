@@ -5,6 +5,15 @@ const path = require('node:path');
 const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
 const attribute = (tag, name) => tag.match(new RegExp(`\\b${name}="([^"]*)"`))?.[1];
 
+test('G-3 analysis tab, labelled controls, result regions and send buttons exist', () => {
+    for (const id of ['tab-analysis', 'analysis', 'analysis-sample', 'analysis-input', 'analyze-btn', 'analysis-result',
+        'analysis-pairs', 'analysis-reversed-list', 'send-to-analysis-encryption', 'send-to-analysis-decryption']) {
+        assert.equal([...html.matchAll(new RegExp(`\\bid="${id}"`, 'g'))].length, 1, id);
+    }
+    assert.match(html, /id="analysis-result"[^>]*aria-live="polite"/);
+    for (const id of ['analysis-sample', 'analysis-input']) assert.match(html, new RegExp(`<label for="${id}"`));
+});
+
 test('G-2 ordered deferred head scripts with only synchronous early theme in body', () => {
     const head = html.match(/<head>([\s\S]*?)<\/head>/)[1];
     const body = html.match(/<body>([\s\S]*?)<\/body>/)[1];
@@ -45,7 +54,7 @@ test('K-5 CSP, referrer, noscript, and safe markup', () => {
 
 test('K-5 tabs, dialog, labels, button types, and external links', () => {
     const tabs = [...html.matchAll(/<button\b[^>]*role="tab"[^>]*>/g)].map(match => match[0]);
-    assert.equal(tabs.length, 3);
+    assert.equal(tabs.length, 4);
     for (const tab of tabs) {
         assert.match(attribute(tab, 'aria-selected'), /^(true|false)$/);
         const id = attribute(tab, 'aria-controls');

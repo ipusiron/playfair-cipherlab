@@ -78,6 +78,8 @@
           aria-selected="false" aria-controls="encryption" tabindex="-1">🔐 暗号化</button>
         <button type="button" class="tab-button" id="tab-decryption" data-tab="decryption" role="tab"
           aria-selected="false" aria-controls="decryption" tabindex="-1">🔓 復号</button>
+        <button type="button" class="tab-button" id="tab-analysis" data-tab="analysis" role="tab"
+          aria-selected="false" aria-controls="analysis" tabindex="-1" data-i18n="tab.analysis"></button>
       </div>
 
       <div class="tab-content">
@@ -287,6 +289,7 @@
             <h3>暗号文</h3>
             <div class="output-container">
               <div id="ciphertext" class="output-text"></div>
+              <button type="button" id="send-to-analysis-encryption" class="btn btn-secondary" data-i18n="analysis.send"></button>
               <button type="button" id="copy-ciphertext" class="btn btn-secondary">
                 コピー
               </button>
@@ -352,6 +355,7 @@
               placeholder="復号したい暗号文を入力"
             ></textarea>
             <div id="ciphertext-error" aria-live="polite" class="error-message"></div>
+            <button type="button" id="send-to-analysis-decryption" class="btn btn-secondary" data-i18n="analysis.send"></button>
           </div>
 
           <div class="settings-section">
@@ -451,6 +455,43 @@
             <div id="candidate-plain" class="output-text"></div>
 
           </div>
+        </div>
+        <div id="analysis" role="tabpanel" aria-labelledby="tab-analysis" class="tab-panel">
+        <h2 data-i18n="analysis.heading"></h2>
+        <div class="input-section">
+          <label for="analysis-sample" data-i18n="analysis.sample"></label>
+          <select id="analysis-sample" class="analysis-select">
+            <option value="" data-i18n="analysis.choose"></option>
+            <option value="TCITIGCTSMCTCBBCCT" data-i18n="analysis.sample.reverse"></option>
+            <option value="BMODZBXDNABEKUDMUIXMMOUVIF" data-i18n="analysis.sample.wiki"></option>
+            <option value="Khoor, Zruog!" data-i18n="analysis.sample.caesar"></option>
+          </select>
+          <label for="analysis-input" data-i18n="analysis.input"></label>
+          <textarea id="analysis-input" rows="3" spellcheck="false"></textarea>
+          <button type="button" id="analyze-btn" class="btn btn-primary" data-i18n="analysis.run"></button>
+          <p id="analysis-empty" aria-live="polite"></p>
+        </div>
+        <div id="analysis-result" aria-live="polite" hidden>
+          <p id="analysis-verdict" class="analysis-verdict"></p>
+          <p data-i18n="analysis.caution"></p>
+          <ul id="analysis-checks" class="analysis-checks"></ul>
+          <p id="analysis-ignored"></p>
+          <h3 data-i18n="analysis.pairs"></h3>
+          <p data-i18n="analysis.legend"></p>
+          <ol id="analysis-pairs" class="analysis-pairs"></ol>
+          <h3 data-i18n="analysis.reversed"></h3>
+          <div id="analysis-reversed-list" class="analysis-reversed-list" tabindex="-1"></div>
+          <div id="analysis-selection" hidden>
+            <p id="analysis-decrypted"></p>
+            <p id="matrix-status-analysis" class="matrix-status"></p>
+          </div>
+          <table class="analysis-frequency">
+            <caption data-i18n="analysis.frequency"></caption>
+            <thead><tr><th scope="col" data-i18n="analysis.pair"></th><th scope="col" data-i18n="analysis.count"></th></tr></thead>
+            <tbody id="analysis-top-pairs"></tbody>
+          </table>
+          <p id="analysis-distinct"></p>
+        </div>
         </div>
       </div>
     </main>
