@@ -122,7 +122,7 @@ class I18nManager {
                 'analysis.open-frequency': 'Day009で頻度分析（新しいタブ）',
                 'analysis.frequency-description': 'Day009（Frequency Analyzer）が開き、この暗号文が入力欄に入ります。'
                     + '『📊 頻度分析』を押すと、1文字ずつの頻度や二重字を調べられます。'
-                    + 'Day009の二重字は1文字ずつずらして数えるので、ここでの組（2文字ずつ区切る）とは数え方が違います。暗号文はURLに含めて渡します。',
+                    + 'Day009の二重字は1文字ずつずらして数えるので、ここでの組（2文字ずつ区切る）とは数え方が違います。暗号文はURLの「#」より後ろに含めて渡します（サーバーへは送られません）。',
                 'analysis.frequency-too-long': '5,000文字を超えるため、Day009へは渡せません',
                 'tab.analysis': '🔍 解析',
                 'analysis.heading': '暗号文を解析',
@@ -322,7 +322,7 @@ class I18nManager {
 <p>逆順の組には同じ番号を付けます。一覧のボタンを押すと、いまの鍵表での復号と鍵表の出どころを表示します。</p>
 <p>Wikipediaの例のREとERのように、組の順序を逆にすると変換後の順序も逆になります。</p>
 <p>見本は鍵語SECRETのTCITIGCTSMCTCBBCCT、Wikipediaの例の暗号文、シーザー暗号の文（Khoor, Zruog!）です。暗号化の出力と復号の入力からも「解析へ送る」で移せます。</p>
-<p>「Day009で頻度分析（新しいタブ）」を押したときだけ暗号文をURLに含めてDay009の入力欄へ渡し、移動先の「📊 頻度分析」で分析します（5,000文字まで）。</p>
+<p>「Day009で頻度分析（新しいタブ）」を押したときだけ暗号文をURLの「#」より後ろに含めてDay009の入力欄へ渡し、Day009は読み込むと同時に分析します（5,000文字まで。「#」より後ろはサーバーへ送られません）。</p>
 <p>Day009の二重字は語ごとに1文字ずつずらして数えるため、ここでの2文字ずつ区切った組とは数え方が違います。</p>
 </section>
 <section><h3>🧩 鍵表の復元</h3>
@@ -767,7 +767,7 @@ class I18nManager {
                 'analysis.frequency-description': 'Day009 (Frequency Analyzer) opens with this ciphertext in its input field. '
                     + 'Press its Frequency Analysis button to examine individual-letter and digram frequencies. '
                     + 'Day009 counts digrams with a one-letter sliding window, unlike the fixed two-letter pairs here. '
-                    + 'The ciphertext is passed in the URL.',
+                    + 'The ciphertext is passed after the "#" in the URL (it is not sent to the server).',
                 'analysis.frequency-too-long': 'Cannot send to Day009 because the text exceeds 5,000 characters',
                 'tab.analysis': '🔍 Analysis',
                 'analysis.heading': 'Analyze ciphertext',
@@ -971,8 +971,8 @@ Variant rules may produce identical-letter pairs.</p>
 <p>As with RE and ER in the Wikipedia example, reversing a pair also reverses its transformed result.</p>
 <p>Samples include TCITIGCTSMCTCBBCCT with keyword SECRET, the Wikipedia example ciphertext, and Caesar cipher text (Khoor, Zruog!).
 Use “Send to analysis” beside encryption output or below decryption input to analyze your own text.</p>
-<p>Only clicking “Open in Day009 Frequency Analyzer (new tab)” sends up to 5,000 characters in the URL to its input field;
-press its Frequency Analysis button to analyze them. Day009 counts overlapping digrams within words,
+<p>Only clicking “Open in Day009 Frequency Analyzer (new tab)” puts up to 5,000 characters after the “#” in the URL for its input field
+(the part after “#” is not sent to the server); Day009 analyzes them as soon as it loads. Day009 counts overlapping digrams within words,
 unlike the fixed two-letter pairs here.</p>
 </section>
 <section><h3>🧩 Key-square recovery</h3>

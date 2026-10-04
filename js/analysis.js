@@ -41,7 +41,8 @@ const PlayfairAnalysis = (() => {
     function frequencyAnalyzerUrl(text) {
         const trimmed = text.trim();
         if (!trimmed || trimmed.length > 5000) return null;
-        return 'https://ipusiron.github.io/frequency-analyzer/?text=' + encodeURIComponent(trimmed);
+        // 「#」より後ろで渡す（サーバーへ送られず、URLの長さの上限もない。Day009は#text=を先に読む）
+        return 'https://ipusiron.github.io/frequency-analyzer/#text=' + encodeURIComponent(trimmed);
     }
 
     return Object.freeze({ analyze, reversePairsDecrypt, frequencyAnalyzerUrl });
