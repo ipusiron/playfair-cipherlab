@@ -206,9 +206,9 @@ J is checked without merging it into I. Whitespace is removed; other nonletters 
 The matrix never changes automatically. Save the SECRET matrix on the Key Generation tab to reproduce the sample's decryption.
 
 Click “Open in Day009 Frequency Analyzer (new tab)” below the results to fill the input field in [Day009](https://ipusiron.github.io/frequency-analyzer/).
-Press its Frequency Analysis button to examine letter and digram frequencies.
+Day009 runs the frequency analysis as soon as it loads, so you can examine letter and digram frequencies. The ciphertext goes after the `#` in the URL, so it is not sent to the server.
 Day009 counts digrams with a one-letter sliding window within words, unlike the fixed two-letter pairs here.
-The original ciphertext, with only leading and trailing whitespace trimmed, is passed in the URL. The link is hidden above 5,000 characters.
+The original ciphertext, with only leading and trailing whitespace trimmed, is passed after the `#` in the URL. The link is hidden above 5,000 characters.
 
 **🧩 Recover a key square from known plaintext**
 
@@ -444,7 +444,7 @@ Sources: the ciphertext comes from secondary sources including [Programming Prax
 ## 🔒 Security
 
 All cipher operations run in the browser with no runtime API, CDN, external font or dependency.
-Only clicking the Day009 link opens Day009 with ciphertext in the URL. Ciphertext is not otherwise sent outside the tool.
+Only clicking the Day009 link opens Day009 with ciphertext after the `#` in the URL (the part after `#` is not sent to the server). Ciphertext is not otherwise sent outside the tool.
 Playfair is an educational classical cipher and must not be used to protect secrets.
 
 The meta CSP allows scripts and styles only from self, without unsafe-inline.
