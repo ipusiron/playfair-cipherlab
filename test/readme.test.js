@@ -376,3 +376,23 @@ test('E-3 Japanese README prose has no spaces at Japanese and ASCII boundaries',
         .replace(inline, tick + tick).replace(/https?:\/\/[^\s<>)]+/g, '').replace(/<[^>]*>/g, '');
     assert.deepEqual([...prose.matchAll(pattern)].map(match => match[0]), []);
 });
+
+test('ユースケースの「このツールならではの使い方」を PlayfairCore で再計算（日英）', () => {
+  const { PlayfairCore } = require('../js/cipher.js');
+  const en = read('README.en.md');
+  const base = PlayfairCore.matrixFromKeyword('');
+  const hello = PlayfairCore.encrypt(base, 'HELLO');
+  assert.deepEqual([hello.prepared, hello.ciphertext], ['HELXLO', 'KCNVMP']);
+  const cat = PlayfairCore.encrypt(base, 'CAT');
+  assert.deepEqual([cat.prepared, cat.ciphertext], ['CATX', 'DBSY']);
+  assert.equal(PlayfairCore.normalize('JELLYFISH'), 'IELLYFISH');
+  assert.equal(base.length, 25);
+  assert.equal(base.includes('J'), false);
+  const fox = PlayfairCore.encrypt(base, 'FOXX');
+  assert.deepEqual(fox.pairs, ['FO', 'XQ', 'XQ']);
+  assert.deepEqual(fox.outPairs, ['IL', 'VS', 'VS']);
+  assert.equal(fox.ciphertext, 'ILVSVS');
+  for (const md of [readme, en]) {
+    assert.ok(md.includes('KCNVMP') && md.includes('DBSY') && md.includes('ILVSVS'));
+  }
+});

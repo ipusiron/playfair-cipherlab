@@ -470,6 +470,12 @@ A failed clipboard write produces a failure notification.
 
 ### Use cases
 
+Ways of using this tool in particular
+
+- Confirming the preprocessing to make pairs of two letters (digraph-cipher classes): the Playfair cipher groups letters in twos, so a doubled letter within a pair gets an X between them and an odd length is padded with X. HELLO becomes `HE LX LO` and then `KCNVMP`, and CAT becomes `CA TX` and then `DBSY`. You can confirm, by the pairs and the ciphertext, the preprocessing a two-letter cipher needs
+- Confirming that I and J are merged to fit 26 letters into 25 cells (the 5x5 constraint): a 5x5 = 25-cell square cannot hold 26 letters, so I and J share a cell. JELLYFISH normalizes to IELLYFISH, and J is not in the square (25 letters). You can confirm the trick of fitting 26 into 25
+- Confirming that the same pair maps to the same ciphertext (bigram frequency-analysis classes): FOXX becomes `FO XQ XQ` and then `ILVSVS`. Both `XQ` become `VS`, so the same pair gives the same ciphertext. Unlike a simple substitution that replaces single letters, it works on pairs, so single-letter frequency analysis is weak and you solve it by digraph (bigram) frequency
+
 - 📖 **Classroom demonstrations**: Demonstrations using a projector
 - 💻 **Self-study**: Understanding ciphers at your own pace
 - 👥 **Group work**: Team-based codebreaking competitions
