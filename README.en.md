@@ -518,6 +518,7 @@ and given and pair counts for all three puzzles from PlayfairRecovery.
 | test/format.test.js | Maximum line lengths, line counts and minification detection |
 | test/readme.test.js | Bilingual tables, hints, YAML structure, complete trees and image references |
 | test/progress.test.js | Mission completion rules, migration, locks, stars, guide steps and blocked storage |
+| test/theme-init.test.js | Initial theme decision (saved value, OS setting, blocked storage) and its `<head>` load position |
 
 ## 📁 Directory structure
 
@@ -574,6 +575,7 @@ playfair-cipherlab/                # Project root
     ├── contrast.test.js           # All 18 existing pairs plus analysis and recovery contrast
     ├── format.test.js             # Minification detection through line lengths and line counts
     ├── progress.test.js           # Missions, migration, locks, guide steps and storage exceptions
+    ├── theme-init.test.js         # Initial theme decision and load position
     └── readme.test.js             # Bilingual tables, YAML, trees and images
 ```
 

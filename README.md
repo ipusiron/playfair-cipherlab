@@ -533,6 +533,7 @@ GitHub Actionsでもpushとpull_requestごとにNode 22で実行します。
 | test/format.test.js | 最長行と行数、minifyの検出 |
 | test/readme.test.js | 表の再計算・ヒント・YAML・ツリー・画像参照 |
 | test/progress.test.js | ミッションの達成条件・移行・ロック・★・ナビの手順・保存領域の遮断 |
+| test/theme-init.test.js | 初期テーマの判定（保存値・OS設定・保存領域の遮断）と`<head>`での読み込み位置 |
 
 ## 📁 ディレクトリー構造
 
@@ -589,6 +590,7 @@ playfair-cipherlab/                # プロジェクトのルート
     ├── contrast.test.js           # 明暗18組と解析・復元のコントラスト検証
     ├── format.test.js             # minifyの検出（最長行・行数）
     ├── progress.test.js           # ミッションの達成条件・移行・ロック・ナビの手順・保存時の例外
+    ├── theme-init.test.js         # 初期テーマの判定と読み込み位置
     └── readme.test.js             # READMEの表・YAML・ツリー・画像の検証
 ```
 

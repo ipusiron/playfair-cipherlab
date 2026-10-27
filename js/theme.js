@@ -2,28 +2,27 @@ class ThemeManager {
     constructor() {
         this.themeToggle = document.getElementById('theme-toggle');
         this.themeIcon = document.querySelector('.theme-icon');
-        this.body = document.body;
-        
-        // ローカルストレージから設定を読み込む
-        this.currentTheme = this.body.classList.contains('dark-mode') ? 'dark' : 'light';
-        this.applyTheme();
-        
+        this.root = document.documentElement;
+
+        // theme-init.js が <head> で付けたクラスを読み、アイコンだけ合わせる
+        this.currentTheme = this.root.classList.contains('dark-mode') ? 'dark' : 'light';
+        this.updateIcon();
+
         // トグルボタンのイベントリスナー
         this.themeToggle.addEventListener('click', () => {
             this.toggleTheme();
         });
     }
-    
+
     applyTheme() {
-        if (this.currentTheme === 'dark') {
-            this.body.classList.add('dark-mode');
-            this.themeIcon.textContent = '☀️';
-        } else {
-            this.body.classList.remove('dark-mode');
-            this.themeIcon.textContent = '🌙';
-        }
+        this.root.classList.toggle('dark-mode', this.currentTheme === 'dark');
+        this.updateIcon();
     }
-    
+
+    updateIcon() {
+        this.themeIcon.textContent = this.currentTheme === 'dark' ? '☀️' : '🌙';
+    }
+
     toggleTheme() {
         this.currentTheme = this.currentTheme === 'light' ? 'dark' : 'light';
         try {
@@ -35,7 +34,7 @@ class ThemeManager {
     }
 }
 
-// DOMContentLoadedの前に実行して、ちらつきを防ぐ
+// 最初のテーマは theme-init.js が <head> で決める。ここではボタンを結び付けるだけ
 document.addEventListener('DOMContentLoaded', () => {
     new ThemeManager();
 });

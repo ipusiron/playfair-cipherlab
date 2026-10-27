@@ -59,17 +59,19 @@ test('G-3 analysis tab, labelled controls, result regions and send buttons exist
     for (const id of ['analysis-sample', 'analysis-input']) assert.match(html, new RegExp(`<label for="${id}"`));
 });
 
-test('G-2 ordered deferred head scripts with only synchronous early theme in body', () => {
+test('G-2 synchronous early theme in head, then ordered deferred head scripts, none in body', () => {
     const head = html.match(/<head>([\s\S]*?)<\/head>/)[1];
     const body = html.match(/<body>([\s\S]*?)<\/body>/)[1];
     const headScripts = [...head.matchAll(/<script\b[^>]*>/g)].map(match => match[0]);
-    assert.deepEqual(headScripts.map(tag => attribute(tag, 'src')), [
+    assert.equal(headScripts[0], '<script src="js/theme-init.js">');
+    assert.ok(head.indexOf('css/styles.css') < head.indexOf('js/theme-init.js'));
+    const deferred = headScripts.slice(1);
+    assert.deepEqual(deferred.map(tag => attribute(tag, 'src')), [
         'js/cipher.js', 'js/analysis.js', 'js/recovery.js', 'js/exercises.js', 'js/progress.js', 'js/guide.js',
         'js/ui.js', 'js/theme.js', 'js/help.js', 'js/i18n.js', 'js/main.js'
     ]);
-    headScripts.forEach(tag => assert.match(tag, /\sdefer(?:\s|>)/));
-    assert.match(body, /^\s*<script src="js\/theme-init\.js"><\/script>/);
-    assert.deepEqual([...body.matchAll(/<script\b[^>]*>/g)].map(match => match[0]), ['<script src="js/theme-init.js">']);
+    deferred.forEach(tag => assert.match(tag, /\sdefer(?:\s|>)/));
+    assert.deepEqual([...body.matchAll(/<script\b[^>]*>/g)], []);
     assert.doesNotMatch(html, /<script\b[^>]*(?:\sasync(?:\s|=|>)|type="module")/);
 });
 
@@ -94,7 +96,7 @@ test('K-5 CSP, referrer, noscript, and safe markup', () => {
     assert.match(html, /<noscript>[\s\S]+?<\/noscript>/);
     assert.doesNotMatch(html, /\sstyle\s*=|\son[a-z]+\s*=/i);
     assert.doesNotMatch(html, /animations\.js/);
-    assert.match(html, /<body>\s*<script src="js\/theme-init\.js"><\/script>/);
+    assert.match(html, /<link rel="stylesheet" href="css\/styles\.css" \/>\s*<script src="js\/theme-init\.js"><\/script>/);
 });
 
 test('K-5 tabs, dialog, labels, button types, and external links', () => {
