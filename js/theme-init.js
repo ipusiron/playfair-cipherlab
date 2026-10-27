@@ -1,3 +1,5 @@
+// Load synchronously in <head> right after the stylesheet so the theme applies before the first paint.
+// <body> does not exist yet, so the dark-mode class goes on <html>; styles.css uses `.dark-mode body ...`.
 (() => {
     let theme;
     try {
@@ -7,5 +9,5 @@
         // Storage may be blocked or unavailable under file://.
     }
     if (!theme) theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    document.body.classList.toggle('dark-mode', theme === 'dark');
+    document.documentElement.classList.toggle('dark-mode', theme === 'dark');
 })();

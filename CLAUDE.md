@@ -28,10 +28,11 @@ Load cipher, analysis, recovery, exercises, progress, guide, ui, theme, help, i1
 as classic scripts in the head with defer, in exactly that order. Fetches can
 run concurrently; execution stays ordered before DOMContentLoaded. Never use
 async, modules, bundling or new dependencies. Only theme-init stays synchronous
-immediately after body opens so the saved theme applies before the first paint.
+in the head, right after the stylesheet, so the saved theme applies before the first paint.
 
-0. **theme-init.js** - Synchronous script immediately after body opens; applies the
-   validated saved theme or OS preference before the first paint.
+0. **theme-init.js** - Synchronous script in the head after the stylesheet; applies the
+   validated saved theme or OS preference before the first paint. The `dark-mode`
+   class goes on `<html>` (body does not exist yet), so dark selectors are `.dark-mode body ...`.
 
 1. **cipher.js** - Pure `PlayfairCore` functions and the `PlayfairCipher` adapter
    - 5×5 matrix management (I/J combined as "I")

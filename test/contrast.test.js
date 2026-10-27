@@ -31,7 +31,7 @@ function luminance(hex) {
 }
 
 test('Recovery B-9 all recovery text states meet 4.5:1 in both themes', () => {
-    for (const mode of [':root', 'body.dark-mode']) {
+    for (const mode of [':root', '.dark-mode body']) {
         const block = css.slice(css.indexOf(mode + ' {')).split('}')[0];
         const colors = Object.fromEntries([...block.matchAll(/(--[\w-]+):\s*(#[a-f0-9]{6});/gi)].map(m => [m[1], m[2]]));
         for (const name of ['text', 'keyword', 'analysis-selected', 'error', 'success', 'warning']) {
@@ -42,7 +42,7 @@ test('Recovery B-9 all recovery text states meet 4.5:1 in both themes', () => {
 });
 
 test('C-5 selected analysis pairs meet 4.5:1 in both themes', () => {
-    for (const mode of [':root', 'body.dark-mode']) {
+    for (const mode of [':root', '.dark-mode body']) {
         const block = css.slice(css.indexOf(mode + ' {')).split('}')[0];
         const fg = block.match(/--analysis-selected-fg:\s*(#[a-f0-9]{6});/i)[1];
         const bg = block.match(/--analysis-selected-bg:\s*(#[a-f0-9]{6});/i)[1];
@@ -51,7 +51,7 @@ test('C-5 selected analysis pairs meet 4.5:1 in both themes', () => {
     }
 });
 
-for (const mode of [':root', 'body.dark-mode']) {
+for (const mode of [':root', '.dark-mode body']) {
     test(`K-6 all 18 contrast pairs: ${mode}`, () => {
         const block = css.slice(css.indexOf(mode + ' {')).split('}')[0];
         const variables = Object.fromEntries([...block.matchAll(/(--[\w-]+):\s*(#[a-f0-9]{6});/gi)]
